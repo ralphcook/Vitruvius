@@ -1,0 +1,86 @@
+HOUSING & ROADS
+h 1x1 house
+H 2x2 house
+d 3x3 house
+$ 4x4 palace
+G 1x1 garden
+# 1x1 plaza
+R 1x1 road
+
+WATER
+F 1x1 fountain
+r 3x3 reservoir
+
+FOOD
+g 3x3 granary
+M 2x2 market
+e 3x3 fruit
+o 3x3 olives
+p 3x3 pigs
+v 3x3 vegetables
+u 3x3 vines
+w 3x3 wheat
+
+OTHER
+E 1x1 engineer
+( 2x2 gatehouse (horizontal)
+P 1x1 prefect
+* 1x1 statue
+: 2x2 statue
+! 3x3 statue
+
+GODS (small, large)
+0 2x2  5 3x3 Ceres
+3 2x2  8 3x3 Mars
+2 2x2  7 3x3 Mercury
+1 2x2  6 3x3 Neptune
+4 2x2  9 3x3 Venus
+@ 2x2 oracle
+  
+ENTERTAINMENT
+X 3x3 ampitheater
+[ 3x3 triumphal arch (horizontal)
+a 3x3 actor colony
+z 3x3 chariotmaker
+C 5x5 colloseum
+y 3x3 gladiator
+Z 15x5 hippodrome
+l 3x3 lion pit
+x 2x2 theater
+
+HEALTH
+B 1x1 barber
+b 1x1 bath
+D 1x1 doctor
++ 1x1 hospital
+
+EDUCATION
+A 3x3 academy
+L 2x2 library
+Y 2x2 mission
+S 2x2 school
+
+INDUSTRIAL
+c 2x2 clay
+i 2x2 iron
+m 2x2 marble
+W 3x3 warehouse
+V 2x2 wharf
+n 2x2 wood
+I 2x2 weapons
+K 2x2 pottery
+N 2x2 furniture
+O 2x2 oil
+U 2x2 wine
+
+MILITARY
+Q 3x3 military academy
+q 3x3 barracks
+j 4x4 fort grounds
+J 3x3 fort house
+T 2x2 tower
+
+GOVERNMENT
+f 2x2 forum
+k 4x4 gov-small (4x4 building, don't know what this is)
+
