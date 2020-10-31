@@ -49,7 +49,7 @@ public class TextTranslator
 //      for (int currentColumn=0; currentColumn<textArray[currentRow].length(); currentColumn++)
 //      for (int currentColumn=0; currentColumn<currentString.length(); currentColumn++)
       {
-        // if array is longer than the string, put in OCCUPIED for cells beyond the string length
+        // if array is longer than the string, put in spaces for cells beyond the string length
         if (currentColumn >= sourceString.length())
         {
           if (pictureArray[currentRow][currentColumn] == null)

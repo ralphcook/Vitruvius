@@ -12,8 +12,9 @@ public class ImagesPanel extends JPanel implements MouseListener, MouseMotionLis
 {
   private static final long serialVersionUID = 1L;
   
-  int         tileSize = 0;
-  Picture[][] pictures = null;
+  int         tileSize = -1;      // # of pixels per tile edge
+  Picture[][] pictures = null;    // 2d array of pictures on display
+  public Picture[][] getPictures() { return pictures; }
   
   public ImagesPanel()
   {
@@ -32,6 +33,7 @@ public class ImagesPanel extends JPanel implements MouseListener, MouseMotionLis
    * @param width number of tiles wide
    * @param height number of tiles high
    * @param tileSize number of pixels per tile square.
+   * <P>N.B. unused except in 'public ImagesPanel(int, Picture[][])' constructor (30-Oct-20)
    */
   public ImagesPanel(int width, int height, int tileSize)
   {
@@ -43,6 +45,7 @@ public class ImagesPanel extends JPanel implements MouseListener, MouseMotionLis
    * Create the panel to hold the given pictures array with the given tileSize.
    * TODO: reuse the existing panel instead of recreating the old one. I don't know
    * how it's getting into the component hierarchy...
+   * ANSWER: this is not getting used (30-Oct-20)
    * @param tileSize number of pixels for the edge of each tile square
    * @param pictures 2D array of picture objects to be displayed.
    */

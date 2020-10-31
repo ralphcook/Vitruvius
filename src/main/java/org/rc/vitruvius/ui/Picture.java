@@ -90,6 +90,7 @@ public enum Picture
   private int     columns;
   private int     rows;
   
+  // unused (30-Oct-20)
   private int     refX = -1;   public int getRefX() { return refX; }
   private int     refY = -1;   public int getRefY() { return refY; }
   public void setRefXAndY(int i, int j) { refX = i; refY = j; }  

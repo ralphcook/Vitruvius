@@ -28,15 +28,16 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
   private JTextArea   messagesTextArea  = null;     // gets messages from the program to the user.
   private JButton     generateImageButton = null;   // generates the image on the images panel;
                                                     // disabled when activated, enabled when text changes.
-  private Picture[][] pictures          = null;     // 2D array of images.
+//  private Picture[][] pictures          = null;     // 2D array of images.
+  private TextTranslator textTranslator = null;
   
   Preferences applicationPreferences = null;
   
-  public Picture[][] getPictures() 
-  { 
-    getUpdatedPictures();
-    return pictures; 
-  }
+//  public Picture[][] getPictures() 
+//  { 
+//    getUpdatedPictures();
+//    return pictures; 
+//  }
   
   private boolean dirtyText = false; 
   public void setDirtyText(boolean b) { dirtyText = b; generateImageButton.setEnabled(true); } 
@@ -52,7 +53,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     initializeSavedWindowPosition(applicationPreferences, 100, 100, 500, 400);
     
     Picture.checkImageFiles();    // outputs error messages if we have letters that are supposed to correspond to particular buildings,
-                                  // but have no image file for the buildings.
+                                  // but we have no file with the filename saved for that letter.
     
     // Create a text area where the user can put text to convert to a map picture
     textMapTextArea = new JTextArea(5,20);
@@ -78,8 +79,8 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
                                                     // another panel using BorderLayout.NORTH makes 
                                                     // them their preferred height at the top of the panel.
     buttonsPanel.setLayout(gridLayout);
-    generateImageButton         = new JButton("Image");
-    generateImageButton.setEnabled(false);
+            generateImageButton         = new JButton("Image");
+            generateImageButton.setEnabled(false);
     JButton generateForumHtmlButton     = new JButton("Forum HTML");
     JButton generateFullHtmlButton      = new JButton("Full HTML");
     JButton displayHelpButton           = new JButton("Help");
@@ -94,21 +95,10 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     messagesTextArea = new JTextArea(5, 80);
     JScrollPane messagesScrollPane = new JScrollPane(messagesTextArea);
     
-//  String stringMap = getTestText();
-//  setText(textMap, stringMap);
-//  Picture[][] pictureArray = getTestPictureArray(stringMap);
-  
-//  ImagesPanel imagesPanel = new ImagesPanel(50, pictureArray);
-  
-//    HtmlGenerator.generateFullHtml(pictureArray);
-    
     add(mainSplitPane);
     add(buttonsPanelScrollPane, BorderLayout.WEST);
     add(messagesScrollPane, BorderLayout.SOUTH);
     
-//    add(textMapScrollPane, BorderLayout.NORTH);
-//    add(imagesScrollPane);
-
     pack();
     
     setWindowPosition();      // set position of the window on the screen.
@@ -116,8 +106,8 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     GenerateImageAction generateImageAction = new GenerateImageAction(this);
     generateImageButton.setAction(generateImageAction);
     GenerateHtmlAction generateForumHtmlAction = new GenerateHtmlAction(this, GenerateHtmlAction.Target.FORUM, "Forum HTML");
-    GenerateHtmlAction generateFullHtmlAction = new GenerateHtmlAction(this, GenerateHtmlAction.Target.FULL, "Full HTML");
     generateForumHtmlButton.setAction(generateForumHtmlAction);
+    GenerateHtmlAction generateFullHtmlAction = new GenerateHtmlAction(this, GenerateHtmlAction.Target.FULL, "Full HTML");
     generateFullHtmlButton.setAction(generateFullHtmlAction);
     
     JDialog helpDialog = new HelpDialog(this);
@@ -126,20 +116,27 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     
   }
   
-  public Picture[][] getUpdatedPictures()
+  private Picture[][] getUpdatedPictures()
   {
+    Picture[][] pictures = null;
+    
     String text = textMapTextArea.getText();
     if (text == null || text.length() == 0)
     {
       addMessage("No text for which to generate image");
-      pictures = null;
+//      pictures = null;
     }
     else
     {
       if (textDirty()) 
       { 
-        pictures = new TextTranslator(this).createPictureArray(text); 
-        setDirtyText(false);
+        if (textTranslator == null) { textTranslator = new TextTranslator(this); }
+        pictures = textTranslator.createPictureArray(text); 
+        setDirtyText(false);    // image matches text, so text no longer dirty
+      }
+      else
+      {
+        pictures = imagesPanel.getPictures();
       }
     }
     return pictures;
@@ -148,7 +145,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
   public Picture[][] generateImage()
   {
     messagesTextArea.setText("");
-    pictures = getUpdatedPictures();
+    Picture[][] pictures = getUpdatedPictures();
     if (pictures != null)
     {
       imagesPanel.setPictures(pictures);
