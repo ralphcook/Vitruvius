@@ -1,6 +1,7 @@
 package org.rc.vitruvius.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.util.prefs.Preferences;
@@ -15,6 +16,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.rc.vitruvius.MessageListener;
+import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.text.TextTranslator;
 
 import rcutil.swing.SavedWindowPositionJFrame;
@@ -28,16 +30,9 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
   private JTextArea   messagesTextArea  = null;     // gets messages from the program to the user.
   private JButton     generateImageButton = null;   // generates the image on the images panel;
                                                     // disabled when activated, enabled when text changes.
-//  private Picture[][] pictures          = null;     // 2D array of images.
   private TextTranslator textTranslator = null;
   
   Preferences applicationPreferences = null;
-  
-//  public Picture[][] getPictures() 
-//  { 
-//    getUpdatedPictures();
-//    return pictures; 
-//  }
   
   private boolean dirtyText = false; 
   public void setDirtyText(boolean b) { dirtyText = b; generateImageButton.setEnabled(true); } 
@@ -69,6 +64,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     // the text area and the images panel go in a split pane so the user
     // can adjust their sizes.
     JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, textMapScrollPane, imagesScrollPane);
+    mainSplitPane.setDividerLocation(250);
     
     // create a panel for buttons to control the program operation,
     // and put a couple of buttons in it.
@@ -79,6 +75,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
                                                     // another panel using BorderLayout.NORTH makes 
                                                     // them their preferred height at the top of the panel.
     buttonsPanel.setLayout(gridLayout);
+
             generateImageButton         = new JButton("Image");
             generateImageButton.setEnabled(false);
     JButton generateForumHtmlButton     = new JButton("Forum HTML");
@@ -114,42 +111,54 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     DisplayHelpAction displayHelpAction = new DisplayHelpAction(helpDialog);
     displayHelpButton.setAction(displayHelpAction);
     
+    // DEBUG
+//    textMapTextArea.setText
+//    (
+//          "GGGGFGGGG"
+//        + "\nH.H.GH.H."
+//        + "\n........."
+//        + "\n#########"
+//        + "\nH.H.GH.H."
+//        + "\n........."
+//        + "\nGGGGFGGGG"
+//    );
+    
   }
   
-  private Picture[][] getUpdatedPictures()
+  private TileArray updateTileArrayFromText()
   {
-    Picture[][] pictures = null;
+    TileArray pictures = null;
     
     String text = textMapTextArea.getText();
     if (text == null || text.length() == 0)
     {
       addMessage("No text for which to generate image");
-//      pictures = null;
     }
     else
     {
       if (textDirty()) 
       { 
         if (textTranslator == null) { textTranslator = new TextTranslator(this); }
-        pictures = textTranslator.createPictureArray(text); 
+        pictures = textTranslator.createTileArray(text); 
         setDirtyText(false);    // image matches text, so text no longer dirty
       }
       else
       {
-        pictures = imagesPanel.getPictures();
+        pictures = imagesPanel.getTileArray();
       }
     }
     return pictures;
   }
   
-  public Picture[][] generateImage()
+  public TileArray generateTileArrayFromTextAndUpdateImagePanel()
   {
     messagesTextArea.setText("");
-    Picture[][] pictures = getUpdatedPictures();
+    TileArray pictures = updateTileArrayFromText();
     if (pictures != null)
     {
-      imagesPanel.setPictures(pictures);
-      this.repaint();
+      imagesPanel.setTileArray(pictures);
+      Container c = imagesPanel.getParent();
+      c.repaint();
       generateImageButton.setEnabled(false);
     }
     return pictures;

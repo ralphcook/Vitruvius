@@ -1,15 +1,18 @@
 package org.rc.vitruvius.ui;
 
+import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.net.URL;
+
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 
 public enum Picture
 {
-   OCCUPIED       ("",   null,                1, 1) // put in by the program for cells that have no graphic
-  ,SPACE          (".",  null,                1, 1)
-  ,OTHERSPACE     (" ",  null,                1, 1)
-  ,academy        ("A","academy",             3, 3)
+  // TODO: make continuation, space, maybe otherspace things about tiles, not things about pictures.
+   CONTINUATION   (".",  "(cont)",            1, 1)   // A period represents a tile that will have part of a glyph other than 
+  ,SPACE          (" ",  "(spc)",             1, 1)   // its upper left-hand corner.
+  ,
+   academy        ("A","academy",             3, 3)
   ,MILacademy     ("Q","academy-military",    3, 3)
   ,amphitheater   ("X","amphitheater",        3, 3)
 //  ,aqH            ("-","aq-h",                1, 1)
@@ -33,7 +36,7 @@ public enum Picture
   ,fruit          ("e","fruit",               3, 3)
   ,garden1        ("G","garden1x1",           1, 1)
   ,gatehouseH     ("(","gatehouse-h",         2, 2)
-  ,gatehouseV     (")","gatehouse-v",         2, 2)
+//  ,gatehouseV     (")","gatehouse-v",         2, 2)
   ,gladiator      ("y","gladiator",           3, 3)
   ,gov            ("k","gov-small",           4, 4)
   ,granary        ("g","granary",             3, 3)
@@ -90,13 +93,7 @@ public enum Picture
   private int     columns;
   private int     rows;
   
-  // unused (30-Oct-20)
-  private int     refX = -1;   public int getRefX() { return refX; }
-  private int     refY = -1;   public int getRefY() { return refY; }
-  public void setRefXAndY(int i, int j) { refX = i; refY = j; }  
-  
-  private static int maxWidth = 0;
-  private static int maxHeight = 0;
+  private final static String IMAGE_FILEPATH_FORMAT = "/images/%s.gif";
   
   private Picture(String key, String imageName, int columns, int rows)
   {
@@ -109,35 +106,6 @@ public enum Picture
   public String getKey()       { return key; }
   public String getImageName() { return imageName; }
   
-//  /**
-//   * return the maximum width of all images, i.e., largest number of columns occupied
-//   * @return
-//   */
-//  public static int maxWidth()
-//  {
-//    if (maxWidth == 0) { calculateMaxHeightAndWidth(); }
-//    return maxWidth;
-//  }
-//  
-//  /**
-//   * return the maximum height of all images, i.e., largest number of rows occupied
-//   * @return
-//   */
-//  public static int maxHeight()
-//  {
-//    if (maxHeight == 0) { calculateMaxHeightAndWidth(); }
-//    return maxHeight;
-//  }
-//  
-//  private static void calculateMaxHeightAndWidth()
-//  {
-//    for (Picture p: values())
-//    {
-//      maxHeight = Math.max(maxHeight, p.rows());
-//      maxWidth  = Math.max(maxWidth,  p.columns());
-//    }
-//  }
-//  
   /**
    * Report any image files that are not where they're supposed to be.
    */
@@ -145,9 +113,9 @@ public enum Picture
   {
     for (Picture p: values())
     {
-      if (p != OCCUPIED && p != SPACE && p != OTHERSPACE)
+      if (p != CONTINUATION && p != SPACE)
       {
-        Image image = p.getImage();
+        ImageIcon image = p.getImageIcon();
         if (image == null)
         {
           System.err.println(String.format("No image for %s (%s)", p.name(), p.getImageName()));
@@ -178,12 +146,38 @@ public enum Picture
     return returnValue;
   }
   
-  public Image getImage()
+  /**
+   * return the Swing component associated with this picture;
+   * if this picture is a continuation of a picture originating
+   * somewhere else, this method returns null.
+   * @param tileSize - number of pixels on each edge of the square
+   * tile; used to scale the image according to the number of rows
+   * and columns of tiles occupied by the picture.
+   * @param height
+   * @return
+   */
+  public JLabel getLabel(int tileSize)
   {
-    URL url = Picture.class.getResource("images/" + imageName + ".gif");
-    Image image = null;
-    if (url != null) { image = Toolkit.getDefaultToolkit().getImage(url); }
-    return image;
+    JLabel result = null;
+    if (this != CONTINUATION && this != SPACE)
+    {
+      ImageIcon imageIcon = getImageIcon();
+      int width = columns * tileSize;
+      int height = rows * tileSize;
+      Image scaledImage = imageIcon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT);
+      result = new JLabel(new ImageIcon(scaledImage));
+      result.setSize(new Dimension(width, height));
+    }
+    return result;
+  }
+  
+  private ImageIcon getImageIcon()
+  {
+    String filepath = String.format(IMAGE_FILEPATH_FORMAT, imageName);
+    java.net.URL imgURL = getClass().getResource(filepath);
+    ImageIcon imageIcon = null;
+    if (imgURL != null) { imageIcon = new ImageIcon(imgURL); }
+    return imageIcon;
   }
   
   public int columns()  { return columns; }

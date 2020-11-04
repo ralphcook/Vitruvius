@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
+import org.rc.vitruvius.model.TileArray;
+
 public class GenerateHtmlAction extends AbstractAction
 {
   private static final long serialVersionUID = 1L;
@@ -16,6 +18,8 @@ public class GenerateHtmlAction extends AbstractAction
   
   private MainFrame   frame     = null;
   private Target      target    = null;
+  
+  private String      html      = null;
   
   public GenerateHtmlAction(MainFrame frame, Target target, String label)
   {
@@ -27,34 +31,31 @@ public class GenerateHtmlAction extends AbstractAction
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    
-//    Picture[][] pictures = frame.getUpdatedPictures();
-    Picture[][] pictures = frame.generateImage();
-    if (pictures != null)
+    TileArray tiles = frame.generateTileArrayFromTextAndUpdateImagePanel();
+    if (tiles != null)
     {
-      String html = null;
       switch(target)
       {
       case FORUM: 
-        html = HtmlGenerator.generateForumHtml(pictures); 
+        html = HtmlGenerator.generateForumHtml(tiles); 
         break;
       case FULL : 
-        html = HtmlGenerator.generateFullHtml(pictures); 
+        html = HtmlGenerator.generateFullHtml(tiles); 
         break;
       default: frame.addMessage("Illegal option for HTML Action");
       }
       
-      String[] options = { "Copy", "Done" };
-      int returnCode = JOptionPane.showOptionDialog(frame, html, "html", JOptionPane.DEFAULT_OPTION, 
-          JOptionPane.PLAIN_MESSAGE, null, options, null);
-      if (returnCode == 0)
-      {
-        // user selected "Copy" button to terminate dialog; put the HTML text on the clipboard.
-        StringSelection stringSelection = new StringSelection(html);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(stringSelection, null);  // no owner
-      }
-    }
+      copyTextToClipboard(html);
+      JOptionPane.showMessageDialog(frame, "HTML copied to clipboard");
+    }  
+  }
+  
+  private void copyTextToClipboard(String text)
+  {
+    // user selected "Copy" button to terminate dialog; put the HTML text on the clipboard.
+    StringSelection stringSelection = new StringSelection(text);
+    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    clipboard.setContents(stringSelection, null);  // no owner
   }
 
 }

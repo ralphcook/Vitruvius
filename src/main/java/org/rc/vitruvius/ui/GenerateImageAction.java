@@ -18,7 +18,7 @@ public class GenerateImageAction extends AbstractAction
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    mainFrame.generateImage();
+    mainFrame.generateTileArrayFromTextAndUpdateImagePanel();
   }
 
 }
