@@ -4,6 +4,11 @@ import org.rc.vitruvius.model.Tile;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.TileRow;
 
+/**
+ * Generate HTML from the current TileArray.
+ * @author rcook
+ *
+ */
 public class HtmlGenerator
 {
   private static String startTable = "<table border=0 cellPadding=0 cellspacing=0>\n";    // do we need width & height?
@@ -15,15 +20,20 @@ public class HtmlGenerator
   private static String startHtml = "<html>\n";
   private static String endHtml   = "</html>\n";
   
-  private static void output(String s) { System.out.println(s); }
+  private static void say(String s) { System.out.println(s); }
 
   @SuppressWarnings("unused")
-  private static void output(String formatString, Object ... args) 
+  private static void say(String formatString, Object ... args) 
   { 
     String resultString = String.format(formatString, args);
-    output(resultString);
+    say(resultString);
   }
   
+  /**
+   * Generate HTML suitable as an entire HTML page.
+   * @param tiles
+   * @return
+   */
   public static String generateFullHtml(TileArray tiles)
   {
     StringBuilder output = new StringBuilder();
@@ -33,6 +43,12 @@ public class HtmlGenerator
     return new String(output);
   }
   
+  /**
+   * Generate HTML suitable for inclusion in the Heavegames forum (or elsewhere), 
+   * i.e., HTML without html tags.
+   * @param tiles
+   * @return
+   */
   public static String generateForumHtml(TileArray tiles)
   {
     StringBuilder output = new StringBuilder();
@@ -58,8 +74,6 @@ public class HtmlGenerator
     int cellSize = 25;
     String pictureCellFormat  = "    <td rowspan=%d colspan=%d><IMG SRC=%s%s.gif style=\"height:%dpx;width:%dpx\" title=\"%s\"></td>\n";
     String emptyCellFormat    = "    <td width=%d height=%d> </td>\n";
-    // get the width of the widest row
-    int tableWidth = tiles.getWidestEffectiveWidth();
     
     output.append(startTable);
     for (TileRow row: tiles)
@@ -89,6 +103,7 @@ public class HtmlGenerator
               break;
         }
       }
+      output.append(endRow);
     }
     output.append(endTable);
   }

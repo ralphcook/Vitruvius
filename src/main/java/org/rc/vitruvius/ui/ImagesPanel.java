@@ -12,6 +12,11 @@ import org.rc.vitruvius.model.Tile;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.TileRow;
 
+/**
+ * The panel for displaying a collection of glyphs.
+ * @author rcook
+ *
+ */
 public class ImagesPanel extends JPanel implements MouseListener, MouseMotionListener
 {
   private static final long serialVersionUID = 1L;
@@ -75,6 +80,12 @@ public class ImagesPanel extends JPanel implements MouseListener, MouseMotionLis
     drawPictures(tileArray);
   }
   
+  /**
+   * Put the glyphs from the given TileArray onto the panel; we currently use
+   * a JLabel for each glyph, and position it on a null layout using X,Y calculated
+   * from tile size and TileArray position.
+   * @param tileArray
+   */
   private void drawPictures(TileArray tileArray)
   {
     if (tileArray != null)

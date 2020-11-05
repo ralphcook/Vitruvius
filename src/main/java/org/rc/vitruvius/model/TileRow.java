@@ -3,12 +3,18 @@ package org.rc.vitruvius.model;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.rc.vitruvius.ui.Picture;
-
+/**
+ * A row of tiles; used in TileArray.
+ * @author rcook
+ *
+ */
 public class TileRow implements Iterable<Tile>
 {
   private ArrayList<Tile> row = null;
   
+  /**
+   * Return a string of "row: " plus a concatenation of strings representing each tile.
+   */
   public String toString()
   {
     StringBuilder sb = new StringBuilder();
@@ -38,7 +44,8 @@ public class TileRow implements Iterable<Tile>
   }
   
   /**
-   * put the given tile at the given 0-based column number on this TileRow.
+   * Put the given tile at the given 0-based column number on this TileRow.
+   * Ensure that the row is long enough to contain the tile.
    * @param tile
    * @param colNumber
    */
@@ -50,32 +57,22 @@ public class TileRow implements Iterable<Tile>
     row.set(colNumber, tile);
   }
   
+  /**
+   * Return the size of the row.
+   * @return
+   */
   public int length() { return row.size(); }
   
-  public int effectiveWidth()
-  {
-    int position = 0;
-    while (position < row.size())
-    {
-      Tile tile = row.get(position);
-      if (tile == null || tile.picture() == null)
-      {
-        position++;
-      }
-      else
-      {
-        Picture picture = tile.picture();
-        position += picture.columns();
-      }
-    }
-    return position;
-  }
-  
+  /**
+   * Add the given tile to the end of the row.
+   * @param tile
+   */
   public void add(Tile tile) { row.add(tile); }
   
   /**
    * return the tile at the given 0-based position on this row,
-   * or null if there is no such tile. 
+   * or null if there is no such tile. The index can be outside
+   * the range of the row.
    * @param index
    * @return
    */
@@ -86,12 +83,23 @@ public class TileRow implements Iterable<Tile>
     return result;
   }
   
+  /**
+   * Put the given tile at the 0-based index of this row; throw an exception
+   * if the index is outside the bounds of the row.
+   * @param index
+   * @param tile
+   * @see put(Tile, int)
+   */
   public void set(int index, Tile tile)
   {
     checkLength(index);
     row.set(index, tile);
   }
   
+  /**
+   * Throw an exception if the given index is outside the bounds of this TileRow.
+   * @param index
+   */
   private void checkLength(int index)
   {
     if (index >= row.size()) 
@@ -103,36 +111,9 @@ public class TileRow implements Iterable<Tile>
     }
   }
   
-  public Iterator<Tile> getTileIterator()
-  {
-    return new TileIterator(this);
-  }
-  
-  class TileIterator implements Iterator<Tile>
-  {
-    TileRow row = null;
-    private int currentPosition = -1;
-    
-    public TileIterator(TileRow givenRow)
-    {
-      if (givenRow == null) { row = new TileRow(); }
-                       else { row = givenRow; }
-      currentPosition = 0;
-    }
-    
-    public boolean hasNext()     {      return (currentPosition > row.length());    }
-    public Tile next()
-    {
-      Tile result = null;
-      if (hasNext()) 
-      {
-        result = row.get(currentPosition);
-        currentPosition++;
-      }
-      return result;
-    }
-  }
-
+  /**
+   * Return the iterator for this TileRow.
+   */
   @Override
   public Iterator<Tile> iterator()
   {

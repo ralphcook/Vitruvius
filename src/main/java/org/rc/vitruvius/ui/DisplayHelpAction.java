@@ -5,6 +5,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 
+/**
+ * Action to display the help text.
+ * @author rcook
+ *
+ */
 public class DisplayHelpAction extends AbstractAction
 {
   private static final long serialVersionUID = 1L;

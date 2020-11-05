@@ -4,6 +4,11 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
+/**
+ * Action to generate the image from the current glyphy tool text.
+ * @author rcook
+ *
+ */
 public class GenerateImageAction extends AbstractAction
 {
   private static final long serialVersionUID = 1L;
@@ -18,7 +23,7 @@ public class GenerateImageAction extends AbstractAction
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    mainFrame.generateTileArrayFromTextAndUpdateImagePanel();
+    mainFrame.updateImagesPanelFromGlyphyText();
   }
 
 }

@@ -6,10 +6,11 @@ import org.rc.vitruvius.ui.Picture;
 
 /**
  * One tile on the display grid; Types currently support an empty tile, a tile with the upper left
- * tile of a graphic, or a 'continuation' tile. This last is a tile occupied by a picture that 
- * covers more than one tile; the 'row,col' of this tile refers to the position of the corresponding
- * PICTURE tile.
- * @author ralph
+ * tile of a graphic, or a 'continuation' tile. This last refers to each tile occupied by a glyph
+ * except for the upper left one, i.e., if the glyph covers 2x2 tiles, the upper left is a PICTURE
+ * tile and the other three are CONTINUATION tiles. 
+ * 
+ * @author rcook
  *
  */
 public class Tile
@@ -45,8 +46,7 @@ public class Tile
   }
   
   /**
-   * return the component to display for this tile, set to the
-   * given width and height.
+   * Return a JLabel of a given size to display for this tile.
    * <P> If null, indicates no component is displayed for this tile;
    * it could be that the space this tile would occupy is already
    * occupied by a component that originates in another tile and

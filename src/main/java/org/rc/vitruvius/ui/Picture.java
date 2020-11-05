@@ -6,9 +6,15 @@ import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
+/**
+ * Represents one glyph image.
+ * 
+ * TODO: create rotated glyphs, maybe aqueducts and other things missing.
+ * @author rcook
+ *
+ */
 public enum Picture
 {
-  // TODO: make continuation, space, maybe otherspace things about tiles, not things about pictures.
    CONTINUATION   (".",  "(cont)",            1, 1)   // A period represents a tile that will have part of a glyph other than 
   ,SPACE          (" ",  "(spc)",             1, 1)   // its upper left-hand corner.
   ,
@@ -171,6 +177,10 @@ public enum Picture
     return result;
   }
   
+  /**
+   * Get the image icon for this Picture.
+   * @return
+   */
   private ImageIcon getImageIcon()
   {
     String filepath = String.format(IMAGE_FILEPATH_FORMAT, imageName);
@@ -180,6 +190,15 @@ public enum Picture
     return imageIcon;
   }
   
+  /**
+   * Return the number of columns used by this glyph, i.e., the width in tiles.
+   * @return
+   */
   public int columns()  { return columns; }
+  
+  /**
+   * Return the number of rows used by this glyph, i.e., the height in tiles.
+   * @return
+   */
   public int rows()     { return rows; }
 }

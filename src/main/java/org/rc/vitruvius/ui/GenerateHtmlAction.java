@@ -10,6 +10,11 @@ import javax.swing.JOptionPane;
 
 import org.rc.vitruvius.model.TileArray;
 
+/**
+ * Action to generate HTML from the given display.
+ * @author rcook
+ *
+ */
 public class GenerateHtmlAction extends AbstractAction
 {
   private static final long serialVersionUID = 1L;
@@ -31,7 +36,7 @@ public class GenerateHtmlAction extends AbstractAction
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    TileArray tiles = frame.generateTileArrayFromTextAndUpdateImagePanel();
+    TileArray tiles = frame.updateImagesPanelFromGlyphyText();
     if (tiles != null)
     {
       switch(target)

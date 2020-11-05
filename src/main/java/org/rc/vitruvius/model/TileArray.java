@@ -3,6 +3,14 @@ package org.rc.vitruvius.model;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+/**
+ * Dynamic 2d collection of Tiles, organized as rows of tiles.
+ * 
+ * @author rcook
+ * 
+ * @see org.rc.vitruvius.model.Tile
+ *
+ */
 public class TileArray implements Iterable<TileRow>
 {
   private ArrayList<TileRow> tileRows = null;
@@ -22,9 +30,13 @@ public class TileArray implements Iterable<TileRow>
     }
   }
   
+  /**
+   * Return a string that is "tileArray: " followed by a concatenation of the strings 
+   * representing each row, or an indication that there are no rows.
+   */
   public String toString()
   {
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new StringBuilder("tileArray: ");
     if (tileRows == null) { sb.append("<null tileRows>"); }
     else
     {
@@ -44,7 +56,7 @@ public class TileArray implements Iterable<TileRow>
   
   /**
    *  Put the given tile at the given 0-based column and row number in this tileArray.
-   *  If the tile array is not currently big enough to have this tile, enlarge it so it can.
+   *  Ensure the tile array is big enough to contain the tile.
    *
    * @param t Tile to place.
    * @param colNumber column number, starts at 0
@@ -58,15 +70,23 @@ public class TileArray implements Iterable<TileRow>
     tileRow.put(t, colNumber);
   }
   
+  /**
+   * Return the number of tiles in the tile array.
+   * @return
+   */
   public int length() { return tileRows.size(); }
   
-  Iterator<TileRow> rowIterator()
-  {
-    return new TileRowIterator(this);
-  }
-  
+  /**
+   * Add the given row to the tile array.
+   * @param row
+   */
   public void addRow(TileRow row) { tileRows.add(row); }
   
+  /**
+   * Get the row of tiles at the given 0-based index.
+   * @param index
+   * @return
+   */
   public TileRow getRow(int index)
   {
     if (index > tileRows.size())
@@ -100,60 +120,13 @@ public class TileArray implements Iterable<TileRow>
     return tile;
   }
   
-  class TileRowIterator implements Iterator<TileRow>
-  {
-    private TileArray tileArray       = null;
-    private int       currentPosition = -1;
-    
-    public TileRowIterator(TileArray givenTileArray)
-    {
-      tileArray = givenTileArray;
-      currentPosition = 0;
-    }
-    
-    @Override    public boolean hasNext() 
-    { 
-      return (currentPosition > tileArray.length()); 
-    }
-    
-    @Override    public TileRow next()
-    {
-      if (!hasNext())
-      {
-        throw new IllegalStateException("Call for next on TileArray past end of list.");
-      }
-      else
-      {
-        TileRow result = tileArray.getRow(currentPosition);
-        currentPosition++;
-        return result;
-      }
-    }
-  }
-
+  /**
+   * Return an iterator over the rows in the TileArray.
+   */
   @Override
   public Iterator<TileRow> iterator()
   {
     return tileRows.iterator();
-  }
-  
-  /**
-   * calculate the EFFECTIVE width of each row, i.e., the number
-   * of tiles occupied by the row. If a picture occupies columns such that it 
-   * makes the row wider than the number of tiles stored for the row, that's the
-   * width we return.
-   * @return
-   */
-  public int getWidestEffectiveWidth()
-  {
-    int widestWidth  = 0;
-    // calculate max width of all the rows
-    for (TileRow row: tileRows)
-    {
-      int rowWidth = row.effectiveWidth();
-      widestWidth = Math.max(widestWidth, rowWidth);
-    }
-    return widestWidth;
   }
   
 }

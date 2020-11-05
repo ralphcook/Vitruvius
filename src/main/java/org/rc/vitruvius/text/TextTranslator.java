@@ -6,34 +6,48 @@ import org.rc.vitruvius.model.Tile;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.ui.Picture;
 
+/**
+ * Translates from text to a TileArray.
+ * @author rcook
+ *
+ */
 public class TextTranslator
 {
   private MessageListener messageListener = null;
   
   private static String OCCUPIED_TILE_MESSAGE = "Error placing character <%s> at row %d, col %d; already in use.%n";
   
+  /**
+   * Constructor, including object to listen for messages from methods from this object.
+   * @param messageListener
+   */
   public TextTranslator(MessageListener messageListener)
   {
     this.messageListener = messageListener;
   }
   
+  /**
+   * Send given string, constructed as for String.format(String, Object...), to this
+   * object's message listener.
+   * @param formatString
+   * @param args
+   */
   public void say(String formatString, Object ... args)
   {
     String resultString = String.format(formatString, args);
     messageListener.addMessage(resultString);
   }
-  public TextTranslator() {}
-  
+
+  /**
+   * Create a TileArray from the given text. Each character represents a glyph for
+   * the tiles, with newlines between rows of tiles.
+   * @param text
+   * @return
+   */
   public TileArray createTileArray(String text)
   {
-    // We create an empty TileArray and TileRow; for each letter in each
-    // newline-terminated string, create a Picture instance and add it to
-    // the TileRow. On newline or end of overall string, add the TileRow
-    // to the TileArray.
     TileArray tileArray = new TileArray();
     String[] lines = text.split("\n");
-////// //    Picture continuationPicture = Picture.CONTINUATION;
-////// //    Tile    continuationTile    = new Tile(continuationPicture);
     
     int currentCharacterRow = 0;
     for (String line :  lines)
@@ -54,9 +68,6 @@ public class TextTranslator
         switch (picture)
         {
         case CONTINUATION : 
-          // not right; still thinking about this one...  
-          // check for continuation tile already in place?
-          // currentTile = new Tile(currentCharacterRow, currentCharacterColumn); 
           break;
         case SPACE        : currentTile = new Tile(); 
           break;
@@ -94,9 +105,6 @@ public class TextTranslator
       }
       currentCharacterRow++;
     }
-    
-//    tileArray.completeRectangle();
-    
     return tileArray;
   }
 }

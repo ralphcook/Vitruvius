@@ -22,6 +22,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+/**
+ * Contains the help text for the glyphy tool function, i.e., letters and their 
+ * corresponding glyph descriptions.
+ * @author rcook
+ *
+ */
 public class HelpDialog extends JDialog
 {
   private static final long serialVersionUID = 1L;

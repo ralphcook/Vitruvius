@@ -21,6 +21,11 @@ import org.rc.vitruvius.text.TextTranslator;
 
 import rcutil.swing.SavedWindowPositionJFrame;
 
+/**
+ * Main JFrame for the Vitruvius program. 
+ * @author rcook
+ *
+ */
 public class MainFrame extends SavedWindowPositionJFrame implements MessageListener, DocumentListener
 {
 //  public static void say(String msg) { System.out.println(msg); }
@@ -40,6 +45,11 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
   
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Create the UI for the program.
+   * 
+   * TODO: should this be done in another thread?
+   */
   public MainFrame()
   {
     setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -47,7 +57,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     // numbers here represent default window position for first time program is run
     initializeSavedWindowPosition(applicationPreferences, 100, 100, 500, 400);
     
-    Picture.checkImageFiles();    // outputs error messages if we have letters that are supposed to correspond to particular buildings,
+    Picture.checkImageFiles();    // outputs syserror messages if we have letters that are supposed to correspond to particular buildings,
                                   // but we have no file with the filename saved for that letter.
     
     // Create a text area where the user can put text to convert to a map picture
@@ -125,9 +135,18 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     
   }
   
-  private TileArray updateTileArrayFromText()
+  /**
+   * If the glyphy tool text area has changed since the tile array was last generated,
+   * re-generate it, otherwise just get it from the images panel.
+   * 
+   * TODO: a little messy -- this method knows the tiles are stored in the images panel,
+   * but doesn't update it when it generates another tile array. Inspect with caller(s)
+   * and clean up.
+   * @return new tile array.
+   */
+  private TileArray getTileArrayFromCurrentText()
   {
-    TileArray pictures = null;
+    TileArray tiles = null;
     
     String text = textMapTextArea.getText();
     if (text == null || text.length() == 0)
@@ -139,31 +158,39 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
       if (textDirty()) 
       { 
         if (textTranslator == null) { textTranslator = new TextTranslator(this); }
-        pictures = textTranslator.createTileArray(text); 
+        tiles = textTranslator.createTileArray(text); 
         setDirtyText(false);    // image matches text, so text no longer dirty
       }
       else
       {
-        pictures = imagesPanel.getTileArray();
+        tiles = imagesPanel.getTileArray();
       }
     }
-    return pictures;
+    return tiles;
   }
   
-  public TileArray generateTileArrayFromTextAndUpdateImagePanel()
+  /**
+   * Create a tile array from the glyphy tool text area and set the resulting
+   * images in the images panel.
+   * @return
+   */
+  public TileArray updateImagesPanelFromGlyphyText()
   {
     messagesTextArea.setText("");
-    TileArray pictures = updateTileArrayFromText();
-    if (pictures != null)
+    TileArray tiles = getTileArrayFromCurrentText();
+    if (tiles != null)
     {
-      imagesPanel.setTileArray(pictures);
+      imagesPanel.setTileArray(tiles);
       Container c = imagesPanel.getParent();
       c.repaint();
       generateImageButton.setEnabled(false);
     }
-    return pictures;
+    return tiles;
   }
   
+  /**
+   * Put the given message in the messages area.
+   */
   public void addMessage(String message)
   {
     messagesTextArea.append(message);
