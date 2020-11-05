@@ -1,0 +1,27 @@
+Three blocks of test data for Vitruvius' 'glyphy tool' functionality
+
+GGGGFGGGG
+H.H.GH.H.
+.........
+#########
+H.H.GH.H.
+.........
+GGGGFGGGG
+
+GGGGFGGGG
+H.H.GH.H.
+.........
+#########
+H.H.GH.H.Z
+.........
+GGGGFGGGG
+.G.G
+
+GG
+H.
+..
+##
+H.Z
+..
+GG
+
