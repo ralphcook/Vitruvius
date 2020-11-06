@@ -12,18 +12,18 @@ import javax.swing.AbstractAction;
 public class GenerateImageAction extends AbstractAction
 {
   private static final long serialVersionUID = 1L;
-  MainFrame mainFrame = null;
+  GlyphyToolPanel homePanel = null;
 
-  public GenerateImageAction(MainFrame mainFrame)
+  public GenerateImageAction(GlyphyToolPanel homePanel)
   {
-    super("Image");
-    this.mainFrame = mainFrame;
+    super("Update Image");
+    this.homePanel = homePanel;
   }
 
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    mainFrame.updateImagesPanelFromGlyphyText();
+    homePanel.updateImagesPanelFromGlyphyText();
   }
 
 }

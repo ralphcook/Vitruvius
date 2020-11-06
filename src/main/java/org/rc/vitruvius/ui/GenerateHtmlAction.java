@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
+import org.rc.vitruvius.MessageListener;
 import org.rc.vitruvius.model.TileArray;
 
 /**
@@ -21,22 +22,24 @@ public class GenerateHtmlAction extends AbstractAction
 
   public enum Target { FORUM, FULL };
   
-  private MainFrame   frame     = null;
-  private Target      target    = null;
+  private MessageListener messageListener = null;
+  private GlyphyToolPanel homePanel       = null;
+  private Target          target          = null;
   
   private String      html      = null;
   
-  public GenerateHtmlAction(MainFrame frame, Target target, String label)
+  public GenerateHtmlAction(MessageListener messageListener, GlyphyToolPanel homePanel, Target target, String label)
   {
     super(label);
-    this.frame = frame;
+    this.messageListener = messageListener;
+    this.homePanel = homePanel;
     this.target = target;
   }
 
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    TileArray tiles = frame.updateImagesPanelFromGlyphyText();
+    TileArray tiles = homePanel.updateImagesPanelFromGlyphyText();
     if (tiles != null)
     {
       switch(target)
@@ -47,11 +50,11 @@ public class GenerateHtmlAction extends AbstractAction
       case FULL : 
         html = HtmlGenerator.generateFullHtml(tiles); 
         break;
-      default: frame.addMessage("Illegal option for HTML Action");
+      default: messageListener.addMessage("Illegal option for HTML Action");
       }
       
       copyTextToClipboard(html);
-      JOptionPane.showMessageDialog(frame, "HTML copied to clipboard");
+      JOptionPane.showMessageDialog(homePanel, "HTML copied to clipboard");
     }  
   }
   

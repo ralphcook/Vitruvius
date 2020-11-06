@@ -15,7 +15,7 @@ public class TextTranslator
 {
   private MessageListener messageListener = null;
   
-  private static String OCCUPIED_TILE_MESSAGE = "Error placing character <%s> at row %d, col %d; already in use.%n";
+  private static String OCCUPIED_TILE_MESSAGE = "Error placing character <%s> at row %d, col %d; tile already in use.%n";
   
   /**
    * Constructor, including object to listen for messages from methods from this object.
@@ -95,7 +95,8 @@ public class TextTranslator
               }
               else
               {
-                System.out.printf(OCCUPIED_TILE_MESSAGE, character, targetRow, targetColumn);
+                String message = String.format(OCCUPIED_TILE_MESSAGE, character, targetRow, targetColumn);
+                messageListener.addMessage(message);
               }
                 
             } // end pictureColumns
