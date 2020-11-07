@@ -36,10 +36,6 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
   public GlyphyToolPanel(MainFrame mainFrame)
   {
     this.mainFrame = mainFrame; 
-  }
-  
-  public GlyphyToolPanel createPanel()
-  {
     setLayout(new BorderLayout());
     
     // Create a text area where the user can put text to convert to a map picture
@@ -94,8 +90,6 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
     JDialog helpDialog = new HelpDialog(mainFrame);
     DisplayHelpAction displayHelpAction = new DisplayHelpAction(helpDialog);
     displayHelpButton.setAction(displayHelpAction);
-    
-    return this;
   }
 
   /**

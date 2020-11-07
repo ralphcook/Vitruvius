@@ -47,8 +47,10 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     JScrollPane messagesScrollPane = new JScrollPane(messagesTextArea);
     
     JTabbedPane tabbedPane = new JTabbedPane();
-    JPanel glyphyToolPanel = new GlyphyToolPanel(this).createPanel();
-    
+    JPanel dragNDropPanel  = new DragNDropPanel();
+    JPanel glyphyToolPanel = new GlyphyToolPanel(this);
+ 
+    tabbedPane.addTab("DragNDrop",   dragNDropPanel);
     tabbedPane.addTab("Glyphy Tool", glyphyToolPanel);
     
     add(tabbedPane, BorderLayout.CENTER);
