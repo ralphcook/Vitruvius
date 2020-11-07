@@ -28,9 +28,9 @@ public class DragNDropPanel extends JPanel
 
   public DragNDropPanel()
   {
-    
     JPanel currentImagePanel    = getCurrentImagePanel();
     JPanel glyphDropdownsPanel  = getGlyphDropdownsPanel();
+    
     JPanel  leftPanel = new JPanel();
     leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
     leftPanel.add(currentImagePanel);
@@ -49,11 +49,9 @@ public class DragNDropPanel extends JPanel
     JPanel panel = new JPanel();
     panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
     
-    String[] roadList = { "roads...", "Road", "Plaza" };
-    JComboBox roadsDropdown = new JComboBox(roadList);
-    
-    String[] farmList = { "farms...", "Wheat", "Fruit", "Vegs", "Pigs", "Olives", "Vines" };
-    JComboBox farmDropdown = new JComboBox(farmList);
+//    String[] roadList = { "roads...", "Road", "Plaza" };
+    JComboBox<Glyph> roadsDropdown = new JComboBox<>(getRoadList());
+    JComboBox<Glyph> farmDropdown = new JComboBox<>(getFarmList());
 
     panel.add(roadsDropdown);
     panel.add(createHalfStandardSpace());
@@ -73,7 +71,7 @@ public class DragNDropPanel extends JPanel
     JPanel currentImagePanel = new JPanel();
     currentImagePanel.setLayout(new BoxLayout(currentImagePanel, BoxLayout.PAGE_AXIS));
     
-    JLabel currentImageLabel = new JLabel("(current glyph)", createTransparentIcon(75,75), SwingConstants.CENTER);
+    JLabel currentImageLabel = new JLabel(I18n.getString("CurrentGlyphLabelText"), createTransparentIcon(75,75), SwingConstants.CENTER);
     
     currentImageLabel.setBorder(BorderFactory.createDashedBorder(Color.BLUE));
     currentImageLabel.setHorizontalTextPosition(JLabel.CENTER);
@@ -117,6 +115,26 @@ public class DragNDropPanel extends JPanel
   private BufferedImage createTransparentImage (final int width, final int height)
   {
     return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+  }
+  
+  private Glyph[] getRoadList()
+  {
+    Glyph[] roadList = { new Glyph("roadFileName", "road", 1, 1)
+                        ,new Glyph("plazaFileName", "plaza", 1, 1)
+                       };
+    return roadList;
+  }
+  
+  private Glyph[] getFarmList()
+  {
+    Glyph[] farmList = { new Glyph("a", "wheat", 3, 3)
+                        ,new Glyph("b", "fruit", 3, 3)
+                        ,new Glyph("c", "vegs", 3, 3)
+                        ,new Glyph("d", "pigs", 3, 3)
+                        ,new Glyph("e", "olives", 3, 3)
+                        ,new Glyph("f", "vines", 3, 3)
+                       };
+    return farmList;
   }
   
 }

@@ -124,7 +124,7 @@ public enum Picture
         ImageIcon image = p.getImageIcon();
         if (image == null)
         {
-          System.err.println(String.format("No image for %s (%s)", p.name(), p.getImageName()));
+          System.err.println(String.format("No glyph image for %s (%s)", p.name(), p.getImageName()));
         }
       }
     }

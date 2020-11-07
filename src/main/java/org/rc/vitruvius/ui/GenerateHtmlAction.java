@@ -50,11 +50,13 @@ public class GenerateHtmlAction extends AbstractAction
       case FULL : 
         html = HtmlGenerator.generateFullHtml(tiles); 
         break;
-      default: messageListener.addMessage("Illegal option for HTML Action");
+      default: throw new RuntimeException("Illegal type of HTML generation; programming error.");
       }
       
       copyTextToClipboard(html);
-      JOptionPane.showMessageDialog(homePanel, "HTML copied to clipboard");
+      String message = I18n.getString("HTMLCopiedMessageText");
+      JOptionPane.showMessageDialog(homePanel, message);
+      messageListener.addMessage(message);
     }  
   }
   

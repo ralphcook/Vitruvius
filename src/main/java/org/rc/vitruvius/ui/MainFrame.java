@@ -21,7 +21,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
 {
 //  public static void say(String msg) { System.out.println(msg); }
   
-  private JTextArea   messagesTextArea  = null;     // gets messages from the program to the user.
+  private JTextArea   messagesTextArea  = null;
   
   Preferences applicationPreferences = null;
   
@@ -50,8 +50,8 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     JPanel dragNDropPanel  = new DragNDropPanel();
     JPanel glyphyToolPanel = new GlyphyToolPanel(this);
  
-    tabbedPane.addTab("DragNDrop",   dragNDropPanel);
-    tabbedPane.addTab("Glyphy Tool", glyphyToolPanel);
+    tabbedPane.addTab(I18n.getString("DragNDropTabbedPaneLabelText"),   dragNDropPanel);
+    tabbedPane.addTab(I18n.getString("GlyphyToolTabbedPaneLabelText"), glyphyToolPanel);
     
     add(tabbedPane, BorderLayout.CENTER);
     add(messagesScrollPane, BorderLayout.SOUTH);

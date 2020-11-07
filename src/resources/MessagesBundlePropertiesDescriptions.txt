@@ -1,0 +1,38 @@
+These are descriptions of the 
+MessagesBundle.properties messages
+
+'ButtonText' appears on buttons.
+'LabelText' appears on labels
+'MessageText" is a message displayed to the user
+
+ForumHTMLButtonText: system generates the HTML suitable for inclusion into the
+heavengames forum and puts it on the clipboard.
+
+FullHTMLButtonText: system generates HTML suitable for opening with a browser and
+puts it on the clipboard
+
+GlyphyTextHelpButtonText: system displays an independent dialog containing each letter 
+recognized by the glyphy tool and the short description of its corresponding glyph.
+
+GlyphyTextHelpTitleText: Title of the independent dialog which displays glyphy text help
+
+CurrentGlyphLabelText: labels the space where the 'current glyph' appears on the DragNDrop
+panel when there is no glyph selected.
+
+HTMLCopiedMessageText: indicates that the HTML requested by the user has been copied to
+the system clipboard.
+
+NoGlyphyTextMessageText: text displayed if the user attempts to generate a glyphy map
+without text in the text area.
+
+OkButtonText: generic button label for confirmation; generally means "accept action 
+taken and close this dialog", or something similar.
+
+GlyphyHelpTextFilename: name of the file containing help text showing the letters 
+corresponding to each glyph. For other locales, the filename should use the same 
+filename with suffixes to indicate language and country, with underscores between 
+("_de", "_en_US", "_fr_CH", etc.); this follows Java Internationalization 
+conventions used for ResourceBundle files. e.g., a French language locale would be
+named "GlyphyHelpText_de.txt", and then "GlyphyHelpText_de" would be the value for
+this key in the "MessagesBundle_de.properties" file.
+

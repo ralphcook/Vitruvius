@@ -66,9 +66,9 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
 
             generateImageButton         = new JButton();
             generateImageButton.setEnabled(false);
-    JButton generateForumHtmlButton     = new JButton("Forum HTML");
-    JButton generateFullHtmlButton      = new JButton("Full HTML");
-    JButton displayHelpButton           = new JButton("Help");
+    JButton generateForumHtmlButton     = new JButton();
+    JButton generateFullHtmlButton      = new JButton();
+    JButton displayHelpButton           = new JButton();
     buttonsPanel.add(generateImageButton);
     buttonsPanel.add(generateForumHtmlButton);
     buttonsPanel.add(generateFullHtmlButton);
@@ -82,13 +82,15 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
     
     GenerateImageAction generateImageAction = new GenerateImageAction(this);
     generateImageButton.setAction(generateImageAction);
-    GenerateHtmlAction generateForumHtmlAction = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FORUM, "Forum HTML");
+    GenerateHtmlAction generateForumHtmlAction 
+      = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FORUM, I18n.getString("ForumHTMLButtonText"));
     generateForumHtmlButton.setAction(generateForumHtmlAction);
-    GenerateHtmlAction generateFullHtmlAction = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FULL, "Full HTML");
+    GenerateHtmlAction generateFullHtmlAction 
+      = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FULL, I18n.getString("FullHTMLButtonText"));
     generateFullHtmlButton.setAction(generateFullHtmlAction);
     
     JDialog helpDialog = new HelpDialog(mainFrame);
-    DisplayHelpAction displayHelpAction = new DisplayHelpAction(helpDialog);
+    DisplayGlyphyHelpAction displayHelpAction = new DisplayGlyphyHelpAction(mainFrame, helpDialog);
     displayHelpButton.setAction(displayHelpAction);
   }
 
@@ -127,7 +129,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
     String text = textMapTextArea.getText();
     if (text == null || text.length() == 0)
     {
-      mainFrame.addMessage("No text for which to generate image");
+      mainFrame.addMessage(I18n.getString("NoGlyphyTextMessageText"));
     }
     else
     {

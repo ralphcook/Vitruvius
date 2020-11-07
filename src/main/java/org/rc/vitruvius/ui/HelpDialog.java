@@ -37,7 +37,7 @@ public class HelpDialog extends JDialog
   public HelpDialog(JFrame parent)
   {
     super(parent);
-    setTitle("Text Help");
+    setTitle(I18n.getString("GlyphyTextHelpTitleText"));
     addWindowListener(closeWindow);
   }
   
@@ -65,7 +65,7 @@ public class HelpDialog extends JDialog
   
   private JButton createOkButton()
   {
-    JButton okButton = new JButton("OK");
+    JButton okButton = new JButton(I18n.getString("OkButtonText"));
     okButton.addActionListener(new ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -82,7 +82,8 @@ public class HelpDialog extends JDialog
     textArea.setFont(new Font("Courier", Font.PLAIN, 18));    // new Font(Font.MONOSPACED, 20, Font.PLAIN);
     try 
     {
-      InputStream stream = this.getClass().getResourceAsStream("HelpText.txt");
+      String filename = I18n.getString("GlyphyHelpTextFilename");
+      InputStream stream = this.getClass().getResourceAsStream(filename + ".txt");
       BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
       String line = reader.readLine();
       while (line != null) 
