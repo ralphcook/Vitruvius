@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractAction;
@@ -23,19 +24,24 @@ import javax.swing.border.BevelBorder;
 public class DragNDropPanel extends JPanel
 {
   private static final long serialVersionUID = 1L;
+
+  Picture  currentPicture       = null;
+  JLabel currentPictureLabel    = null;
+  String defaultPictureText     = I18n.getString("CurrentPictureDefaultLabelText");
   
+  @SuppressWarnings("unused")
   private static void say(String s) { System.out.println(s); }
 
   public DragNDropPanel()
   {
-    JPanel currentImagePanel    = getCurrentImagePanel();
-    JPanel glyphDropdownsPanel  = getGlyphDropdownsPanel();
+    JPanel currentImagePanel      = getCurrentImagePanel();
+    JPanel pictureDropdownsPanel  = getPictureDropdownsPanel();
     
     JPanel  leftPanel = new JPanel();
     leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
     leftPanel.add(currentImagePanel);
     leftPanel.add(createStandardSpace());
-    leftPanel.add(glyphDropdownsPanel);
+    leftPanel.add(pictureDropdownsPanel);
     
     setLayout(new BorderLayout());
     JPanel leftContainingPanel = new JPanel();
@@ -44,20 +50,54 @@ public class DragNDropPanel extends JPanel
     add(leftContainingPanel, BorderLayout.WEST);
   }
   
-  private JPanel getGlyphDropdownsPanel()
+  private JPanel getPictureDropdownsPanel()
   {
     JPanel panel = new JPanel();
     panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
     
 //    String[] roadList = { "roads...", "Road", "Plaza" };
-    JComboBox<Glyph> roadsDropdown = new JComboBox<>(getRoadList());
-    JComboBox<Glyph> farmDropdown = new JComboBox<>(getFarmList());
+//    JComboBox<Picture> roadsDropdown = new JComboBox<>(getRoadList());
+//    JComboBox<Picture> farmDropdown = new JComboBox<>(getFarmList());
 
+    JComboBox<Picture> roadsDropdown = createPictureComboBox("Roads", getRoadList());
     panel.add(roadsDropdown);
     panel.add(createHalfStandardSpace());
+    JComboBox<Picture> farmDropdown = createPictureComboBox("Farms", getFarmList());
     panel.add(farmDropdown);
     
     return panel;
+  }
+  
+  private JComboBox<Picture> createPictureComboBox(String categoryName, Picture[] list)
+  {
+    JComboBox<Picture> cBox = new JComboBox<>();
+    
+//    Picture categoryPicture = new Picture(null, categoryName, 0, 0);
+//    cBox.addItem(categoryPicture);
+    
+    for (Picture p: list) { cBox.addItem(p); }
+    
+    cBox.addActionListener(new ActionListener()
+                            {
+                              public void actionPerformed(ActionEvent e)
+                              {
+                                Object o = e.getSource();
+                                JComboBox<Picture> cBox = (JComboBox<Picture>)o;
+                                Picture p = (Picture) cBox.getSelectedItem();
+                                System.out.println("picture name: " + p.getDisplayText());
+                                setCurrentPicture(p);
+                              }
+                            }
+                          );
+    return cBox;
+  }
+  
+  private void setCurrentPicture(Picture picture)
+  {
+    ImageIcon icon = picture.getImageIcon();
+    String    text = picture.getDisplayText();
+    currentPictureLabel.setIcon(icon);
+    currentPictureLabel.setText(text);
   }
   
   private Dimension getHalfStandardDimension() { return new Dimension(8,8); }
@@ -71,15 +111,15 @@ public class DragNDropPanel extends JPanel
     JPanel currentImagePanel = new JPanel();
     currentImagePanel.setLayout(new BoxLayout(currentImagePanel, BoxLayout.PAGE_AXIS));
     
-    JLabel currentImageLabel = new JLabel(I18n.getString("CurrentGlyphLabelText"), createTransparentIcon(75,75), SwingConstants.CENTER);
+    currentPictureLabel = new JLabel(defaultPictureText, createTransparentIcon(75,75), SwingConstants.CENTER);
     
-    currentImageLabel.setBorder(BorderFactory.createDashedBorder(Color.BLUE));
-    currentImageLabel.setHorizontalTextPosition(JLabel.CENTER);
-    currentImageLabel.setVerticalTextPosition(JLabel.BOTTOM);
-    currentImageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+    currentPictureLabel.setBorder(BorderFactory.createDashedBorder(Color.BLUE));
+    currentPictureLabel.setHorizontalTextPosition(JLabel.CENTER);
+    currentPictureLabel.setVerticalTextPosition(JLabel.BOTTOM);
+    currentPictureLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
     Dimension defaultLabelSize = new Dimension(100,100);
-    currentImageLabel.setPreferredSize(defaultLabelSize);
-    currentImageLabel.setMaximumSize(defaultLabelSize);
+    currentPictureLabel.setPreferredSize(defaultLabelSize);
+    currentPictureLabel.setMaximumSize(defaultLabelSize);
     
     JButton clearButton = new JButton();
     clearButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -92,13 +132,14 @@ public class DragNDropPanel extends JPanel
 
           public void actionPerformed(ActionEvent event)
           {
-            currentImageLabel.setIcon(createTransparentIcon(75,75));
-            say("need to clear current image from where it's stored...");
+            currentPictureLabel.setIcon(createTransparentIcon(75,75));
+            currentPictureLabel.setText(defaultPictureText);
+            currentPicture = null;
           }
         }
     );
     
-    currentImagePanel.add(currentImageLabel);
+    currentImagePanel.add(currentPictureLabel);
     currentImagePanel.add(createHalfStandardSpace()); 
     currentImagePanel.add(clearButton);
     
@@ -117,23 +158,23 @@ public class DragNDropPanel extends JPanel
     return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
   }
   
-  private Glyph[] getRoadList()
+  private Picture[] getRoadList()
   {
-    Glyph[] roadList = { new Glyph("roadFileName", "road", 1, 1)
-                        ,new Glyph("plazaFileName", "plaza", 1, 1)
+    Picture[] roadList = {    Picture.road
+                            , Picture.plaza
                        };
     return roadList;
   }
   
-  private Glyph[] getFarmList()
+  private Picture[] getFarmList()
   {
-    Glyph[] farmList = { new Glyph("a", "wheat", 3, 3)
-                        ,new Glyph("b", "fruit", 3, 3)
-                        ,new Glyph("c", "vegs", 3, 3)
-                        ,new Glyph("d", "pigs", 3, 3)
-                        ,new Glyph("e", "olives", 3, 3)
-                        ,new Glyph("f", "vines", 3, 3)
-                       };
+    Picture[] farmList = {  Picture.wheat
+                          , Picture.fruit
+                          , Picture.vegetables
+                          , Picture.pigs
+                          , Picture.olives
+                          , Picture.vines
+                        };
     return farmList;
   }
   

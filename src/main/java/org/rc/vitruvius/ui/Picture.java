@@ -7,7 +7,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
 /**
- * Represents one glyph image.
+ * Each enum value Represents one glyph image. The name of each glyph type 
+ * is used to index the display text for that glyph. Therefore the name of
+ * an enum cannot be changed without changing its corresponding entry in
+ * MessageBundle.properties; if we get more languages for this text, the
+ * key would need to be changed in all the properties files where it appears. 
  * 
  * TODO: create rotated glyphs, maybe aqueducts and other things missing.
  * @author rcook
@@ -15,6 +19,7 @@ import javax.swing.JLabel;
  */
 public enum Picture
 {
+ //  type         letter filename            rows cols
    CONTINUATION   (".",  "(cont)",            1, 1)   // A period represents a tile that will have part of a glyph other than 
   ,SPACE          (" ",  "(spc)",             1, 1)   // its upper left-hand corner.
   ,
@@ -24,7 +29,7 @@ public enum Picture
 //  ,aqH            ("-","aq-h",                1, 1)
   ,arcH           ("[","arc-h",               3, 3)
 //  ,arcV           ("]","arc-v",               3, 3)
-  ,artcolony      ("a","artcolony",           3, 3)
+  ,actorcolony    ("a","actorcolony",         3, 3)   // renamed from "artcolony"
   ,barber         ("B","barber",              1, 1)
   ,barracks       ("q","barracks",            3, 3)
   ,bath           ("b","bath",                2, 2)
@@ -32,7 +37,7 @@ public enum Picture
   ,ceresL         ("5","ceres-l",             3, 3)
   ,chariotmaker   ("z","chariotmaker",        3, 3)
   ,clay           ("c","clay",                2, 2)
-  ,colloseum      ("C","colloseum",           5, 5)
+  ,coliseum       ("C","colloseum",           5, 5)
   ,doctor         ("D","doctor",              1, 1)
   ,engineer       ("E","engineer",            1, 1)
   ,fortG          ("j","fort-ground",         4, 4)
@@ -99,6 +104,8 @@ public enum Picture
   private int     columns;
   private int     rows;
   
+  private ImageIcon cachedImageIcon = null;   // lazy instantiation at first use.
+  
   private final static String IMAGE_FILEPATH_FORMAT = "/images/%s.gif";
   
   private Picture(String key, String imageName, int columns, int rows)
@@ -111,6 +118,14 @@ public enum Picture
   
   public String getKey()       { return key; }
   public String getImageName() { return imageName; }
+  public String getDisplayText() 
+  { 
+    // use the enum's name as the key to the resource bundle
+    String enumName = name();
+    String displayText = I18n.getString(enumName);
+    if (displayText == null) { displayText = enumName; }
+    return displayText;
+  }
   
   /**
    * Report any image files that are not where they're supposed to be.
@@ -181,13 +196,15 @@ public enum Picture
    * Get the image icon for this Picture.
    * @return
    */
-  private ImageIcon getImageIcon()
+  public ImageIcon getImageIcon()
   {
-    String filepath = String.format(IMAGE_FILEPATH_FORMAT, imageName);
-    java.net.URL imgURL = getClass().getResource(filepath);
-    ImageIcon imageIcon = null;
-    if (imgURL != null) { imageIcon = new ImageIcon(imgURL); }
-    return imageIcon;
+    if (cachedImageIcon == null)
+    {
+      String filepath = String.format(IMAGE_FILEPATH_FORMAT, imageName);
+      java.net.URL imgURL = getClass().getResource(filepath);
+      if (imgURL != null) { cachedImageIcon = new ImageIcon(imgURL); }
+    }
+    return cachedImageIcon;
   }
   
   /**
