@@ -1,8 +1,10 @@
-package org.rc.vitruvius.ui;
+package org.rc.vitruvius.ui.actions;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+
+import org.rc.vitruvius.ui.GlyphyToolPanel;
 
 /**
  * Action to generate the image from the current glyphy tool text.

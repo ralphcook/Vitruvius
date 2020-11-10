@@ -45,7 +45,7 @@ public enum Picture
   ,forum          ("f","forum",               2, 2)
   ,fountain       ("F","fountain",            1, 1)
   ,fruit          ("e","fruit",               3, 3)
-  ,garden1        ("G","garden1x1",           1, 1)
+  ,garden         ("G","garden1x1",           1, 1)
   ,gatehouseH     ("(","gatehouse-h",         2, 2)
 //  ,gatehouseV     (")","gatehouse-v",         2, 2)
   ,gladiator      ("y","gladiator",           3, 3)
@@ -182,13 +182,29 @@ public enum Picture
     JLabel result = null;
     if (this != CONTINUATION && this != SPACE)
     {
-      ImageIcon imageIcon = getImageIcon();
+      ImageIcon imageIcon = getImageIcon(tileSize);
+      result = new JLabel(imageIcon);
+
       int width = columns * tileSize;
       int height = rows * tileSize;
-      Image scaledImage = imageIcon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT);
-      result = new JLabel(new ImageIcon(scaledImage));
       result.setSize(new Dimension(width, height));
+      result.setToolTipText(getDisplayText());
     }
+    return result;
+  }
+  
+  /**
+   * Get a scaled image icon for this picture
+   * @param tileSize size in pixels of the square size of the resulting icon
+   * @return ImageIcon of this picture's glyph scaled to the given size.
+   */
+  public ImageIcon getImageIcon(int tileSize)
+  {
+    ImageIcon imageIcon = getImageIcon();
+    int width = columns * tileSize;
+    int height = rows * tileSize;
+    Image scaledImage = imageIcon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT);
+    ImageIcon result = new ImageIcon(scaledImage);
     return result;
   }
   
@@ -218,4 +234,6 @@ public enum Picture
    * @return
    */
   public int rows()     { return rows; }
+  
+  public String toString() { return I18n.getString(name()); }
 }

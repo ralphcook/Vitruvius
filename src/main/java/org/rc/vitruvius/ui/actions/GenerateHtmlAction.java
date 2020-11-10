@@ -1,4 +1,4 @@
-package org.rc.vitruvius.ui;
+package org.rc.vitruvius.ui.actions;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -10,6 +10,9 @@ import javax.swing.JOptionPane;
 
 import org.rc.vitruvius.MessageListener;
 import org.rc.vitruvius.model.TileArray;
+import org.rc.vitruvius.ui.GlyphyToolPanel;
+import org.rc.vitruvius.ui.HtmlGenerator;
+import org.rc.vitruvius.ui.I18n;
 
 /**
  * Action to generate HTML from the given display.

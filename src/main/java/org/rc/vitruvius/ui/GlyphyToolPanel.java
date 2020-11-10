@@ -16,6 +16,9 @@ import javax.swing.event.DocumentListener;
 
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.text.TextTranslator;
+import org.rc.vitruvius.ui.actions.DisplayGlyphyHelpAction;
+import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
+import org.rc.vitruvius.ui.actions.GenerateImageAction;
 
 public class GlyphyToolPanel extends JPanel implements DocumentListener
 {

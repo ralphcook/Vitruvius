@@ -1,4 +1,4 @@
-package org.rc.vitruvius.ui;
+package org.rc.vitruvius.ui.actions;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+
+import org.rc.vitruvius.ui.I18n;
 
 /**
  * Action to display the help text.

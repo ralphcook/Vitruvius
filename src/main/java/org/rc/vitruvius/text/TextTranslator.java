@@ -57,6 +57,11 @@ public class TextTranslator
       {
         String character = line.substring(position, position+1);
         Picture picture = Picture.lookup(character);
+        if (picture == null)
+        {
+          picture = Picture.lookup(" ");
+          messageListener.addMessage(String.format("No picture for character %s", character));
+        }
         Tile currentTile = null;
         
         // if the character indicates a continuation tile, we should not have to place it

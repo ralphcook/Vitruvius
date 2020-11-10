@@ -3,6 +3,7 @@ package org.rc.vitruvius.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,15 +20,18 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
 public class DragNDropPanel extends JPanel
 {
+  private static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   private static final long serialVersionUID = 1L;
 
-  Picture  currentPicture       = null;
-  JLabel currentPictureLabel    = null;
-  String defaultPictureText     = I18n.getString("CurrentPictureDefaultLabelText");
+  private Picture  currentPicture         = null;
+  private JLabel   currentPictureLabel    = null;
+  private String   defaultPictureText     = I18n.getString("CurrentDragComponentDefaultLabelText");
+  private GlassPaneWrapper mapPane        = null;
   
   @SuppressWarnings("unused")
   private static void say(String s) { System.out.println(s); }
@@ -48,27 +52,59 @@ public class DragNDropPanel extends JPanel
     leftContainingPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.BLACK, Color.WHITE));
     leftContainingPanel.add(leftPanel);
     add(leftContainingPanel, BorderLayout.WEST);
+    add(getGlassPane());
   }
   
   private JPanel getPictureDropdownsPanel()
   {
     JPanel panel = new JPanel();
-    panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+    panel.setLayout(new NonUniformGridLayout(0,2,10,5));   // rows and columns for categories and picture dropdowns
+    panel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
     
-//    String[] roadList = { "roads...", "Road", "Plaza" };
-//    JComboBox<Picture> roadsDropdown = new JComboBox<>(getRoadList());
-//    JComboBox<Picture> farmDropdown = new JComboBox<>(getFarmList());
-
-    JComboBox<Picture> roadsDropdown = createPictureComboBox("Roads", getRoadList());
-    panel.add(roadsDropdown);
-    panel.add(createHalfStandardSpace());
-    JComboBox<Picture> farmDropdown = createPictureComboBox("Farms", getFarmList());
-    panel.add(farmDropdown);
+    addDropdown(panel, "roads", Picture.road, Picture.plaza, Picture.garden);
+    addDropdown(panel, "houses", Picture.house1, Picture.house2, Picture.house3, Picture.palace);
+    // TODO: add well and aqueducts to Picture
+    addDropdown(panel, "water", Picture.reservoir, Picture.fountain);
+    addDropdown(panel, "farms", Picture.wheat, Picture.olives, Picture.vines, Picture.pigs, Picture.vegetables);
+    // TODO: add boatyard; do we need a better category for these?
+    addDropdown(panel, "food",  Picture.granary, Picture.market, Picture.wharf);
+    addDropdown(panel, "gods",  Picture.ceres, Picture.mars, Picture.mercury, Picture.neptune, Picture.venus,
+                                    Picture.ceresL, Picture.marsL, Picture.mercuryL, Picture.neptuneL, Picture.venusL, Picture.oracle);
+    addDropdown(panel, "entertainment", Picture.theater, Picture.actorcolony, Picture.amphitheater, Picture.gladiator,
+                                            Picture.coliseum, Picture.lionpit, Picture.hippodroom, Picture.chariotmaker);
+    addDropdown(panel, "industry", Picture.clay, Picture.workshopP, Picture.iron, Picture.workshopW,
+                                        Picture.wood, Picture.workshopF, Picture.marble, Picture.workshopw, Picture.workshopO);
+    addDropdown(panel, "services", Picture.library, Picture.school, Picture.barber, Picture.doctor, 
+                            Picture.bath,    Picture.forum,  Picture.hospital, Picture.prefect, 
+                            Picture.statue1, Picture.statue2, Picture.statue3);
+    addDropdown(panel, "military", Picture.fortG, Picture.fortH, Picture.gatehouseH, Picture.arcH, Picture.barracks, Picture.MILacademy);
     
     return panel;
   }
   
-  private JComboBox<Picture> createPictureComboBox(String categoryName, Picture[] list)
+  private void addDropdown(Container panel, String categoryKey, Picture... pictures)
+  {
+    JLabel label = new JLabel(I18n.getString(categoryKey));
+    JComboBox<Picture> cbox = createPictureComboBox(pictures);
+    panel.add(label);
+    panel.add(cbox);
+  }
+  
+  private GlassPaneWrapper getGlassPane()
+  {
+    JPanel mapPanel = new JPanel();
+    mapPanel.setLayout(null);
+    // TODO: figure out how to size this thing.
+    Dimension mapSize = new Dimension(400,400);
+    mapPanel.setSize(mapSize);
+    mapPanel.setPreferredSize(mapSize);
+    mapPanel.setMaximumSize(mapSize);
+    mapPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+    mapPane = new GlassPaneWrapper(mapPanel);
+    return mapPane;
+  }
+  
+  private JComboBox<Picture> createPictureComboBox(Picture[] list)
   {
     JComboBox<Picture> cBox = new JComboBox<>();
     
@@ -94,10 +130,17 @@ public class DragNDropPanel extends JPanel
   
   private void setCurrentPicture(Picture picture)
   {
-    ImageIcon icon = picture.getImageIcon();
+    say("setting current picture, edt=" + SwingUtilities.isEventDispatchThread());
+    ImageIcon icon = picture.getImageIcon(25);
     String    text = picture.getDisplayText();
     currentPictureLabel.setIcon(icon);
     currentPictureLabel.setText(text);
+    currentPictureLabel.setToolTipText(picture.getDisplayText());
+    JLabel dragLabel = new JLabel(icon);
+    Dimension size = dragLabel.getPreferredSize();
+//    say("dragLabel size %d, %d", size.width, size.height);
+    dragLabel.setSize(size);
+    mapPane.activateDragging(dragLabel);
   }
   
   private Dimension getHalfStandardDimension() { return new Dimension(8,8); }
@@ -134,6 +177,7 @@ public class DragNDropPanel extends JPanel
           {
             currentPictureLabel.setIcon(createTransparentIcon(75,75));
             currentPictureLabel.setText(defaultPictureText);
+            mapPane.deactivateDragging();
             currentPicture = null;
           }
         }
@@ -162,7 +206,7 @@ public class DragNDropPanel extends JPanel
   {
     Picture[] roadList = {    Picture.road
                             , Picture.plaza
-                       };
+                         };
     return roadList;
   }
   
