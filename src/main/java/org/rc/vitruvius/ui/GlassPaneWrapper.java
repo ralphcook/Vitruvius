@@ -6,6 +6,8 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -18,18 +20,16 @@ import javax.swing.JPanel;
 public class GlassPaneWrapper extends JLayeredPane
 {
   private static void say(String s) { System.out.println(s); }
-  private static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
+//  private static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   
   private static final long serialVersionUID = 1L;
-  private JPanel            glassPanel = new JPanel();
-  private Component         draggedComponent = null;
+  private JPanel            glassPanel            = new JPanel();
+  private Component         draggedComponent      = null;
   private boolean           draggedComponentAdded = false;
-  private Container         wrappedPanel = null;
+  private Container         wrappedPanel          = null;
   
-  private Cursor            blankCursor = null;
-  private int               tileSize    = 25;
-  // TODO: get the actual tileSize from the main panel into this instance.
-  // include a way to change it.
+  private Cursor            blankCursor           = null;
+  private int               tileSize              = 25;     // TODO: get the actual tileSize from the main panel into this instance, and to change it.
   
   public GlassPaneWrapper(JComponent givenPanel)
   {
@@ -42,6 +42,16 @@ public class GlassPaneWrapper extends JLayeredPane
     glassPanel.setOpaque(false);
     glassPanel.setVisible(false);
     glassPanel.setFocusable(true);
+//    glassPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+    
+//    Dimension wrappedPanelSize = wrappedPanel.getPreferredSize();
+//    wrappedPanel.setSize(wrappedPanel.getPreferredSize());
+//    glassPanel.setSize(wrappedPanelSize);
+//    glassPanel.setPreferredSize(wrappedPanelSize);
+//    setPreferredSize(wrappedPanelSize);
+//
+//    add(wrappedPanel, JLayeredPane.DEFAULT_LAYER);
+//    add(glassPanel, JLayeredPane.PALETTE_LAYER);
     
     glassPanel.addMouseMotionListener
     (new MouseAdapter() 
@@ -54,6 +64,8 @@ public class GlassPaneWrapper extends JLayeredPane
             {
               add(draggedComponent, JLayeredPane.DEFAULT_LAYER);
               add(draggedComponent, JLayeredPane.DRAG_LAYER);
+              setAllSizes(glassPanel, wrappedPanel.getSize());    // .getParent().getSize();    // worked.
+              // TODO: test, do I need to do this again on resize for glassPanel?
               draggedComponentAdded = true;
             }
             Point newPoint = getComponentPoint(event.getX(), event.getY());
@@ -77,7 +89,8 @@ public class GlassPaneWrapper extends JLayeredPane
             if (draggedComponent != null)
             {
               // drop a copy of the current component being dragged.
-              dropCurrentComponentCopy(e.getX(), e.getY());
+              Point cursorPoint = new Point(e.getX(), e.getY());
+              if (glassPanel.contains(cursorPoint)) { dropCurrentComponentCopy(e.getX(), e.getY()); }
             }
             break;
           case MouseEvent.BUTTON3:
@@ -92,6 +105,9 @@ public class GlassPaneWrapper extends JLayeredPane
             break;
           }
         }
+        // these two methods prevent the dragged component from staying on the glasspanel if the mouse leaves it.
+        @Override public void mouseExited(MouseEvent event)   { if (draggedComponent != null) { draggedComponent.setVisible(false); } }
+        @Override public void mouseEntered(MouseEvent event)  { if (draggedComponent != null) { draggedComponent.setVisible(true);  } }
       }
     );
 
@@ -105,6 +121,33 @@ public class GlassPaneWrapper extends JLayeredPane
     glassPanel.setPreferredSize(wrappedPanelSize);
 
     setPreferredSize(wrappedPanel.getPreferredSize());
+
+    addComponentListener
+    (
+        // when this (the layered pane) gets a resize event,
+        // resize the panel it contains to the same size.
+        new ComponentAdapter()
+        {
+          @Override public void componentResized(ComponentEvent e)
+          {
+            Component c = e.getComponent();
+            Dimension size = c.getSize();
+            setAllSizes(wrappedPanel, c.getSize());
+            wrappedPanel.setPreferredSize(size);
+            wrappedPanel.setMaximumSize(size);
+            wrappedPanel.setSize(size);
+            wrappedPanel.repaint();
+          }
+        }
+    );
+
+  }
+  
+  private void setAllSizes(Component c, Dimension size)
+  {
+    c.setSize(size);
+    c.setPreferredSize(size);
+    c.setMaximumSize(size);
   }
 
   /**
@@ -129,7 +172,7 @@ public class GlassPaneWrapper extends JLayeredPane
   private void dropCurrentComponentCopy(int cursorX, int cursorY)
   {
     // make a copy of the current component
-    // TODO: determine if this needs to cover more than a JLabel, which is all this will do.
+    // TODO: This only does JLabel; does it/can it do a Component?
     JLabel copiedLabel = null;
     Dimension copiedLabelSize = null;
     if (draggedComponent instanceof JLabel)

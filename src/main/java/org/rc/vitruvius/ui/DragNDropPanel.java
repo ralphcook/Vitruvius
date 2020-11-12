@@ -1,4 +1,4 @@
-package org.rc.vitruvius.ui;
+ package org.rc.vitruvius.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -18,17 +18,22 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
+/**
+ * This is the panel for drag-n-drop planning, including ways to choose glyphs 
+ * to put on the map and the map panel being built.
+ * @author rcook
+ *
+ */
 public class DragNDropPanel extends JPanel
 {
-  private static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
+//  private static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   private static final long serialVersionUID = 1L;
 
-  private Picture  currentPicture         = null;
   private JLabel   currentPictureLabel    = null;
   private String   defaultPictureText     = I18n.getString("CurrentDragComponentDefaultLabelText");
   private GlassPaneWrapper mapPane        = null;
@@ -38,21 +43,26 @@ public class DragNDropPanel extends JPanel
 
   public DragNDropPanel()
   {
-    JPanel currentImagePanel      = getCurrentImagePanel();
-    JPanel pictureDropdownsPanel  = getPictureDropdownsPanel();
-    
-    JPanel  leftPanel = new JPanel();
-    leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
-    leftPanel.add(currentImagePanel);
-    leftPanel.add(createStandardSpace());
-    leftPanel.add(pictureDropdownsPanel);
+    JPanel        leftPanel   = getLeftPanel(); 
+    JLayeredPane  middlePanel = getMiddleComponent();
     
     setLayout(new BorderLayout());
-    JPanel leftContainingPanel = new JPanel();
-    leftContainingPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.BLACK, Color.WHITE));
-    leftContainingPanel.add(leftPanel);
-    add(leftContainingPanel, BorderLayout.WEST);
-    add(getGlassPane());
+    add(leftPanel, BorderLayout.WEST);
+    add(middlePanel, BorderLayout.CENTER);
+  }
+  
+  private JPanel getLeftPanel()
+  {
+    JPanel innerPanel = new JPanel();
+    innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.PAGE_AXIS));
+    innerPanel.add(getCurrentImagePanel());
+    innerPanel.add(createStandardSpace());
+    innerPanel.add(getPictureDropdownsPanel());
+    
+    JPanel leftPanel = new JPanel();        // we wrap the panel with the components so the components don't stretch.
+    leftPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.BLACK, Color.WHITE));
+    leftPanel.add(innerPanel);
+    return leftPanel;
   }
   
   private JPanel getPictureDropdownsPanel()
@@ -90,7 +100,7 @@ public class DragNDropPanel extends JPanel
     panel.add(cbox);
   }
   
-  private GlassPaneWrapper getGlassPane()
+  private GlassPaneWrapper getMiddleComponent()
   {
     JPanel mapPanel = new JPanel();
     mapPanel.setLayout(null);
@@ -99,7 +109,7 @@ public class DragNDropPanel extends JPanel
     mapPanel.setSize(mapSize);
     mapPanel.setPreferredSize(mapSize);
     mapPanel.setMaximumSize(mapSize);
-    mapPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+    mapPanel.setBorder(BorderFactory.createLineBorder(Color.green, 3));
     mapPane = new GlassPaneWrapper(mapPanel);
     return mapPane;
   }
@@ -118,9 +128,9 @@ public class DragNDropPanel extends JPanel
                               public void actionPerformed(ActionEvent e)
                               {
                                 Object o = e.getSource();
+                                @SuppressWarnings("unchecked")
                                 JComboBox<Picture> cBox = (JComboBox<Picture>)o;
                                 Picture p = (Picture) cBox.getSelectedItem();
-                                System.out.println("picture name: " + p.getDisplayText());
                                 setCurrentPicture(p);
                               }
                             }
@@ -130,7 +140,6 @@ public class DragNDropPanel extends JPanel
   
   private void setCurrentPicture(Picture picture)
   {
-    say("setting current picture, edt=" + SwingUtilities.isEventDispatchThread());
     ImageIcon icon = picture.getImageIcon(25);
     String    text = picture.getDisplayText();
     currentPictureLabel.setIcon(icon);
@@ -178,7 +187,6 @@ public class DragNDropPanel extends JPanel
             currentPictureLabel.setIcon(createTransparentIcon(75,75));
             currentPictureLabel.setText(defaultPictureText);
             mapPane.deactivateDragging();
-            currentPicture = null;
           }
         }
     );
@@ -200,26 +208,6 @@ public class DragNDropPanel extends JPanel
   private BufferedImage createTransparentImage (final int width, final int height)
   {
     return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-  }
-  
-  private Picture[] getRoadList()
-  {
-    Picture[] roadList = {    Picture.road
-                            , Picture.plaza
-                         };
-    return roadList;
-  }
-  
-  private Picture[] getFarmList()
-  {
-    Picture[] farmList = {  Picture.wheat
-                          , Picture.fruit
-                          , Picture.vegetables
-                          , Picture.pigs
-                          , Picture.olives
-                          , Picture.vines
-                        };
-    return farmList;
   }
   
 }
