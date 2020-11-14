@@ -5,13 +5,16 @@ Vitruvius punch list.
 
 * prevent overlap of glyphs
 
+tooltip labels are incorrect
+
+implement highlighting and deleting (single) existing glyphs
+
+implement moving existing glyphs
+
 Implement sending tile size into GlassPaneWrapper from 
 DragNDrop panel, and allowing the user to change the tile size
 
-reorganize glyphy tool panel around shared functions;
-remove UI elements from model and vversa.
-
-implement glyph selection, one (and later multiple?)
+implement multiple glyph selection?
 
 When right-click clears the current glyph, clear from left panel
 
