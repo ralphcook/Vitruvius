@@ -1,19 +1,20 @@
 package org.rc.vitruvius.text;
 
 
-import org.rc.vitruvius.MessageListener;
+import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Tile;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.ui.Picture;
 
 /**
- * Translates from text to a TileArray.
+ * Translates from text to a TileArray; this is based on Heavengames.com "glyphy script", which does the same 
+ * operation but limits to 40x40 tiles.
  * @author rcook
  *
  */
 public class TextTranslator
 {
-  private MessageListener messageListener = null;
+  private UserMessageListener messageListener = null;
   
   private static String OCCUPIED_TILE_MESSAGE = "Error placing character <%s> at row %d, col %d; tile already in use.%n";
   
@@ -21,7 +22,7 @@ public class TextTranslator
    * Constructor, including object to listen for messages from methods from this object.
    * @param messageListener
    */
-  public TextTranslator(MessageListener messageListener)
+  public TextTranslator(UserMessageListener messageListener)
   {
     this.messageListener = messageListener;
   }
@@ -69,7 +70,6 @@ public class TextTranslator
         // It doesn't interfere with anything already there. So we skip it; either the
         // tile will be covered by multi-tile picture, or it will be null and nothing will
         // be put there. We assume here that all continuation characters are 1x1 tile.
-        // TODO: what if there's a misplaced continuation character in the text array?
         switch (picture)
         {
         case CONTINUATION : 
@@ -78,8 +78,6 @@ public class TextTranslator
           break;
         default           :
           currentTile = new Tile(picture);
-          int currentTileRow    = currentCharacterRow;
-          int currentTileColumn = currentCharacterColumn;
           
           // some pictures require more than one row and/or column; for each
           // tile this one occupies beyond its upper left one, put a continuation
@@ -95,8 +93,8 @@ public class TextTranslator
               if (existingTile == null || existingTile.type() == Tile.Type.EMPTY)
               {
                 if (pictureRow==0 && pictureColumn==0)
-                      { tileArray.put(currentTile,                                 targetRow, targetColumn); }
-                else  { tileArray.put(new Tile(currentTileRow, currentTileColumn), targetRow, targetColumn); } 
+                      { tileArray.put(currentTile,                      targetRow, targetColumn); }
+                else  { tileArray.put(new Tile(Tile.Type.CONTINUATION), targetRow, targetColumn); } 
               }
               else
               {

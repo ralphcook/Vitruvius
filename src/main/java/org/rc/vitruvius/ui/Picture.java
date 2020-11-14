@@ -2,21 +2,38 @@ package org.rc.vitruvius.ui;
 
 import java.awt.Dimension;
 import java.awt.Image;
+import java.util.HashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
+import org.rc.vitruvius.model.Tile;
+import org.rc.vitruvius.model.TileArray;
+
 /**
- * Each enum value Represents one glyph image. The name of each glyph type 
- * is used to index the display text for that glyph. Therefore the name of
- * an enum cannot be changed without changing its corresponding entry in
- * MessageBundle.properties; if we get more languages for this text, the
- * key would need to be changed in all the properties files where it appears. 
+ * Each enum value Represents one glyph image. 
+ * <P>each glyph has a character used to represent that glyph in the glyphy
+ * tool.
+ * <P>Each glyph also has a String 'name'; it is used as the stem filename
+ * for the corresponding glyph file, and also as the key used to obtain the
+ * display text for that glyph in the current locale. For example, the letter
+ * "A" represents an academy; the enum is "academy" and the filename is "academy";
+ * the program uses the string "academy" to look up the display text for the 
+ * glyph, which is (oddly enough) "Academy". Another locale, however, could use
+ * some other display text for the glyph by supplying another properties file
+ * with the desired term indexed by "academy" and running the program with that
+ * locale.
+ * <P>for programmers: the name of glyph cannot be changed, therefore, without
+ * programming changes. For instance, if an existing glyph 'filename' field is changed,
+ * then the properties file(s) which use that name as an index also need to be
+ * changed.
  * 
- * TODO: create rotated glyphs, maybe aqueducts and other things missing.
+ * 
  * @author rcook
  *
  */
+// TODO: create rotated glyphs, maybe aqueducts and other things missing.
+// TODO: could create an "X" glyph for unsupported characters
 public enum Picture
 {
  //  type         letter filename            rows cols
@@ -99,12 +116,13 @@ public enum Picture
   ,workshopw      ("U","workshop-wine",       2, 2)  
   ;
   
-  private String  key;
-  private String  imageName;
-  private int     columns;
-  private int     rows;
+  private String  key;            // single character used to represent picture in glyphy tool text
+  private String  imageName;      // string used as filename and key into properties files
+  private int     columns;        // columns occupied by the glyph
+  private int     rows;           // rows occupied by the glyph
   
-  private ImageIcon cachedImageIcon = null;   // lazy instantiation at first use.
+  private ImageIcon unscaledImageIcon = null;   // lazy instantiation at first use.
+  private HashMap<Integer, ImageIcon> scaledImageIcons = new HashMap<>();
   
   private final static String IMAGE_FILEPATH_FORMAT = "/images/%s.gif";
   
@@ -147,9 +165,11 @@ public enum Picture
 
   /**
    * Look up the Picture that corresponds to this key.
+   * 
    * @param key
    * @return
    */
+  // TODO: could speed this up with a hash table.
   public static Picture lookup(String key)
   {
     Picture returnValue = null;
@@ -195,32 +215,37 @@ public enum Picture
   
   /**
    * Get a scaled image icon for this picture
-   * @param tileSize size in pixels of the square size of the resulting icon
+   * @param size size in pixels of the square size of the resulting icon
    * @return ImageIcon of this picture's glyph scaled to the given size.
    */
-  public ImageIcon getImageIcon(int tileSize)
+  public ImageIcon getImageIcon(int size)
   {
-    ImageIcon imageIcon = getImageIcon();
-    int width = columns * tileSize;
-    int height = rows * tileSize;
-    Image scaledImage = imageIcon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT);
-    ImageIcon result = new ImageIcon(scaledImage);
+    ImageIcon result = scaledImageIcons.get(size);
+    if (result == null)
+    {
+      ImageIcon imageIcon = getImageIcon();
+      int width = columns * size;
+      int height = rows * size;
+      Image scaledImage = imageIcon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT);
+      result = new ImageIcon(scaledImage);
+      scaledImageIcons.put(size, result);
+    }
     return result;
   }
   
   /**
-   * Get the image icon for this Picture.
+   * Get the unscaled image icon for this Picture.
    * @return
    */
   public ImageIcon getImageIcon()
   {
-    if (cachedImageIcon == null)
+    if (unscaledImageIcon == null)
     {
       String filepath = String.format(IMAGE_FILEPATH_FORMAT, imageName);
       java.net.URL imgURL = getClass().getResource(filepath);
-      if (imgURL != null) { cachedImageIcon = new ImageIcon(imgURL); }
+      if (imgURL != null) { unscaledImageIcon = new ImageIcon(imgURL); }
     }
-    return cachedImageIcon;
+    return unscaledImageIcon;
   }
   
   /**
@@ -236,4 +261,20 @@ public enum Picture
   public int rows()     { return rows; }
   
   public String toString() { return I18n.getString(name()); }
+  
+  public TileArray getTileArray()
+  {
+    TileArray ta = new TileArray(rows(), columns());
+    for (int i=0; i<rows; i++)
+    {
+      for (int j=0; j<columns; j++)
+      {
+        Tile newTile = null;
+        if (i==0 && j==0) { newTile = new Tile(this); }
+                     else { newTile = new Tile(Tile.Type.CONTINUATION); }
+        ta.put(newTile, i, j);
+      }
+    }
+    return ta;
+  }
 }

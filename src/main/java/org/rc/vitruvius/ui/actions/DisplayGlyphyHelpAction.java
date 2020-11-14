@@ -10,7 +10,12 @@ import javax.swing.JFrame;
 import org.rc.vitruvius.ui.I18n;
 
 /**
- * Action to display the help text.
+ * Action to display the 'glyphy tool' help text, showing what characters
+ * correspond to what Caesar III structures. All this action does is make
+ * the dialog visible.
+ * 
+ * @see org.rc.vitruvius.ui.GlyphyHelpDialog
+ * 
  * @author rcook
  *
  */

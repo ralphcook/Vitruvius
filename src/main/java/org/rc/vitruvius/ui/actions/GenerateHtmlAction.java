@@ -8,8 +8,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
-import org.rc.vitruvius.MessageListener;
+import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.TileArray;
+import org.rc.vitruvius.text.TextTranslator;
 import org.rc.vitruvius.ui.GlyphyToolPanel;
 import org.rc.vitruvius.ui.HtmlGenerator;
 import org.rc.vitruvius.ui.I18n;
@@ -25,24 +26,30 @@ public class GenerateHtmlAction extends AbstractAction
 
   public enum Target { FORUM, FULL };
   
-  private MessageListener messageListener = null;
-  private GlyphyToolPanel homePanel       = null;
+  private UserMessageListener messageListener = null;
+  private GlyphyToolPanel glyphyToolPanel = null;
   private Target          target          = null;
+  
+  private TextTranslator  textTranslator  = null;
   
   private String      html      = null;
   
-  public GenerateHtmlAction(MessageListener messageListener, GlyphyToolPanel homePanel, Target target, String label)
+  public GenerateHtmlAction(UserMessageListener messageListener, GlyphyToolPanel glyphyToolPanel, Target target, String label)
   {
     super(label);
     this.messageListener = messageListener;
-    this.homePanel = homePanel;
+    this.glyphyToolPanel = glyphyToolPanel;
     this.target = target;
+    
+    textTranslator = new TextTranslator(messageListener);
   }
 
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    TileArray tiles = homePanel.updateImagesPanelFromGlyphyText();
+    String text = glyphyToolPanel.getGlyphyText();
+    TileArray tiles = textTranslator.createTileArray(text);
+//    TileArray tiles = homePanel.updateImagesPanelFromGlyphyText();
     if (tiles != null)
     {
       switch(target)
@@ -55,11 +62,12 @@ public class GenerateHtmlAction extends AbstractAction
         break;
       default: throw new RuntimeException("Illegal type of HTML generation; programming error.");
       }
-      
       copyTextToClipboard(html);
       String message = I18n.getString("HTMLCopiedMessageText");
-      JOptionPane.showMessageDialog(homePanel, message);
       messageListener.addMessage(message);
+      JOptionPane.showMessageDialog(glyphyToolPanel, message);
+//      mainFrame.clearMessages(); 
+//      glyphyToolPanel.setTileArray(tiles);
     }  
   }
   

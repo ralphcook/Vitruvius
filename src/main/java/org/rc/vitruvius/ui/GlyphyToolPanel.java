@@ -20,25 +20,34 @@ import org.rc.vitruvius.ui.actions.DisplayGlyphyHelpAction;
 import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
 import org.rc.vitruvius.ui.actions.GenerateImageAction;
 
+/**
+ * This panel supports the entry of a block of characters representing glyphs
+ * which, in turn, represent Caesar III game structures (buildings, roads, etc.).
+ * This functionality was conceived by someone else, and implemented on the
+ * Heavengames.com website as the "glyphy tool". 
+ * 
+ * @author rcook
+ *
+ */
 public class GlyphyToolPanel extends JPanel implements DocumentListener
 {
   private static final long serialVersionUID = 1L;
 
-  private MainFrame   mainFrame         = null;
+//  private MainFrame   mainFrame         = null;
   
   private JTextArea   textMapTextArea   = null;     // contains text representing a portion of a map
   private ImagesPanel imagesPanel       = null;     // contains images representing a portion of a map
   private JButton     generateImageButton = null;   // generates the image on the images panel;
   // disabled when activated, enabled when text changes.
-  private TextTranslator textTranslator = null;
+//  private TextTranslator textTranslator = null;
   
   private boolean dirtyText = false; 
-  public void setDirtyText(boolean b) { dirtyText = b; generateImageButton.setEnabled(true); } 
+  public void setDirtyText(boolean b) { dirtyText = b; generateImageButton.setEnabled(b); } 
   public boolean textDirty() { return dirtyText; }
   
   public GlyphyToolPanel(MainFrame mainFrame)
   {
-    this.mainFrame = mainFrame; 
+//    this.mainFrame = mainFrame; 
     setLayout(new BorderLayout());
     
     // Create a text area where the user can put text to convert to a map picture
@@ -83,7 +92,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
     add(mainSplitPane, BorderLayout.CENTER);
     add(buttonsPanelScrollPane, BorderLayout.WEST);
     
-    GenerateImageAction generateImageAction = new GenerateImageAction(this);
+    GenerateImageAction generateImageAction = new GenerateImageAction(this, mainFrame, new TextTranslator(mainFrame));
     generateImageButton.setAction(generateImageAction);
     GenerateHtmlAction generateForumHtmlAction 
       = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FORUM, I18n.getString("ForumHTMLButtonText"));
@@ -92,68 +101,91 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
       = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FULL, I18n.getString("FullHTMLButtonText"));
     generateFullHtmlButton.setAction(generateFullHtmlAction);
     
-    JDialog helpDialog = new HelpDialog(mainFrame);
+    JDialog helpDialog = new GlyphyHelpDialog(mainFrame);
     DisplayGlyphyHelpAction displayHelpAction = new DisplayGlyphyHelpAction(mainFrame, helpDialog);
     displayHelpButton.setAction(displayHelpAction);
   }
+  
+  /**
+   * Set the given tile array on the glyphy tool images panel.
+   * 
+   * @param tileArray
+   */
+  public void setTileArray(TileArray tileArray)
+  {
+    imagesPanel.setTileArray(tileArray);
+    Container c = imagesPanel.getParent();
+    c.repaint();
+    generateImageButton.setEnabled(false);
+  }
 
   /**
-   * Create a tile array from the glyphy tool text area and set the resulting
-   * images in the images panel.
+   * Return the text entered from the text area holding the text.
+   *  
    * @return
    */
-  public TileArray updateImagesPanelFromGlyphyText()
+  public String getGlyphyText()
   {
-    mainFrame.clearMessages();
-    TileArray tiles = getTileArrayFromCurrentText();
-    if (tiles != null)
-    {
-      imagesPanel.setTileArray(tiles);
-      Container c = imagesPanel.getParent();
-      c.repaint();
-      generateImageButton.setEnabled(false);
-    }
-    return tiles;
+    return textMapTextArea.getText();
   }
   
-  /**
-   * If the glyphy tool text area has changed since the tile array was last generated,
-   * re-generate it, otherwise just get it from the images panel.
-   * 
-   * TODO: a little messy -- this method knows the tiles are stored in the images panel,
-   * but doesn't update it when it generates another tile array. Inspect with caller(s)
-   * and clean up.
-   * @return new tile array.
-   */
-  private TileArray getTileArrayFromCurrentText()
-  {
-    TileArray tiles = null;
-    
-    String text = textMapTextArea.getText();
-    if (text == null || text.length() == 0)
-    {
-      mainFrame.addMessage(I18n.getString("NoGlyphyTextMessageText"));
-    }
-    else
-    {
-      if (textDirty()) 
-      { 
-        if (textTranslator == null) { textTranslator = new TextTranslator(mainFrame); }
-        tiles = textTranslator.createTileArray(text); 
-        setDirtyText(false);    // image matches text, so text no longer dirty
-      }
-      else
-      {
-        tiles = imagesPanel.getTileArray();
-      }
-    }
-    return tiles;
-  }
-  
-
   // DocumentEvents happen when someone changes the text of the text area.
   @Override public void insertUpdate(DocumentEvent e)  {    setDirtyText(true);  }
   @Override public void removeUpdate(DocumentEvent e)  {    setDirtyText(true);  }
   @Override public void changedUpdate(DocumentEvent e) { }
+
+///**
+//* Create a tile array from the glyphy tool text area and set the resulting
+//* images in the images panel.
+//* @return
+//*/
+//public TileArray updateImagesPanelFromGlyphyText()
+//{
+// mainFrame.clearMessages();
+// TileArray tiles = getTileArrayFromCurrentText();
+// if (tiles != null)
+// {
+//   imagesPanel.setTileArray(tiles);
+//   Container c = imagesPanel.getParent();
+//   c.repaint();
+//   generateImageButton.setEnabled(false);
+// }
+// return tiles;
+//}
+
+//  /**
+//   * If the glyphy tool text area has changed since the tile array was last generated,
+//   * re-generate it, otherwise just get it from the images panel.
+//   * 
+//   * TODO: a little messy -- this method knows the tiles are stored in the images panel,
+//   * but doesn't update it when it generates another tile array. Inspect with caller(s)
+//   * and clean up.
+//   * @return new tile array.
+//   */
+//  private TileArray getTileArrayFromCurrentText()
+//  {
+//    TileArray tiles = null;
+//    
+//    String text = textMapTextArea.getText();
+//    if (text == null || text.length() == 0)
+//    {
+//      mainFrame.addMessage(I18n.getString("NoGlyphyTextMessageText"));
+//    }
+//    else
+//    {
+//      if (textDirty()) 
+//      { 
+//        if (textTranslator == null) { textTranslator = new TextTranslator(mainFrame); }
+//        tiles = textTranslator.createTileArray(text); 
+//        setDirtyText(false);    // image matches text, so text no longer dirty
+//      }
+//      else
+//      {
+//        tiles = imagesPanel.getTileArray();
+//      }
+//    }
+//    return tiles;
+//  }
+  
 
 }

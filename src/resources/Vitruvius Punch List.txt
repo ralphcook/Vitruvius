@@ -1,18 +1,19 @@
 Vitruvius punch list.
 ---------------------
 
-implement glyph selection, one (and later multiple?)
+* implement tileArray to hold glyphs built up on dragndrop panel.
 
-
-When right-click clears the current glyph, clear from left panel
-
-prevent overlap of glyphs
-
-Instead of JLabels on the panel, create underlying dynamic
-list-of-lists as for glyphy tool? Or in addition to?
+* prevent overlap of glyphs
 
 Implement sending tile size into GlassPaneWrapper from 
 DragNDrop panel, and allowing the user to change the tile size
+
+reorganize glyphy tool panel around shared functions;
+remove UI elements from model and vversa.
+
+implement glyph selection, one (and later multiple?)
+
+When right-click clears the current glyph, clear from left panel
 
 implement dragging of cursor to create line of glyphs.
 Should that be limited to certain glyphs?

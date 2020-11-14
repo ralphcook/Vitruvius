@@ -6,6 +6,9 @@ import java.util.Iterator;
 /**
  * A row of tiles; used in TileArray.
  * @author rcook
+ * 
+ * @see org.rc.vitruvius.model.TileArray
+ * @see org.rc.vitruvius.model.Tile
  *
  */
 public class TileRow implements Iterable<Tile>

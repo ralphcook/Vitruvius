@@ -8,7 +8,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
-import org.rc.vitruvius.MessageListener;
+import org.rc.vitruvius.UserMessageListener;
 
 import rcutil.swing.SavedWindowPositionJFrame;
 
@@ -17,7 +17,7 @@ import rcutil.swing.SavedWindowPositionJFrame;
  * @author rcook
  *
  */
-public class MainFrame extends SavedWindowPositionJFrame implements MessageListener
+public class MainFrame extends SavedWindowPositionJFrame implements UserMessageListener
 {
 //  public static void say(String msg) { System.out.println(msg); }
   
@@ -47,7 +47,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
     JScrollPane messagesScrollPane = new JScrollPane(messagesTextArea);
     
     JTabbedPane tabbedPane = new JTabbedPane();
-    JPanel dragNDropPanel  = new DragNDropPanel();
+    JPanel dragNDropPanel  = new DragNDropPanel(this);
     JPanel glyphyToolPanel = new GlyphyToolPanel(this);
  
     tabbedPane.addTab(I18n.getString("DragNDropTabbedPaneLabelText"),   dragNDropPanel);
@@ -75,9 +75,12 @@ public class MainFrame extends SavedWindowPositionJFrame implements MessageListe
   }
   
   /**
-   * Put the given message in the messages area.
+   * Put the given message in the user messages area.
    */
-  public void addMessage(String message)    { messagesTextArea.append(message);  }
+  public void addMessage(String message)    { messagesTextArea.append(message); messagesTextArea.append("\n"); }
+  /**
+   * Clear the user messages area.
+   */
   public void clearMessages()               { messagesTextArea.setText(""); }
   
 }

@@ -1,19 +1,24 @@
 package org.rc.vitruvius.model;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * Dynamic 2d collection of Tiles, organized as rows of tiles.
+ * Dynamic 2d collection of Tiles, organized as a list of TileRow.
  * 
  * @author rcook
  * 
  * @see org.rc.vitruvius.model.Tile
+ * @see org.rc.vitruvius.model.TileRow
  *
  */
 public class TileArray implements Iterable<TileRow>
 {
-  private ArrayList<TileRow> tileRows = null;
+  private ArrayList<TileRow>  tileRows = null;
+  private int                 rows      = 0;
+  private int                 columns   = 0;
+  private boolean             rowsAndColumnsDirty = true;
   
   public TileArray()
   {
@@ -28,6 +33,74 @@ public class TileArray implements Iterable<TileRow>
       TileRow tileRow = new TileRow(cols);
       tileRows.add(tileRow);
     }
+    calculateRowsAndColumns();
+  }
+  
+  /**
+   * return the number of non-empty rows in the enclosing rectangle
+   * of this TileArray.
+   * @return
+   */
+  // TODO: don't keep recalculating this; implement a 'dirty' flag set
+  // when the value changes, calculate lazily when needed.
+  public int rows()
+  {
+    if (rowsAndColumnsDirty) { calculateRowsAndColumns(); }
+    return rows;
+  }
+
+  /**
+   * return the number of non-empty columns in the enclosing rectangle
+   * of this tile array. 
+   * @return
+   */
+  // TODO: redo calculation for empty tiles. Handles tileArrays made from
+  // pictures for the moment, since those are all solid rectangles.
+  public int columns()
+  {
+    if (rowsAndColumnsDirty) { calculateRowsAndColumns(); }
+    return columns;
+  }
+  
+  private void calculateRowsAndColumns()
+  {
+    rows = tileRows.size();
+    for (TileRow row : tileRows)
+    {
+      columns = Math.max(columns, row.length());
+    } 
+    rowsAndColumnsDirty = false;
+  }
+  
+  /**
+   * return true if this tile array, starting at the given row and column,
+   * has any non-empty tiles at the same position as the given tile array
+   * has starting at its 0,0. 
+   */
+  public boolean anyOverlap(TileArray smallerTileArray, int startColumn, int startRow)
+  {
+    int columns = smallerTileArray.columns();
+    int rows    = smallerTileArray.rows();
+    boolean result = false;
+    for (int i=0; i<rows; i++)
+    {
+      for (int j=0; j<columns; j++)
+      {
+        Tile smallerArrayTile = smallerTileArray.getTile(i, j);
+        Tile largerArrayTile  = getTile(i+startRow, j+startColumn);
+        if (smallerArrayTile != null && smallerArrayTile.type() != Tile.Type.EMPTY)
+        {
+          if (largerArrayTile != null && largerArrayTile.type() != Tile.Type.EMPTY)
+          {
+            result = true;    // found an overlap.
+            break;
+          }
+          if (result) { break; }
+        }
+        if (result) { break; }
+      }
+    }
+    return result;
   }
   
   /**
@@ -68,6 +141,51 @@ public class TileArray implements Iterable<TileRow>
     for (int i=0; i<rowsNeeded; i++) { tileRows.add(new TileRow()); }
     TileRow tileRow = tileRows.get(rowNumber);
     tileRow.put(t, colNumber);
+  }
+  
+  public boolean accepts(TileArray ta, Point arrayPosition)
+  {
+    boolean result = true;
+    for (int rowOffset=0; rowOffset < ta.rows(); rowOffset++)
+    {
+      for (int colOffset=0; colOffset < ta.columns(); colOffset++)
+      {
+        Tile currentTile = ta.getTile(rowOffset, colOffset);
+        if (currentTile != null && currentTile.type() != Tile.Type.EMPTY)
+        {
+          Tile existingTile = getTile(arrayPosition.y + rowOffset, arrayPosition.x + colOffset);
+          boolean tileFree = (existingTile == null || existingTile.type() == Tile.Type.EMPTY);
+          if (!tileFree)
+          {
+            result = false;
+            break;
+          }
+        }
+      }
+      if (!result) { break; }
+    }
+    return result;
+  }
+  
+  /**
+   * Put the entire given Tile array in this tile array at the given location;
+   * involves putting the picture tile in the given tile location,
+   * and continuation tiles in place for the columns and rows taken
+   * up by the Picture.
+   * @param p
+   * @param rowNumber
+   * @param colNumber
+   */
+  public void put(TileArray ta, Point arrayPosition)
+  {
+    for (int rowOffset=0; rowOffset < ta.rows(); rowOffset++)
+    {
+      for (int colOffset=0; colOffset < ta.columns(); colOffset++)
+      {
+        Tile currentTile = ta.getTile(rowOffset, colOffset);
+        put(currentTile, arrayPosition.y + rowOffset, arrayPosition.x + colOffset);
+      }
+    }
   }
   
   /**

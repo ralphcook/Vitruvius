@@ -36,3 +36,9 @@ conventions used for ResourceBundle files. e.g., a French language locale would 
 named "GlyphyHelpText_de.txt", and then "GlyphyHelpText_de" would be the value for
 this key in the "MessagesBundle_de.properties" file.
 
+DragNDropTabbedPaneLabelText: text put on the tabbed panel tab for the drag-n-drop planning tool.
+
+GlyphyToolTabbedPaneLabelText: text put on the tabbed panel tab for the glyphy planning tool. 
+
+clearedLandMessage: message displayed if the user attempts to drop a glyph on an area that already
+has something on it.

@@ -1,9 +1,6 @@
 package org.rc.vitruvius.ui;
 
 import java.awt.Dimension;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -17,7 +14,7 @@ import org.rc.vitruvius.model.TileRow;
  * @author rcook
  *
  */
-public class ImagesPanel extends JPanel implements MouseListener, MouseMotionListener
+public class ImagesPanel extends JPanel // implements MouseListener, MouseMotionListener
 {
   private static final long serialVersionUID = 1L;
   
@@ -38,7 +35,11 @@ public class ImagesPanel extends JPanel implements MouseListener, MouseMotionLis
     this();
     this.tileSize = tileSize;
   }
-  
+
+  /**
+   * set the size of the images panel so that it is big enough to accommodate the given tile array.
+   * @param tileArray
+   */
   private void setSize(TileArray tileArray)
   {
     int height = 0;
@@ -77,7 +78,7 @@ public class ImagesPanel extends JPanel implements MouseListener, MouseMotionLis
     // Ensure the panel is the right size and clear it.
     setSize(tileArray);
     removeAll();
-    drawPictures(tileArray);
+    drawTileArray(tileArray);
   }
   
   /**
@@ -86,7 +87,7 @@ public class ImagesPanel extends JPanel implements MouseListener, MouseMotionLis
    * from tile size and TileArray position.
    * @param tileArray
    */
-  private void drawPictures(TileArray tileArray)
+  private void drawTileArray(TileArray tileArray)
   {
     if (tileArray != null)
     {
@@ -110,16 +111,17 @@ public class ImagesPanel extends JPanel implements MouseListener, MouseMotionLis
         rowNumber++;
       }
     }
-    invalidate();
+//    invalidate();     // TODO: figure out if this is necessary; caller liable to invalidate higher-level things anyway.
+                      // Include repaint/invalidate decisions in javadoc.
   }
 
-  @Override  public void mouseDragged(MouseEvent e)  {      }
-  @Override  public void mouseMoved(MouseEvent e)  {      }
-  
-  @Override  public void mouseClicked(MouseEvent e)    {     }
-  @Override  public void mousePressed(MouseEvent e)  {      }
-  @Override  public void mouseReleased(MouseEvent e)  {      }
-  @Override  public void mouseEntered(MouseEvent e)  {      }
-  @Override  public void mouseExited(MouseEvent e)  {      }
+//  @Override  public void mouseDragged(MouseEvent e)  {      }
+//  @Override  public void mouseMoved(MouseEvent e)  {      }
+//  
+//  @Override  public void mouseClicked(MouseEvent e)    {     }
+//  @Override  public void mousePressed(MouseEvent e)  {      }
+//  @Override  public void mouseReleased(MouseEvent e)  {      }
+//  @Override  public void mouseEntered(MouseEvent e)  {      }
+//  @Override  public void mouseExited(MouseEvent e)  {      }
 
 }
