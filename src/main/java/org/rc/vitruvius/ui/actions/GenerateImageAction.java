@@ -8,6 +8,7 @@ import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.text.TextTranslator;
 import org.rc.vitruvius.ui.GlyphyToolPanel;
+import org.rc.vitruvius.ui.I18n;
 import org.rc.vitruvius.ui.MainFrame;
 
 /**
@@ -26,7 +27,7 @@ public class GenerateImageAction extends AbstractAction
 
   public GenerateImageAction(GlyphyToolPanel glyphyPanel, MainFrame mainFrame, TextTranslator textTranslator)
   {
-    super("Update Image");
+    super(I18n.getString("UpdateImageButtonText")); // "Update Image");
     this.glyphyToolPanel = glyphyPanel;
     this.mainFrame = mainFrame;
     this.textTranslator = textTranslator;

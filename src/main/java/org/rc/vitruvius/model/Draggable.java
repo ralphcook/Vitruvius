@@ -5,7 +5,7 @@ import javax.swing.JLabel;
 
 public interface Draggable
 {
-  public JLabel getJLabel(int tileSize);
+  public JLabel getJLabelJustIcon(int tileSize);
   public TileArray getTileArray();
   
   public ImageIcon getImageIcon(int tileSize);

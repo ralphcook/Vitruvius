@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.rc.vitruvius.ui.Picture;
+
 /**
  * Dynamic 2d collection of Tiles, organized as a list of TileRow.
  * 
@@ -34,6 +36,28 @@ public class TileArray implements Iterable<TileRow>
       tileRows.add(tileRow);
     }
     calculateRowsAndColumns();
+  }
+  
+  /**
+   * Given the index tile position in the tile array, set to
+   * Tile.Type.EMPTY all the tiles that otherwise have values
+   * because of the Picture object at the index location.
+   * @param indexTilePosition
+   */
+  public void deletePictureTiles(Point indexTilePosition)
+  {
+    int indexCol = indexTilePosition.x;
+    int indexRow = indexTilePosition.y;
+    Tile indexTile = getTile(indexRow, indexCol);
+    Picture p = indexTile.picture();
+    Tile emptyTile = new Tile();
+    for (int i=0; i<p.rows(); i++)
+    {
+      for (int j=0; j<p.columns(); j++)
+      {
+        put(emptyTile, indexRow+i, indexCol+j);
+      }
+    }
   }
   
   /**

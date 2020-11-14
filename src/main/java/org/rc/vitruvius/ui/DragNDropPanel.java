@@ -7,6 +7,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractAction;
@@ -54,12 +56,14 @@ public class DragNDropPanel extends JPanel
   {
     this.userMessageListener = userMessageListener;
     
-    JPanel        leftPanel   = createLeftPanel(); 
-    JLayeredPane  middlePanel = createMiddleComponent();
+    JPanel                leftPanel   = createLeftPanel(); 
+    DragNDropImagesPane   middlePanel = createMiddleComponent();
     
     setLayout(new BorderLayout());
     add(leftPanel, BorderLayout.WEST);
     add(middlePanel, BorderLayout.CENTER);
+    
+    addKeyListener(new DragNDropKeyListener(middlePanel));
   }
   
   /**
@@ -287,5 +291,5 @@ public class DragNDropPanel extends JPanel
   {
     return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
   }
-  
+
 }

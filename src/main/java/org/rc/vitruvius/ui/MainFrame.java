@@ -42,7 +42,6 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     Picture.checkImageFiles();    // outputs syserror messages if we have letters that are supposed to correspond to particular buildings,
                                   // but we have no file with the filename saved for that letter.
     
-    
     messagesTextArea = new JTextArea(5, 80);
     JScrollPane messagesScrollPane = new JScrollPane(messagesTextArea);
     
@@ -59,6 +58,8 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     pack();
     
     setWindowPosition();      // set position of the window on the screen.
+    
+    addKeyListener(new DragNDropKeyListener(null));
     
     // DEBUG
 //    textMapTextArea.setText
