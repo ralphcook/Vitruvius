@@ -12,6 +12,12 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -21,7 +27,10 @@ import javax.swing.JPanel;
 
 import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Draggable;
+import org.rc.vitruvius.model.Tile;
+import org.rc.vitruvius.model.Tile.Type;
 import org.rc.vitruvius.model.TileArray;
+import org.rc.vitruvius.model.TileRow;
 
 /**
  * This wrapper extends JLayeredPane, allowing operations above the given 'wrapped' panel 
@@ -190,6 +199,80 @@ public class DragNDropImagesPane extends JLayeredPane
     addKeyListener(new DragNDropKeyListener(this));
   }
   
+  public void saveTileFile(File saveFile)
+  {
+    String message = null;
+    try
+    {
+      BufferedWriter writer = new BufferedWriter(new FileWriter(saveFile));
+      tileArray.saveToFile(writer);
+      writer.close();
+      
+      message = I18n.getString("tileFileSavedMessage");
+    }
+    catch (Exception e)
+    {
+      message = String.format("Could not save file:%n%s", e.getMessage());
+    }
+    userMessageListener.addMessage(message);
+  }
+  
+  public void openTileFile(File saveFile) throws IOException, Exception
+  {
+    BufferedReader reader = null;
+    TileArray readTileArray = new TileArray();
+    try
+    {
+      reader = new BufferedReader(new FileReader(saveFile));
+      
+      String line = reader.readLine();
+      if (!(line.startsWith("tileArray:")))
+      {
+        throw new Exception(I18n.getString("tileFileIncorrectFormat"));
+      }
+      else
+      {
+        line = reader.readLine();
+        while(line.startsWith("row:"))
+        {
+          line = line.substring(4);   // cut off "row:"
+          TileRow tileRow = new TileRow();
+          String[] tileStrings = line.split(";");
+          for (String part: tileStrings)
+          {
+            Tile newTile = null;
+            if (part.length() == 0)                   { newTile = null; }
+            else if (part.startsWith("null"))         { newTile = null; }
+            else if (part.startsWith("EMPTY"))        { newTile = new Tile(); }
+            else if (part.startsWith("CONTINUATION")) { newTile = new Tile(Type.CONTINUATION); }
+            else if (part.startsWith("PICTURE"))      { String pictureKey = part.substring("PICTURE:".length());
+                                                        newTile = Tile.getTileFromPictureKey(pictureKey);
+                                                      }
+            tileRow.add(newTile);
+          }
+          line = reader.readLine();
+          readTileArray.addRow(tileRow);
+        }
+        if (!(line.startsWith("endTileArray"))) { throw new Exception(I18n.getString("tileFileIncorrectFormat")); }
+      }
+    }
+    catch (IOException ioe)
+    {
+      throw new IOException(I18n.getString("errorOpeningTileFile"), ioe);
+    }
+    finally
+    {
+      if (reader != null) { reader.close(); }
+    }
+    tileArray = readTileArray;
+    displayTileArray(tileArray);
+  }
+  
+  private void displayTileArray(TileArray tileArray)
+  {
+    
+  }
+  
   private void unselectCurrentItem()
   {
     if (selectedItem != null)
@@ -281,6 +364,10 @@ public class DragNDropImagesPane extends JLayeredPane
     return new Point(newX, newY);
   }
   
+  // OK, HERE'S WHAT WE NEED
+  // WE'RE GOING TO USE THIS LOGIC ON ANOTHER SET OF TILES, ONE TILE AT A TIME.
+  // SO INSTEAD OF TAKING ITS JLABEL FROM OUR DRAGGABLE, SOMETHING IS GOING TO BE
+  // PASSED IN. WILL FIGURE THAT OUT TOMORROW.
   /**
    * Make a copy of the currently dragged component and drop it at the current 
    * cursor position. Whether this drop is legal should be determined before this

@@ -41,7 +41,7 @@ public class GlyphyHelpDialog extends JDialog
   public GlyphyHelpDialog(JFrame parent)
   {
     super(parent);
-    setTitle(I18n.getString("GlyphyTextHelpTitleText"));
+    setTitle(I18n.getString("glyphyTextHelpTitleText"));
     addWindowListener(closeWindow);
   }
   
@@ -69,7 +69,7 @@ public class GlyphyHelpDialog extends JDialog
   
   private JButton createOkButton()
   {
-    JButton okButton = new JButton(I18n.getString("OkButtonText"));
+    JButton okButton = new JButton(I18n.getString("okButtonText"));
     okButton.addActionListener(new ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -86,7 +86,7 @@ public class GlyphyHelpDialog extends JDialog
     textArea.setFont(new Font("Courier", Font.PLAIN, 18));    // new Font(Font.MONOSPACED, 20, Font.PLAIN);
     try 
     {
-      String filename = I18n.getString("GlyphyHelpTextFilename");
+      String filename = I18n.getString("glyphyHelpTextFilename");
       InputStream stream = this.getClass().getResourceAsStream(filename + ".txt");
       BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
       String line = reader.readLine();

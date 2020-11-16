@@ -63,7 +63,7 @@ public class GenerateHtmlAction extends AbstractAction
       default: throw new RuntimeException("Illegal type of HTML generation; programming error.");
       }
       copyTextToClipboard(html);
-      String message = I18n.getString("HTMLCopiedMessageText");
+      String message = I18n.getString("htmlCopiedMessageText");
       messageListener.addMessage(message);
       JOptionPane.showMessageDialog(glyphyToolPanel, message);
 //      mainFrame.clearMessages(); 

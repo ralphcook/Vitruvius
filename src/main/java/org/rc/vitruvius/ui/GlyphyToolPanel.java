@@ -95,10 +95,10 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
     GenerateImageAction generateImageAction = new GenerateImageAction(this, mainFrame, new TextTranslator(mainFrame));
     generateImageButton.setAction(generateImageAction);
     GenerateHtmlAction generateForumHtmlAction 
-      = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FORUM, I18n.getString("ForumHTMLButtonText"));
+      = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FORUM, I18n.getString("forumHTMLButtonText"));
     generateForumHtmlButton.setAction(generateForumHtmlAction);
     GenerateHtmlAction generateFullHtmlAction 
-      = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FULL, I18n.getString("FullHTMLButtonText"));
+      = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FULL, I18n.getString("fullHTMLButtonText"));
     generateFullHtmlButton.setAction(generateFullHtmlAction);
     
     JDialog helpDialog = new GlyphyHelpDialog(mainFrame);

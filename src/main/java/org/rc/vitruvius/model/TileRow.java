@@ -1,5 +1,7 @@
 package org.rc.vitruvius.model;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -33,6 +35,22 @@ public class TileRow implements Iterable<Tile>
       }
     }
     return new String(sb);
+  }
+  
+  public boolean saveToFile(BufferedWriter writer) throws IOException
+  {
+    boolean result = true;
+    writer.write("row:");
+    if ((row != null) && (!row.isEmpty()))
+    {
+      for (Tile tile: row)
+      {
+        tile.saveToFile(writer);
+        writer.write(";");
+      }
+    }
+    writer.newLine();
+    return result;
   }
   
   public TileRow()

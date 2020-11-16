@@ -116,28 +116,29 @@ public enum Picture
   ,workshopw      ("U","workshop-wine",       2, 2)  
   ;
   
-  private String  key;            // single character used to represent picture in glyphy tool text
-  private String  imageName;      // string used as filename and key into properties files
-  private int     columns;        // columns occupied by the glyph
-  private int     rows;           // rows occupied by the glyph
+  private String  charKey;            // single character used to represent picture in glyphy tool text
+  private String  stringKey;          // string used as filename and key into properties files
+  private int     columns;            // columns occupied by the glyph
+  private int     rows;               // rows occupied by the glyph
   
   private ImageIcon unscaledImageIcon = null;   // lazy instantiation at first use.
   private HashMap<Integer, ImageIcon> scaledImageIcons = new HashMap<>();
   
   private final static String IMAGE_FILEPATH_FORMAT = "/images/%s.gif";
   
-  private Picture(String key, String imageName, int columns, int rows)
+  private Picture(String charKey, String stringKey, int columns, int rows)
   {
-    this.key       = key;
-    this.imageName = imageName;
+    this.charKey       = charKey;
+    this.stringKey = stringKey;
     this.columns   = columns;
     this.rows      = rows;
   }
   
-  public String getKey()       { return key; }
-  public String getImageName() { return imageName; }
+  public String getKey()       { return charKey; }
+  public String getImageName() { return stringKey; }
   public String getDisplayText() 
   { 
+    // TODO: we could cache this, use lazy instantiation. 
     // use the enum's name as the key to the resource bundle
     String enumName = name();
     String displayText = I18n.getString(enumName);
@@ -177,7 +178,24 @@ public enum Picture
     {
       for (Picture p: values())
       {
-        if (p.key.equals(key))
+        if (p.charKey.equals(key))
+        {
+          returnValue = p;
+          break;
+        }
+      }
+    }
+    return returnValue;
+  }
+  
+  public static Picture getPictureFromKey(String pictureKey)
+  {
+    Picture returnValue = null;
+    if (pictureKey != null)
+    {
+      for (Picture p: values())
+      {
+        if (p.stringKey.equals(pictureKey))
         {
           returnValue = p;
           break;
@@ -241,7 +259,7 @@ public enum Picture
   {
     if (unscaledImageIcon == null)
     {
-      String filepath = String.format(IMAGE_FILEPATH_FORMAT, imageName);
+      String filepath = String.format(IMAGE_FILEPATH_FORMAT, stringKey);
       java.net.URL imgURL = getClass().getResource(filepath);
       if (imgURL != null) { unscaledImageIcon = new ImageIcon(imgURL); }
     }
@@ -260,7 +278,7 @@ public enum Picture
    */
   public int rows()     { return rows; }
   
-  public String toString() { return I18n.getString(name()); }
+  public String toString() { return I18n.getString(name()); }   // TODO: do we want toString to access i18n?
   
   public TileArray getTileArray()
   {

@@ -7,9 +7,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -20,7 +19,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
@@ -42,7 +40,7 @@ public class DragNDropPanel extends JPanel
   private static final long serialVersionUID = 1L;
 
   private JLabel              currentPictureLabel     = null;
-  private String              defaultPictureText      = I18n.getString("CurrentDragComponentDefaultLabelText");
+  private String              defaultPictureText      = I18n.getString("currentDragComponentDefaultLabelText");
   private DragNDropImagesPane mapPane                 = null;
   private UserMessageListener userMessageListener     = null;
   
@@ -64,6 +62,23 @@ public class DragNDropPanel extends JPanel
     add(middlePanel, BorderLayout.CENTER);
     
     addKeyListener(new DragNDropKeyListener(middlePanel));
+  }
+  
+  public void saveTileFile(File saveFile)
+  {
+    mapPane.saveTileFile(saveFile);
+  }
+  
+  public void openTileFile(File saveFile)
+  {
+    try
+    {
+      mapPane.openTileFile(saveFile);
+    }
+    catch (Exception e)
+    {
+      String message = I18n.getString("exceptionOpeningTileFile");
+    }
   }
   
   /**

@@ -1,5 +1,8 @@
 package org.rc.vitruvius.model;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 import javax.swing.JLabel;
 
 import org.rc.vitruvius.ui.Picture;
@@ -87,9 +90,26 @@ public class Tile
   public String toString()
   {
     StringBuilder sb = new StringBuilder(type.toString());
-    if (type == Type.PICTURE) { sb.append(": "); sb.append(picture.getImageName()); }
+    if (type == Type.PICTURE) { sb.append(":"); sb.append(picture.getImageName()); }
 //    else if (type == Type.CONTINUATION) { sb.append(String.format(": r%d,c%d", row, column)); } 
     return new String(sb);
+  }
+  
+  public boolean saveToFile(BufferedWriter saveFile) throws IOException
+  {
+    boolean result = true;
+    saveFile.write(type.toString());
+    if (type == Type.PICTURE) { saveFile.write(":");
+                                saveFile.write(picture.getImageName());
+                              }
+    return result;
+  }
+  
+  public static Tile getTileFromPictureKey(String pictureKey)
+  {
+    Picture picture = Picture.getPictureFromKey(pictureKey);
+    Tile returnTile = new Tile(picture);
+    return returnTile;
   }
   
   /**

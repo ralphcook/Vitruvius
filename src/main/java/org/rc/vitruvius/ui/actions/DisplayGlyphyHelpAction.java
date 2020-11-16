@@ -27,7 +27,7 @@ public class DisplayGlyphyHelpAction extends AbstractAction
   
   public DisplayGlyphyHelpAction(JFrame mainFrame, JDialog dialog)
   {
-    super(I18n.getString("GlyphyTextHelpButtonText"));
+    super(I18n.getString("glyphyTextHelpButtonText"));
     this.mainFrame = mainFrame;
     this.dialog = dialog;
   }

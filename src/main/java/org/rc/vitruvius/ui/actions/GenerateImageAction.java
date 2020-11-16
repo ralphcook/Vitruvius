@@ -27,7 +27,7 @@ public class GenerateImageAction extends AbstractAction
 
   public GenerateImageAction(GlyphyToolPanel glyphyPanel, MainFrame mainFrame, TextTranslator textTranslator)
   {
-    super(I18n.getString("UpdateImageButtonText")); // "Update Image");
+    super(I18n.getString("updateImageButtonText")); // "Update Image");
     this.glyphyToolPanel = glyphyPanel;
     this.mainFrame = mainFrame;
     this.textTranslator = textTranslator;

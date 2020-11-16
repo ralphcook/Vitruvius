@@ -1,9 +1,14 @@
 package org.rc.vitruvius.model;
 
 import java.awt.Point;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.rc.vitruvius.ui.I18n;
 import org.rc.vitruvius.ui.Picture;
 
 /**
@@ -133,24 +138,54 @@ public class TileArray implements Iterable<TileRow>
    */
   public String toString()
   {
+    String newLine = System.getProperty("line.separator");
     StringBuilder sb = new StringBuilder("tileArray: ");
-    if (tileRows == null) { sb.append("<null tileRows>"); }
+    sb.append(newLine);
+    if (tileRows == null) 
+    { 
+      sb.append("<null tileRows>");
+      sb.append(newLine);
+    }
     else
     {
       for (TileRow tileRow: tileRows)
       {
         if (tileRow == null) { sb.append("<null TR>"); }
-        else
-        {
-          sb.append(tileRow.toString());
-        }
-        sb.append("\n");
+                        else { sb.append(tileRow.toString()); }
+        sb.append(newLine);
       }
       
     }
     return new String(sb);
   }
   
+  public boolean saveToFile(BufferedWriter writer) throws Exception
+  {
+    boolean result = true;
+    try
+    {
+      writer.write("tileArray:");
+      writer.newLine();
+      
+      if (tileRows != null && (!tileRows.isEmpty()))
+      {
+        for (TileRow row: tileRows)
+        {
+          row.saveToFile(writer);
+        }
+      }
+      
+      writer.write("endTileArray");
+      writer.newLine();
+    }
+    catch (Exception exception)
+    {
+      throw new Exception("Error writing save file", exception);
+    }
+    
+    return result;
+  }
+
   /**
    *  Put the given tile at the given 0-based column and row number in this tileArray.
    *  Ensure the tile array is big enough to contain the tile.
