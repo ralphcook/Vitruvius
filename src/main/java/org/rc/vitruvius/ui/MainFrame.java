@@ -148,7 +148,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
 //    return menuItem;
 //  }
   
-  public void openTileFile(File fileToOpen)
+  public void openTileFile(File fileToOpen) throws Exception
   {
     dragNDropPanel.openTileFile(fileToOpen);
   }

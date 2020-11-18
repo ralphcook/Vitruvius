@@ -51,7 +51,13 @@ public class FileOpenAction extends AbstractAction
     {
       File selectedFile = chooser.getSelectedFile();
       try { mainFrame.openTileFile(selectedFile); }
-      catch (Exception exception) { exception.printStackTrace(); }
+      catch (Exception exception) 
+      { 
+        String message = I18n.getString("errorOpeningFile");
+        String fullMessage = String.format("%s (%s)", message, exception.getMessage());
+        mainFrame.addMessage(fullMessage);
+//        exception.printStackTrace(); 
+      }
     }
   }
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="Vitruvius/bin/VitruviusSource.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/Vitruvius/src/VitruviusSource.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <selectedElements exportClassFiles="false" exportJavaFiles="true" exportOutputFolder="false">
+        <file path="/Vitruvius/src/resources/.gitignore"/>
+        <javaElement handleIdentifier="=rcutil/src"/>
+        <file path="/Vitruvius/src/resources/more properties.txt"/>
+        <file path="/Vitruvius/src/resources/MessagesBundlePropertiesDescriptions.txt"/>
+        <javaElement handleIdentifier="=Vitruvius/src\/main\/java"/>
+        <file path="/Vitruvius/.gitignore"/>
+        <file path="/Vitruvius/src/resources/Vitruvius Punch List.txt"/>
+        <file path="/Vitruvius/.project"/>
+        <file path="/Vitruvius/src/resources/MessagesBundle.properties"/>
+        <folder path="/Vitruvius/src"/>
+        <file path="/Vitruvius/src/resources/VitruviusTestData.txt"/>
+        <file path="/Vitruvius/.classpath"/>
+        <file path="/Vitruvius/src/resources/VitruviusImage.html"/>
+    </selectedElements>
+</jardesc>

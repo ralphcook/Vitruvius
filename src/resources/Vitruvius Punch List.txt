@@ -1,6 +1,14 @@
 Vitruvius punch list.
 ---------------------
 
+tileSize -- currently hard-coded in the images pane, the panel containing the
+images pane does not have a variable for tilesize at the moment. Tile size 
+makes sense for both of the display panels, but they don't need to be the same
+and it might be useful if they changed separately. 
+
+The action from a combo box selection creates a DraggablePicture, then calls
+'activateDragging' on the mapPane to set it as the 'current draggable'. 
+
 Menu bar:
 
 File

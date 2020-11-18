@@ -69,7 +69,7 @@ public class DragNDropPanel extends JPanel
     mapPane.saveTileFile(saveFile);
   }
   
-  public void openTileFile(File saveFile)
+  public void openTileFile(File saveFile) throws Exception
   {
     try
     {
@@ -78,6 +78,7 @@ public class DragNDropPanel extends JPanel
     catch (Exception e)
     {
       String message = I18n.getString("exceptionOpeningTileFile");
+      throw new Exception(message, e);
     }
   }
   
@@ -216,12 +217,19 @@ public class DragNDropPanel extends JPanel
    */
   private void setCurrentPicture(Draggable draggablePicture)
   {
-    ImageIcon icon = draggablePicture.getImageIcon(25);     // TODO: figure out if hard-coded size is best here.
+//    currentPictureLabel = draggablePicture.getJLabelJustIcon(25);
+//    currentPictureLabel.setText(draggablePicture.getDisplayText());
+    
+    // note to self -- commented out code above gets a new label; I could use it,
+    // but then would have to replace the label currently on the panel. Code below
+    // sets attributes of the label currently on the panel.
+    ImageIcon icon = draggablePicture.getImageIcon(25);     // TODO: figure out what we really want as sizing here.
     String    text = draggablePicture.getDisplayText();
     currentPictureLabel.setIcon(icon);
     currentPictureLabel.setText(text);                      
     currentPictureLabel.setToolTipText(draggablePicture.getDisplayText());
-    JLabel dragLabel = new JLabel(icon);                    // TODO: we need tileSize here somewhere
+    
+    JLabel dragLabel = new JLabel(icon);
     Dimension size = dragLabel.getPreferredSize();
 //    say("dragLabel size %d, %d", size.width, size.height);
     dragLabel.setSize(size);

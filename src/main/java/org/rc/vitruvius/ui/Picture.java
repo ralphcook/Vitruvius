@@ -225,7 +225,12 @@ public enum Picture
 
       int width = columns * tileSize;
       int height = rows * tileSize;
-      result.setSize(new Dimension(width, height));
+      Dimension size = new Dimension(width, height);
+      result.setPreferredSize(size);
+      result.setSize(size);
+      result.setMinimumSize(size);
+      result.setMaximumSize(size);
+      
       result.setToolTipText(getDisplayText());
     }
     return result;

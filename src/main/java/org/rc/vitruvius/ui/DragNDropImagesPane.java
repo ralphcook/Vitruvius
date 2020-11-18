@@ -2,7 +2,6 @@ package org.rc.vitruvius.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -20,7 +19,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -47,7 +45,7 @@ public class DragNDropImagesPane extends JLayeredPane
 //  private static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   
   private static final long serialVersionUID = 1L;
-  private Container           wrappedPanel          = null;
+  private JPanel              wrappedPanel          = null;
   private JPanel              glassPanel            = new JPanel();
   
   private Draggable           draggableItem         = null;     // item being dragged
@@ -67,7 +65,7 @@ public class DragNDropImagesPane extends JLayeredPane
   
   private UserMessageListener userMessageListener       = null;
   
-  public DragNDropImagesPane(JComponent givenPanel, TileArray tileArray, UserMessageListener givenListener)
+  public DragNDropImagesPane(JPanel givenPanel, TileArray tileArray, UserMessageListener givenListener)
   {
     wrappedPanel = givenPanel;
     this.tileArray = tileArray;
@@ -80,7 +78,7 @@ public class DragNDropImagesPane extends JLayeredPane
     glassPanel.setOpaque(false);
     glassPanel.setVisible(false);
     glassPanel.setFocusable(true);
-//    glassPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+    glassPanel.setBorder(BorderFactory.createLineBorder(Color.red));
     
     glassPanel.addMouseMotionListener
     (new MouseAdapter() 
@@ -89,15 +87,7 @@ public class DragNDropImagesPane extends JLayeredPane
         {
           if (draggableItem != null)
           {
-//            if (!draggableAddedToWindow) 
-//            {
-//              draggableJLabel = draggableItem.getJLabelJustIcon(tileSize);
-//              add(draggableJLabel, JLayeredPane.DEFAULT_LAYER);
-//              add(draggableJLabel, JLayeredPane.DRAG_LAYER);
-//              setAllComponentSizes(glassPanel, wrappedPanel.getSize());
-//              draggableAddedToWindow = true;
-//            }
-            Point newPoint = getDraggedComponentPoint(event.getX(), event.getY());
+            Point newPoint = getDraggedComponentIndexPoint(event.getX(), event.getY());
             draggableJLabel.setLocation(newPoint.x, newPoint.y);
           }
         }
@@ -188,6 +178,7 @@ public class DragNDropImagesPane extends JLayeredPane
         {
           @Override public void componentResized(ComponentEvent e)
           {
+            say("DNDImagesPane.componentResized()");
             Component c = e.getComponent();
             Dimension size = c.getSize();
             setAllComponentSizes(wrappedPanel, size);
@@ -264,13 +255,61 @@ public class DragNDropImagesPane extends JLayeredPane
     {
       if (reader != null) { reader.close(); }
     }
-    tileArray = readTileArray;
-    displayTileArray(tileArray);
+    displayTileArray(readTileArray);
   }
-  
+
+  /**
+   * Set the given tile Array as the current one, and display it.
+   * @param tileArray
+   */
   private void displayTileArray(TileArray tileArray)
   {
-    
+    wrappedPanel.removeAll();
+    this.tileArray = tileArray;
+    int rowNumber = 0;
+    for (TileRow tileRow: tileArray)
+    {
+      int colNumber = 0;
+      for (Tile tile: tileRow)
+      {
+        if (tile != null && tile.type() == Tile.Type.PICTURE)
+        {
+          Picture picture = tile.picture();
+          JLabel label = picture.getLabel(tileSize);
+          int x = colNumber * tileSize;
+          int y = rowNumber * tileSize;
+          label.setLocation(x,y);
+          label.setVisible(true);
+//          this.add(label, JLayeredPane.DEFAULT_LAYER);
+          printAllSizes("label", label);
+          wrappedPanel.add(label);
+          System.out.printf("added size %d, %d at %d, %d%n", label.getSize().width, label.getSize().height, x, y);
+        }
+        colNumber++;
+      }
+      rowNumber++;
+    }
+    System.out.println("repainting");
+    printAllSizes("wrappedPanel", wrappedPanel);
+    wrappedPanel.invalidate();
+    wrappedPanel.repaint();
+    invalidate();
+    repaint();
+  }
+  
+  private void printAllSizes(String name, Component c)
+  {
+    System.out.println(name);
+    printSize("  size", c.getSize());
+    printSize("  pref", c.getPreferredSize());
+    printSize("  min ", c.getMinimumSize());
+    printSize("  max ", c.getMaximumSize());
+  }
+  
+  private void printSize(String label, Dimension size)
+  {
+    String message = "%s size is %d, %d%n";
+    System.out.printf(message, label, size.width, size.height);
   }
   
   private void unselectCurrentItem()
@@ -351,7 +390,7 @@ public class DragNDropImagesPane extends JLayeredPane
    * @param y
    * @return
    */
-  private Point getDraggedComponentPoint(int x, int y)
+  private Point getDraggedComponentIndexPoint(int x, int y)
   {
     Dimension d = draggableJLabel.getSize();
     int xOffset = d.width / 2;
@@ -364,10 +403,6 @@ public class DragNDropImagesPane extends JLayeredPane
     return new Point(newX, newY);
   }
   
-  // OK, HERE'S WHAT WE NEED
-  // WE'RE GOING TO USE THIS LOGIC ON ANOTHER SET OF TILES, ONE TILE AT A TIME.
-  // SO INSTEAD OF TAKING ITS JLABEL FROM OUR DRAGGABLE, SOMETHING IS GOING TO BE
-  // PASSED IN. WILL FIGURE THAT OUT TOMORROW.
   /**
    * Make a copy of the currently dragged component and drop it at the current 
    * cursor position. Whether this drop is legal should be determined before this
@@ -381,21 +416,15 @@ public class DragNDropImagesPane extends JLayeredPane
    */
   private void dropDraggableCopy(int cursorX, int cursorY)
   {
-//    // calculate the tile x,y for the object
-//    Point tilePoint = calculateIndexTile(cursorX, cursorY);
-//    // put the Picture object in the tile array
-//    TileArray draggedTileArray = draggableItem.getTileArray();
-//    tileArray.put(draggedTileArray, tilePoint.x, tilePoint.y);
-    
-    // make a copy of the current component
-    JLabel copiedLabel = null;
+    // make a copy of the current draggable component
     Dimension copiedLabelSize = draggableJLabel.getSize();
+    JLabel copiedLabel = null;
     copiedLabel = new JLabel();
     copiedLabel.setIcon(draggableJLabel.getIcon());
     copiedLabel.setSize(copiedLabelSize);
     copiedLabel.setPreferredSize(copiedLabelSize);
     copiedLabel.setToolTipText(draggableJLabel.getToolTipText());
-    Point componentPoint = getDraggedComponentPoint(cursorX, cursorY);
+    Point componentPoint = getDraggedComponentIndexPoint(cursorX, cursorY);
     copiedLabel.setLocation(componentPoint.x, componentPoint.y);
 
     // add the component to the wrapped pane.
@@ -404,19 +433,26 @@ public class DragNDropImagesPane extends JLayeredPane
     wrappedPanel.repaint();
     
     copiedLabel.addMouseListener(passAlongListener);
-//    (
-//        new MouseAdapter()
-//        {
-//          public void mousePressed(MouseEvent event)
-//          {
-//            System.out.println("Maybe like this?");
-//            Component parent = getParent();
-////            parent.
-//          }
-//        }
-//    );
   }
   
+//  /**
+//   * Put the image for the given picture at the given x,y position on the panel.
+//   * Sizing to current tileSize is handled here.
+//   * Does not repaint so that this can be used for multiple labels with one repaint afterwards.
+//   * @param label
+//   * @param x
+//   * @param y
+//   */
+//  public void put(Picture picture, int x, int y)
+//  {
+//    JLabel label = picture.getLabel(tileSize);
+////    setAllComponentSizes(label, label.getPreferredSize());
+//    label.setVisible(true);
+//    label.setLocation(x,y);
+//    add(label, JLayeredPane.DEFAULT_LAYER);
+//    wrappedPanel.add(label);
+//  }
+//  
   /**
    * given these x,y coordinates, calculate the x,y position in the
    * tile array of the upper left-hand tile in our draggable item.
@@ -425,7 +461,7 @@ public class DragNDropImagesPane extends JLayeredPane
    */
   private Point calculateDraggedIndexTile(int cursorX, int cursorY)
   {
-    Point draggableXY = getDraggedComponentPoint(cursorX, cursorY);
+    Point draggableXY = getDraggedComponentIndexPoint(cursorX, cursorY);
     int tileX = draggableXY.x / tileSize;
     int tileY = draggableXY.y / tileSize;
     Point result = new Point(tileX, tileY);
@@ -459,14 +495,15 @@ public class DragNDropImagesPane extends JLayeredPane
    */
   public void activateDragging(Draggable draggable)
   {
+    System.out.println("activateDragging()");
     draggableItem = draggable;
     
     // trying doing this here instead of in mouseMoved
     // TODO: if this works, eliminate draggableAddedToWindow boolean.
     draggableJLabel = draggable.getJLabelJustIcon(tileSize);
     draggableJLabel.setVisible(false);
-    add(draggableJLabel, JLayeredPane.DEFAULT_LAYER);
-    add(draggableJLabel, JLayeredPane.DRAG_LAYER);
+    add(draggableJLabel, JLayeredPane.DEFAULT_LAYER);   //, -1);  // or 0
+    add(draggableJLabel, JLayeredPane.DRAG_LAYER);      //,   -1);  // or 0
     
     setAllComponentSizes(glassPanel, wrappedPanel.getSize());
     
@@ -482,6 +519,7 @@ public class DragNDropImagesPane extends JLayeredPane
    */
   public void deactivateDragging()
   {
+    System.out.println("deactivateDragging()");
     if (draggableJLabel != null)
     {
       remove(draggableJLabel);
