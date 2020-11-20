@@ -1,18 +1,10 @@
 Vitruvius punch list.
 ---------------------
 
-Currently going through all the classes to check for leftover artifacts from 
-working out the File Open bug, or other, fixing occasional problems.
+get the map images panel sizing straightened out. We might need to display it
+as an x-by-y tile count or something. 
 
-tileSize -- currently hard-coded in the images pane, the panel containing the
-images pane does not have a variable for tilesize at the moment. Tile size 
-makes sense for both of the display panels, but they don't need to be the same
-and it might be useful if they changed separately. 
-
-The action from a combo box selection creates a DraggablePicture, then calls
-'activateDragging' on the mapPane to set it as the 'current draggable'. 
-
-Menu bar: ('*' next to options that might apply to both DnD and Glyphy panes)
+Menu bar: '*' for menus applying to both working panes, 'G' for glyphy tool only.
 
 File
 *	open
@@ -23,8 +15,8 @@ Images
 *	set window size
 *	decrease tile size
 *	increase tile size
-	update image panel (glyphy only)
-	transfer Image to DnD
+G	update image panel
+G	transfer Image to DnD
 HTML
 *	generate full HTML
 *	generate forum HTML
@@ -32,21 +24,23 @@ Help
 *	program help
 *	credits
 
-Save file: probably separate for dragndrop & glyph, possibly save glyphy text,
-certainly HTML.
+When right-click clears the current glyph, clear from left panel
 
 Consider key bindings instead of key listener dependent on focus.
 
 implement image panel sizing, with scroll bars where necessary. 
 
-implement moving existing glyphs
+implement clicking-and-dragging glyphs already on the panel
 
 Implement sending tile size into GlassPaneWrapper from 
 DragNDrop panel, and allowing the user to change the tile size
 
-implement multiple glyph selection?
+tileSize -- currently hard-coded in the images pane, the panel containing the
+images pane does not have a variable for tilesize at the moment. Tile size 
+makes sense for both of the display panels, but they don't need to be the same
+and it might be useful if they changed separately.
 
-When right-click clears the current glyph, clear from left panel
+implement multiple glyph selection?
 
 implement dragging of cursor to create line of glyphs.
 Should that be limited to certain glyphs?
