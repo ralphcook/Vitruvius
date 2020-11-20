@@ -121,6 +121,8 @@ public enum Picture
   private int     columns;            // columns occupied by the glyph
   private int     rows;               // rows occupied by the glyph
   
+  private String  cachedDisplayText = null;  // we read this once from the messages bundle.
+  
   private ImageIcon unscaledImageIcon = null;   // lazy instantiation at first use.
   private HashMap<Integer, ImageIcon> scaledImageIcons = new HashMap<>();
   private PassAlongMousePressedListener cachedMousePressListener = new PassAlongMousePressedListener();
@@ -139,11 +141,13 @@ public enum Picture
   public String getImageName() { return stringKey; }
   public String getDisplayText() 
   { 
-    // TODO: we could cache this, use lazy instantiation. 
-    // use the enum's name as the key to the resource bundle
-    String enumName = name();
-    String displayText = I18n.getString(enumName);
-    if (displayText == null) { displayText = enumName; }
+    String displayText = cachedDisplayText;
+    if (displayText == null)
+    {
+      String enumName = name();
+      displayText = I18n.getString(enumName);
+      if (displayText == null) { displayText = enumName; }
+    }
     return displayText;
   }
   

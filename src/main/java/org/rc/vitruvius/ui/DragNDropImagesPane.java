@@ -32,7 +32,7 @@ import org.rc.vitruvius.model.TileRow;
  * @author rcook
  *
  */
-public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectedListener 
+public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionListener 
 {
   public static void say(String s) { System.out.println(s); }
   public static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
@@ -58,12 +58,10 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectedLi
   private DragNDropPanel      glyphSelectionGenerator   = null;
   private UserMessageListener userMessageListener       = null;
   
-  // TODO: decide whether we still want the 'givenPanel' passed in -- it is not used by the caller at this time.
-  // Neither is the tile array.
   public DragNDropImagesPane(DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener)
   {
     this.glyphSelectionGenerator = glyphSelectionGenerator;
-    glyphSelectionGenerator.addGlyphSelectedListener(this);
+    glyphSelectionGenerator.addGlyphSelectionListener(this);
     this.userMessageListener = givenListener;
     
     wrappedPanel = createWrappedPanel();
@@ -121,7 +119,8 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectedLi
             if (draggableItem != null)
             {
               // cancel current component being dragged.
-              deactivateDragging();
+              GlyphSelectionEvent gsEvent = new GlyphSelectionEvent(this, "deselect", draggableItem);
+              glyphSelectionGenerator.fireGlyphSelectionEvent(gsEvent);
             }
             break;
           default:
@@ -188,15 +187,12 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectedLi
     
   }
   
-  public void glyphSelected(GlyphSelectedEvent gsEvent)
+  public void glyphSelection(GlyphSelectionEvent gsEvent)
   {
-    say("glyphSelectedEvent in DNDImagesPane");
+    String action = gsEvent.getAction();
     Draggable draggable = gsEvent.getDraggable();
-    ImageIcon icon = draggable.getImageIcon(25);      // TODO: this doesn't look like the right size.
-    JLabel dragLabel = new JLabel(icon);
-    Dimension size = dragLabel.getPreferredSize();
-    dragLabel.setSize(size);
-    activateDragging(draggable);
+    if (action.equals("select")) { activateDragging(draggable); }
+                            else { deactivateDragging();        }
     repaint();
   }
   
@@ -440,7 +436,6 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectedLi
    */
   public void activateDragging(Draggable draggable)
   {
-    System.out.println("activateDragging()");
     draggableItem = draggable;
     
     draggableJLabel = draggable.getJLabelJustIcon(tileSize);
@@ -461,7 +456,6 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectedLi
    */
   public void deactivateDragging()
   {
-    System.out.println("deactivateDragging()");
     if (draggableJLabel != null)
     {
       remove(draggableJLabel);

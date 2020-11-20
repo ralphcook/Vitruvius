@@ -75,8 +75,6 @@ public class TileArray implements Iterable<TileRow>
    * of this TileArray.
    * @return
    */
-  // TODO: don't keep recalculating this; implement a 'dirty' flag set
-  // when the value changes, calculate lazily when needed.
   public int rows()
   {
     if (rowsAndColumnsDirty) { calculateRowsAndColumns(); }
@@ -88,8 +86,6 @@ public class TileArray implements Iterable<TileRow>
    * of this tile array. 
    * @return
    */
-  // TODO: redo calculation for empty tiles. Handles tileArrays made from
-  // pictures for the moment, since those are all solid rectangles.
   public int columns()
   {
     if (rowsAndColumnsDirty) { calculateRowsAndColumns(); }
@@ -243,7 +239,6 @@ public class TileArray implements Iterable<TileRow>
       {
         for (TileRow row: tileRows)
         {
-          say("Writing row");
           row.saveToFile(writer);
         }
       }

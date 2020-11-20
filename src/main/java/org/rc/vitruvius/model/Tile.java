@@ -129,7 +129,6 @@ public class Tile
     // we can decide whether to return something for landscape.
     JLabel label = null;
     if (picture != null) { label = picture.getLabel(tileSize); }
-    // TODO: put tooltip here? option for with or without label, so we can use this for the map itself?
     return label;
   }
 }

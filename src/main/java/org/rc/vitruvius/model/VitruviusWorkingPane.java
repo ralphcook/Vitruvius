@@ -13,7 +13,7 @@ public interface VitruviusWorkingPane
    * and display on the current pane.
    * @return
    */
-  public boolean  openFile();
+  public void     openFile();
   
   /**
    * Save the information from the current pane to a file

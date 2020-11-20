@@ -22,7 +22,9 @@ HTML
 *	generate forum HTML
 Help
 *	program help
-*	credits
+*	credits / about
+
+Set up key bindings for hot keys.
 
 When right-click clears the current glyph, clear from left panel
 
@@ -45,6 +47,27 @@ implement multiple glyph selection?
 implement dragging of cursor to create line of glyphs.
 Should that be limited to certain glyphs?
 
-Implement tooltip for left panel and for main image panel
+organize messages in MessagesBundle Properties; 
+transfer documentation to properties file
 
 Button to clear panel?
+
+glyphs to add: well, aqueduct(h&v), boatyard
+
+track whether image being built has changed since last read/write,
+warn on exit/read
+
+Larger font for messages text panel.
+
+There's something funny about the messages text panel sizing / scroll bars
+
+implement scrolledpane for left and middle DnD panels
+
+if a file is opened, make that file default for saving.
+
+might separate 'file save' from 'file save as'
+
+idea: FileAction class, with action names for save, open, saveAs
+
+idea: FileHandling class, an instance could hold current files,
+most recent files, etc.

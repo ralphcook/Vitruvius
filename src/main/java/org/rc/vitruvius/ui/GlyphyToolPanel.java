@@ -135,10 +135,9 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   @Override public void removeUpdate(DocumentEvent e)  {    setDirtyText(true);  }
   @Override public void changedUpdate(DocumentEvent e) { }
   @Override
-  public boolean openFile()
+  public void openFile()
   {
     System.out.println("open glyphy tool file here");
-    return false;
   }
   @Override
   public void saveFile()
@@ -187,59 +186,4 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
     // TODO Auto-generated method stub
     
   }
-
-///**
-//* Create a tile array from the glyphy tool text area and set the resulting
-//* images in the images panel.
-//* @return
-//*/
-//public TileArray updateImagesPanelFromGlyphyText()
-//{
-// mainFrame.clearMessages();
-// TileArray tiles = getTileArrayFromCurrentText();
-// if (tiles != null)
-// {
-//   imagesPanel.setTileArray(tiles);
-//   Container c = imagesPanel.getParent();
-//   c.repaint();
-//   generateImageButton.setEnabled(false);
-// }
-// return tiles;
-//}
-
-//  /**
-//   * If the glyphy tool text area has changed since the tile array was last generated,
-//   * re-generate it, otherwise just get it from the images panel.
-//   * 
-//   * TODO: a little messy -- this method knows the tiles are stored in the images panel,
-//   * but doesn't update it when it generates another tile array. Inspect with caller(s)
-//   * and clean up.
-//   * @return new tile array.
-//   */
-//  private TileArray getTileArrayFromCurrentText()
-//  {
-//    TileArray tiles = null;
-//    
-//    String text = textMapTextArea.getText();
-//    if (text == null || text.length() == 0)
-//    {
-//      mainFrame.addMessage(I18n.getString("NoGlyphyTextMessageText"));
-//    }
-//    else
-//    {
-//      if (textDirty()) 
-//      { 
-//        if (textTranslator == null) { textTranslator = new TextTranslator(mainFrame); }
-//        tiles = textTranslator.createTileArray(text); 
-//        setDirtyText(false);    // image matches text, so text no longer dirty
-//      }
-//      else
-//      {
-//        tiles = imagesPanel.getTileArray();
-//      }
-//    }
-//    return tiles;
-//  }
-  
-
 }

@@ -1,4 +1,4 @@
- package org.rc.vitruvius.ui;
+package org.rc.vitruvius.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -42,14 +42,15 @@ import rcutil.file.ExtensionFileFilter;
  * @author rcook
  *
  */
-public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, GlyphSelectedListener
+public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, GlyphSelectionListener
 {
   public static void say(String s) { System.out.println(s); }
   public static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   private static final long serialVersionUID = 1L;
 
   private JLabel              currentPictureLabel     = null;   // label of current picture, displayed upper left.
-  private String              defaultPictureText      = I18n.getString("currentDragComponentDefaultLabelText");
+  private Icon                currentPictureLabelDefaultIcon = null;
+  private String              currentPictureLabelDefaultText = I18n.getString("currentDragComponentDefaultLabelText");
   private DragNDropImagesPane mapPane                 = null;
   private UserMessageListener userMessageListener     = null;
   private Preferences         applicationPreferences  = null;
@@ -72,7 +73,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     add(mapPane, BorderLayout.CENTER);
     
     addKeyListener(new DragNDropKeyListener(mapPane));
-    addGlyphSelectedListener(this);
+    addGlyphSelectionListener(this);
   }
   
   /**
@@ -108,10 +109,8 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     
     addDropdown(panel, "roads", Picture.road, Picture.plaza, Picture.garden);                                                     // 3
     addDropdown(panel, "houses", Picture.house1, Picture.house2, Picture.house3, Picture.palace);                                 // 4
-    // TODO: add well and aqueducts to Picture
     addDropdown(panel, "water", Picture.reservoir, Picture.fountain);                                                             // 2
     addDropdown(panel, "farms", Picture.wheat, Picture.fruit, Picture.olives, Picture.vines, Picture.pigs, Picture.vegetables);   // 6
-    // TODO: add boatyard; do we need a better category for these?
     addDropdown(panel, "food",  Picture.granary, Picture.market, Picture.wharf);                                                  // 3
     addDropdown(panel, "gods",  Picture.ceres,  Picture.mars,  Picture.mercury,  Picture.neptune,  Picture.venus,
         Picture.ceresL, Picture.marsL, Picture.mercuryL, Picture.neptuneL, Picture.venusL, Picture.oracle);                       //11
@@ -168,9 +167,9 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
                                 JComboBox<Picture> cBox = (JComboBox<Picture>)o;
                                 Picture p = (Picture) cBox.getSelectedItem();
                                 DraggablePicture draggablePicture = new DraggablePicture(p);
-                                GlyphSelectedEvent gsEvent = new GlyphSelectedEvent(this, draggablePicture);
+                                GlyphSelectionEvent gsEvent = new GlyphSelectionEvent(this, "select", draggablePicture);
 //                                setCurrentPicture(draggablePicture);
-                                fireGlyphSelectedEvent(gsEvent);
+                                fireGlyphSelectionEvent(gsEvent);
                               }
                             }
                           );
@@ -195,13 +194,14 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     JPanel currentImagePanel = new JPanel();
     currentImagePanel.setLayout(new BoxLayout(currentImagePanel, BoxLayout.PAGE_AXIS));
     
-    currentPictureLabel = new JLabel(defaultPictureText, createTransparentIcon(75,75), SwingConstants.CENTER);
+    currentPictureLabelDefaultIcon = createTransparentIcon(75,75);    // TODO: make this the correct size, jfthoi
+    currentPictureLabel = new JLabel(currentPictureLabelDefaultText, currentPictureLabelDefaultIcon, SwingConstants.CENTER);
     
     currentPictureLabel.setBorder(BorderFactory.createDashedBorder(Color.BLUE));
     currentPictureLabel.setHorizontalTextPosition(JLabel.CENTER);
     currentPictureLabel.setVerticalTextPosition(JLabel.BOTTOM);
     currentPictureLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-    Dimension defaultLabelSize = new Dimension(100,100);
+    Dimension defaultLabelSize = new Dimension(100,100);    // TODO: what is this size supposed to be?
     currentPictureLabel.setPreferredSize(defaultLabelSize);
     currentPictureLabel.setMaximumSize(defaultLabelSize);
     
@@ -217,9 +217,8 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
 
           public void actionPerformed(ActionEvent event)
           {
-            currentPictureLabel.setIcon(createTransparentIcon(75,75));
-            currentPictureLabel.setText(defaultPictureText);
-            mapPane.deactivateDragging();
+            GlyphSelectionEvent gsEvent = new GlyphSelectionEvent(this, "deselect", null);
+            fireGlyphSelectionEvent(gsEvent);
           }
         }
     );
@@ -257,10 +256,13 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
 
   // ================================= methods called by various actions ======================================
   
-  public void glyphSelected(GlyphSelectedEvent gsEvent)
+  public void glyphSelection(GlyphSelectionEvent gsEvent)
   {
-    say("glyphSelectedEvent in DnDropPanel");
-    Draggable draggable = gsEvent.getDraggable();
+    Draggable draggable = null;
+    if (gsEvent.getAction().equals("select"))
+    {
+      draggable = gsEvent.getDraggable();
+    }
     setCurrentPicture(draggable);
   }
   
@@ -270,23 +272,20 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
    */
   private void setCurrentPicture(Draggable draggablePicture)
   {
-//    currentPictureLabel = draggablePicture.getJLabelJustIcon(25);
-//    currentPictureLabel.setText(draggablePicture.getDisplayText());
-    
-    // note to self -- commented out code above gets a new label; I could use it,
-    // but then would have to replace the label currently on the panel. Code below
-    // sets attributes of the label currently on the panel.
-    ImageIcon icon = draggablePicture.getImageIcon(25);     // TODO: figure out what we really want as sizing here.
-    String    text = draggablePicture.getDisplayText();
-    currentPictureLabel.setIcon(icon);
-    currentPictureLabel.setText(text);                      
-    currentPictureLabel.setToolTipText(draggablePicture.getDisplayText());
-    
-//    JLabel dragLabel = new JLabel(icon);
-//    Dimension size = dragLabel.getPreferredSize();
-////    say("dragLabel size %d, %d", size.width, size.height);
-//    dragLabel.setSize(size);
-//    mapPane.activateDragging(draggablePicture);
+    if (draggablePicture == null)
+    {
+      currentPictureLabel.setIcon(currentPictureLabelDefaultIcon);
+      currentPictureLabel.setText(currentPictureLabelDefaultText);
+      currentPictureLabel.setToolTipText("");
+    }
+    else
+    {
+      ImageIcon icon = draggablePicture.getImageIcon(25);     // TODO: figure out what we really want as sizing here.
+      String    text = draggablePicture.getDisplayText();
+      currentPictureLabel.setIcon(icon);
+      currentPictureLabel.setText(text);                      
+      currentPictureLabel.setToolTipText(draggablePicture.getDisplayText());
+    }
     repaint();
   }
 
@@ -298,7 +297,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   
 
   @Override
-  public boolean openFile()
+  public void openFile()
   {
     // TODO: consider a method (somewhere) that accepts necessary parameters for user to choose
     // a file to save to; parameters would include:
@@ -307,6 +306,9 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     // filter, or extension(s) for filter
     // dialog title
     // dialog button text
+    //
+    // would the method handle checking for existing file and warning of overwrite?
+    // would the method handle defaulting the extension and warning of overriding?
     // 
     String defaultPath = System.getProperty("user.home");
     String defaultFolderName = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
@@ -318,7 +320,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     
     String buttonText = I18n.getString("fileOpenDialogButtonText");
     
-    int fileChooseReturn = chooser.showDialog(this, buttonText);    // TODO: check experiment of dialog centered on panel not JFrame
+    int fileChooseReturn = chooser.showDialog(this, buttonText);
     if (fileChooseReturn == JFileChooser.APPROVE_OPTION)
     {
       File selectedFile = chooser.getSelectedFile();
@@ -343,7 +345,6 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
 //        exception.printStackTrace(); 
       }
     }
-    return true;      // TODO: if this is all we do, eliminate the return value.
   }
 
   @Override
@@ -359,7 +360,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
 
     String buttonText = I18n.getString("fileSaveDialogButtonText");
     
-    int fileChooseReturn = chooser.showDialog(this, buttonText);    // TODO: check experiment of opening dialog above this panel
+    int fileChooseReturn = chooser.showDialog(this, buttonText);
     if (fileChooseReturn == JFileChooser.APPROVE_OPTION)
     {
       File selectedFile = chooser.getSelectedFile();
@@ -436,19 +437,17 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     
   }
   
-  // =================================== 'glyph selected' event ====================================
+  // =================================== 'glyph selection' event ====================================
   
-  HashSet<GlyphSelectedListener> glyphSelectedListeners = new HashSet<>();
+  HashSet<GlyphSelectionListener> glyphSelectionListeners = new HashSet<>();
   
-  public void addGlyphSelectedListener(GlyphSelectedListener listener)    { glyphSelectedListeners.add(listener);     }
-  public void removeGlyphSelectedListener(GlyphSelectedListener listener) { glyphSelectedListeners.remove(listener);  }
-  public void fireGlyphSelectedEvent(GlyphSelectedEvent gsEvent)          
+  public void addGlyphSelectionListener(GlyphSelectionListener listener)    { glyphSelectionListeners.add(listener);     }
+  public void removeGlyphSelectionListener(GlyphSelectionListener listener) { glyphSelectionListeners.remove(listener);  }
+  public void fireGlyphSelectionEvent(GlyphSelectionEvent gsEvent)          
   { 
-    say("Firing GlyphSelected, %d listeners", glyphSelectedListeners.size());
-    for (GlyphSelectedListener listener: glyphSelectedListeners) 
+    for (GlyphSelectionListener listener: glyphSelectionListeners) 
     { 
-      listener.glyphSelected(gsEvent);  
-      say("listener notified");
+      listener.glyphSelection(gsEvent);  
     }  
   }
 }

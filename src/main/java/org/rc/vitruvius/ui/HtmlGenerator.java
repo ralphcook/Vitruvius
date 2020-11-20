@@ -60,12 +60,6 @@ public class HtmlGenerator
    * From the given set of tiles, generate HTML without start/end HTML tags
    * (suitable for the Heavengames forum) and accumulate it in the given 
    * StringBuilder.
-   * <P>TODO: known problem: blank spaces in the tiles grid leads to skipped cells
-   * in the HTML table, and other images then center in the combined space
-   * instead of staying within their planned space.
-   * <P>TODO: known problem: if some rows are longer than other rows, skipped
-   * cells at the ends of rows causes images to truncated or scaled into their
-   * space, causing other cells to be non-square.
    * @param output
    * @param tiles
    */
