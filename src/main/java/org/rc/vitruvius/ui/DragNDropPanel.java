@@ -32,7 +32,6 @@ import org.rc.vitruvius.model.Draggable;
 import org.rc.vitruvius.model.DraggablePicture;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
-import org.rc.vitruvius.ui.actions.FileOpenAction;
 
 import rcutil.file.ExtensionFileFilter;
 
@@ -54,14 +53,12 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   private DragNDropImagesPane mapPane                 = null;
   private UserMessageListener userMessageListener     = null;
   private Preferences         applicationPreferences  = null;
-  private MainFrame           mainFrame               = null;
   
   /**
    * Create the DragNDrop panel
    */
-  public DragNDropPanel(MainFrame mainFrame, UserMessageListener userMessageListener, Preferences applicationPreferences)
+  public DragNDropPanel(UserMessageListener userMessageListener, Preferences applicationPreferences)
   {
-    this.mainFrame              = mainFrame;
     this.userMessageListener    = userMessageListener;
     this.applicationPreferences = applicationPreferences;
     

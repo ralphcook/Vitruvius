@@ -13,7 +13,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -55,12 +54,10 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
   
   PassAlongMousePressedListener passAlongListener   = new PassAlongMousePressedListener();
   
-  private DragNDropPanel      glyphSelectionGenerator   = null;
   private UserMessageListener userMessageListener       = null;
   
   public DragNDropImagesPane(DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener)
   {
-    this.glyphSelectionGenerator = glyphSelectionGenerator;
     glyphSelectionGenerator.addGlyphSelectionListener(this);
     this.userMessageListener = givenListener;
     

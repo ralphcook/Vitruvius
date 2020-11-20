@@ -66,7 +66,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     setJMenuBar(menuBar);
     
     JTabbedPane tabbedPane = new JTabbedPane();
-    dragNDropPanel  = new DragNDropPanel(this, this, applicationPreferences);
+    dragNDropPanel  = new DragNDropPanel(this, applicationPreferences);
     glyphyToolPanel = new GlyphyToolPanel(this);
  
     tabbedPane.addTab(I18n.getString("dragNDropTabbedPaneLabelText"),   dragNDropPanel);
