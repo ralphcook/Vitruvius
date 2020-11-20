@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.prefs.Preferences;
 
@@ -328,7 +329,15 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
       }
       catch (Exception exception) 
       { 
-        String message = I18n.getString("errorOpeningFile");
+        String message;
+        try
+        {
+          message = I18n.getString("errorOpeningFile", selectedFile.getCanonicalPath());
+        }
+        catch (IOException ioe)
+        {
+          message = I18n.getString("errorOpeningFile");
+        }
         String fullMessage = String.format("%s (%s)", message, exception.getMessage());
         userMessageListener.addMessage(fullMessage);
 //        exception.printStackTrace(); 
@@ -354,22 +363,24 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     if (fileChooseReturn == JFileChooser.APPROVE_OPTION)
     {
       File selectedFile = chooser.getSelectedFile();
+      String filename = "";
+      String filepath = "";
       try 
       { 
         TileArray tileArray = mapPane.getTileArray();
         tileArray.saveToFile(selectedFile);
         // now that we've saved it, save the filename and directory for use later.
-        String filename = selectedFile.getName();
-        String filepath = selectedFile.getCanonicalPath();
+        filename = selectedFile.getName();
+        filepath = selectedFile.getCanonicalPath();
         applicationPreferences.put(SAVED_TILE_FILE_FILENAME_KEY, filename);
         applicationPreferences.put(SAVED_TILE_FILE_DIRECTORY_KEY, filepath);
         
         // and let the user know that it's been saved
-        resultMessage = I18n.getString("tileFileSavedMessage");
+        resultMessage = I18n.getString("fileSavedMessage", filepath);
       }
       catch (Exception exception) 
       { 
-        resultMessage = I18n.getString("tileFileCouldNotBeSaved");
+        resultMessage = I18n.getString("fileCouldNotBeSaved", filepath);
         exception.printStackTrace(); 
       }
     }

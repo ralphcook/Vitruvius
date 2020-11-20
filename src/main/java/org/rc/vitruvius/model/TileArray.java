@@ -218,7 +218,7 @@ public class TileArray implements Iterable<TileRow>
     }
     catch (IOException ioe)
     {
-      throw new IOException(I18n.getString("errorOpeningTileFile"), ioe);
+      throw new IOException(I18n.getString("errorOpeningTileFileException"), ioe);
     }
     finally
     {
@@ -228,17 +228,11 @@ public class TileArray implements Iterable<TileRow>
 //    displayTileArray(readTileArray);
   }
   
-  public boolean saveToFile(File file) throws Exception
+  public void saveToFile(File file) throws Exception
   {
-    boolean result = false;
-    BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-    saveToFile(writer);
-    return result;
-  }
+    BufferedWriter writer = null;
+    writer = new BufferedWriter(new FileWriter(file));
 
-  public boolean saveToFile(BufferedWriter writer) throws Exception
-  {
-    boolean result = true;
     try
     {
       writer.write("tileArray:");
@@ -265,8 +259,6 @@ public class TileArray implements Iterable<TileRow>
     {
       writer.close();
     }
-    
-    return result;
   }
 
   /**

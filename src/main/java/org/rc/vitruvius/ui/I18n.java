@@ -1,5 +1,6 @@
 package org.rc.vitruvius.ui;
 
+import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -26,6 +27,27 @@ public class I18n
     {
       value = key;
       System.err.println(mre.getMessage());
+    }
+    return value;
+    
+  }
+
+  public static String getString(String key, Object... arguments)
+  {
+    String value = null;
+    try
+    {
+      String template = bundle.getString(key);
+      value = MessageFormat.format(template,  arguments);
+    }
+    catch (MissingResourceException mre)
+    {
+      value = key;
+      for (int i=0; i<arguments.length; i++)
+      {
+        value = value + " : " + arguments[i].toString();
+        System.err.println(mre.getMessage());
+      }
     }
     return value;
   }
