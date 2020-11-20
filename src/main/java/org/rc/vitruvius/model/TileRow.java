@@ -41,6 +41,8 @@ public class TileRow implements Iterable<Tile>
   {
     boolean result = true;
     writer.write("row:");
+    // if row is null or empty, no lines get written for row
+    // otherwise the tile representations get written after "row:"
     if ((row != null) && (!row.isEmpty()))
     {
       for (Tile tile: row)

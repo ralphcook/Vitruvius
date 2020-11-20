@@ -123,6 +123,7 @@ public enum Picture
   
   private ImageIcon unscaledImageIcon = null;   // lazy instantiation at first use.
   private HashMap<Integer, ImageIcon> scaledImageIcons = new HashMap<>();
+  private PassAlongMousePressedListener cachedMousePressListener = new PassAlongMousePressedListener();
   
   private final static String IMAGE_FILEPATH_FORMAT = "/images/%s.gif";
   
@@ -232,6 +233,10 @@ public enum Picture
       result.setMaximumSize(size);
       
       result.setToolTipText(getDisplayText());
+      
+      // set a mouse listener on this label so that it 'passes along' any mouse 
+      // pressed events to its UI parents/ancestors.
+      result.addMouseListener(cachedMousePressListener);
     }
     return result;
   }

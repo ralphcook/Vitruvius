@@ -15,6 +15,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.rc.vitruvius.model.TileArray;
+import org.rc.vitruvius.model.VitruviusWorkingPane;
 import org.rc.vitruvius.text.TextTranslator;
 import org.rc.vitruvius.ui.actions.DisplayGlyphyHelpAction;
 import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
@@ -29,7 +30,7 @@ import org.rc.vitruvius.ui.actions.GenerateImageAction;
  * @author rcook
  *
  */
-public class GlyphyToolPanel extends JPanel implements DocumentListener
+public class GlyphyToolPanel extends JPanel implements DocumentListener, VitruviusWorkingPane
 {
   private static final long serialVersionUID = 1L;
 
@@ -133,6 +134,59 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener
   @Override public void insertUpdate(DocumentEvent e)  {    setDirtyText(true);  }
   @Override public void removeUpdate(DocumentEvent e)  {    setDirtyText(true);  }
   @Override public void changedUpdate(DocumentEvent e) { }
+  @Override
+  public boolean openFile()
+  {
+    System.out.println("open glyphy tool file here");
+    return false;
+  }
+  @Override
+  public void saveFile()
+  {
+    System.out.println("save glyphy tool file here");
+  }
+  @Override
+  public void clearPanel()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  @Override
+  public void setPanelSize()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  @Override
+  public void decreaseTileSize()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  @Override
+  public void increaseTileSize()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  @Override
+  public void generateFullHTML()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  @Override
+  public void generateForumHTML()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  @Override
+  public void displayHelp()
+  {
+    // TODO Auto-generated method stub
+    
+  }
 
 ///**
 //* Create a tile array from the glyphy tool text area and set the resulting

@@ -1,5 +1,7 @@
 .settings/
 archive/
 bin/
+test/output/
 .project
 .classpath
+*.tiles

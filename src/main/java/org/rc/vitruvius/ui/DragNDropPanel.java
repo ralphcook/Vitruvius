@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.HashSet;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -18,6 +20,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -27,59 +30,48 @@ import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Draggable;
 import org.rc.vitruvius.model.DraggablePicture;
 import org.rc.vitruvius.model.TileArray;
+import org.rc.vitruvius.model.VitruviusWorkingPane;
+import org.rc.vitruvius.ui.actions.FileOpenAction;
+
+import rcutil.file.ExtensionFileFilter;
 
 /**
- * Panel for drag-n-drop planning, including ways to choose glyphs 
- * to put on the map and the map panel that displays what has been dragged and drug.
+ * Panel for drag-n-drop Caesar III map planning, including ways to drag glyphs 
+ * onto a grid.
  * @author rcook
  *
  */
-public class DragNDropPanel extends JPanel
+public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, GlyphSelectedListener
 {
-//  private static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
+  public static void say(String s) { System.out.println(s); }
+  public static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   private static final long serialVersionUID = 1L;
 
-  private JLabel              currentPictureLabel     = null;
+  private JLabel              currentPictureLabel     = null;   // label of current picture, displayed upper left.
   private String              defaultPictureText      = I18n.getString("currentDragComponentDefaultLabelText");
   private DragNDropImagesPane mapPane                 = null;
   private UserMessageListener userMessageListener     = null;
+  private Preferences         applicationPreferences  = null;
+  private MainFrame           mainFrame               = null;
   
-  @SuppressWarnings("unused")
-  private static void say(String s) { System.out.println(s); }
-
   /**
    * Create the DragNDrop panel
    */
-  public DragNDropPanel(UserMessageListener userMessageListener)
+  public DragNDropPanel(MainFrame mainFrame, UserMessageListener userMessageListener, Preferences applicationPreferences)
   {
-    this.userMessageListener = userMessageListener;
+    this.mainFrame              = mainFrame;
+    this.userMessageListener    = userMessageListener;
+    this.applicationPreferences = applicationPreferences;
     
-    JPanel                leftPanel   = createLeftPanel(); 
-    DragNDropImagesPane   middlePanel = createMiddleComponent();
+    JPanel leftPanel   = createLeftPanel(); 
+           mapPane     = new DragNDropImagesPane(this, userMessageListener);
     
     setLayout(new BorderLayout());
     add(leftPanel, BorderLayout.WEST);
-    add(middlePanel, BorderLayout.CENTER);
+    add(mapPane, BorderLayout.CENTER);
     
-    addKeyListener(new DragNDropKeyListener(middlePanel));
-  }
-  
-  public void saveTileFile(File saveFile)
-  {
-    mapPane.saveTileFile(saveFile);
-  }
-  
-  public void openTileFile(File saveFile) throws Exception
-  {
-    try
-    {
-      mapPane.openTileFile(saveFile);
-    }
-    catch (Exception e)
-    {
-      String message = I18n.getString("exceptionOpeningTileFile");
-      throw new Exception(message, e);
-    }
+    addKeyListener(new DragNDropKeyListener(mapPane));
+    addGlyphSelectedListener(this);
   }
   
   /**
@@ -100,6 +92,8 @@ public class DragNDropPanel extends JPanel
     return leftPanel;
   }
   
+  // ============================== (private) methods used to create the UI components ==================================== 
+  
   /**
    * Create the panel containing the dropdown components for picking what structure to drag
    * onto the map.
@@ -111,37 +105,27 @@ public class DragNDropPanel extends JPanel
     panel.setLayout(new NonUniformGridLayout(0,2,10,5));   // rows and columns for categories and picture dropdowns
     panel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
     
-    addDropdown(panel, "roads", Picture.road, Picture.plaza, Picture.garden);
-    //3
-    addDropdown(panel, "houses", Picture.house1, Picture.house2, Picture.house3, Picture.palace);
-    //4
+    addDropdown(panel, "roads", Picture.road, Picture.plaza, Picture.garden);                                                     // 3
+    addDropdown(panel, "houses", Picture.house1, Picture.house2, Picture.house3, Picture.palace);                                 // 4
     // TODO: add well and aqueducts to Picture
-    addDropdown(panel, "water", Picture.reservoir, Picture.fountain);
-    //2
-    addDropdown(panel, "farms", Picture.wheat, Picture.fruit, Picture.olives, Picture.vines, Picture.pigs, Picture.vegetables);
-    //6
+    addDropdown(panel, "water", Picture.reservoir, Picture.fountain);                                                             // 2
+    addDropdown(panel, "farms", Picture.wheat, Picture.fruit, Picture.olives, Picture.vines, Picture.pigs, Picture.vegetables);   // 6
     // TODO: add boatyard; do we need a better category for these?
-    addDropdown(panel, "food",  Picture.granary, Picture.market, Picture.wharf);
-    //3
+    addDropdown(panel, "food",  Picture.granary, Picture.market, Picture.wharf);                                                  // 3
     addDropdown(panel, "gods",  Picture.ceres,  Picture.mars,  Picture.mercury,  Picture.neptune,  Picture.venus,
-                                Picture.ceresL, Picture.marsL, Picture.mercuryL, Picture.neptuneL, Picture.venusL, Picture.oracle);
-    //11
+        Picture.ceresL, Picture.marsL, Picture.mercuryL, Picture.neptuneL, Picture.venusL, Picture.oracle);                       //11
     addDropdown(panel, "entertainment", Picture.theater,  Picture.actorcolony, Picture.amphitheater, Picture.gladiator,
-                                        Picture.coliseum, Picture.lionpit,     Picture.hippodroom,   Picture.chariotmaker);
-    //8
+                                        Picture.coliseum, Picture.lionpit,     Picture.hippodroom,   Picture.chariotmaker);       // 8
     addDropdown(panel, "industry", Picture.clay, Picture.workshopP, Picture.iron,   Picture.workshopW,
                                    Picture.wood, Picture.workshopF, Picture.marble, Picture.workshopw, Picture.workshopO,
-                                   Picture.warehouse);
-    //10
+                                   Picture.warehouse);                                                                            //10
     addDropdown(panel, "services",  Picture.prefect,  Picture.engineer,  Picture.library,  Picture.school,  Picture.barber,    
                                     Picture.bath,     Picture.forum,     Picture.hospital, Picture.academy, Picture.doctor,
-                                    Picture.statue1,  Picture.statue2,   Picture.statue3,  Picture.mission);
-    //14
+                                    Picture.statue1,  Picture.statue2,   Picture.statue3,  Picture.mission);                      //14
     addDropdown(panel, "military", Picture.fortG,   Picture.fortH,        Picture.gatehouseH, Picture.arcH, 
-                                   Picture.barracks, Picture.MILacademy,  Picture.tower);
-    //7
-    //total 3+4+2+6+3+11+8+10+14+7 = 68
-    //left out: gov-small, 
+                                   Picture.barracks, Picture.MILacademy,  Picture.tower);                                         // 7
+                                                                                                                                  //total 3+4+2+6+3+11+8+10+14+7 = 68
+                                                                                                                                  //left out: gov-small, 
     
     return panel;
   }
@@ -163,24 +147,6 @@ public class DragNDropPanel extends JPanel
   }
   
   /**
-   * Create the map pane, ready to receive glyphs dragged onto it.
-   * @return
-   */
-  private DragNDropImagesPane createMiddleComponent()
-  {
-    JPanel mapPanel = new JPanel();
-    mapPanel.setLayout(null);
-    // TODO: figure out why this is still needed.
-    Dimension mapSize = new Dimension(400,400);
-    mapPanel.setSize(mapSize);
-    mapPanel.setPreferredSize(mapSize);
-    mapPanel.setMaximumSize(mapSize);
-    mapPanel.setBorder(BorderFactory.createLineBorder(Color.green, 3));
-    mapPane = new DragNDropImagesPane(mapPanel, new TileArray(), userMessageListener);
-    return mapPane;
-  }
-  
-  /**
    * Create a JComboBox containing the given list of Pictures, and
    * add its action listener to it.
    * @param list
@@ -189,9 +155,6 @@ public class DragNDropPanel extends JPanel
   private JComboBox<Picture> createPictureComboBox(Picture[] list)
   {
     JComboBox<Picture> cBox = new JComboBox<>();
-    
-//    Picture categoryPicture = new Picture(null, categoryName, 0, 0);
-//    cBox.addItem(categoryPicture);
     
     for (Picture p: list) { cBox.addItem(p); }
     
@@ -204,37 +167,13 @@ public class DragNDropPanel extends JPanel
                                 JComboBox<Picture> cBox = (JComboBox<Picture>)o;
                                 Picture p = (Picture) cBox.getSelectedItem();
                                 DraggablePicture draggablePicture = new DraggablePicture(p);
-                                setCurrentPicture(draggablePicture);
+                                GlyphSelectedEvent gsEvent = new GlyphSelectedEvent(this, draggablePicture);
+//                                setCurrentPicture(draggablePicture);
+                                fireGlyphSelectedEvent(gsEvent);
                               }
                             }
                           );
     return cBox;
-  }
-  
-  /**
-   * Set the given picture as the one that will be dragged onto the drag-n-drop panel.
-   * @param draggablePicture
-   */
-  private void setCurrentPicture(Draggable draggablePicture)
-  {
-//    currentPictureLabel = draggablePicture.getJLabelJustIcon(25);
-//    currentPictureLabel.setText(draggablePicture.getDisplayText());
-    
-    // note to self -- commented out code above gets a new label; I could use it,
-    // but then would have to replace the label currently on the panel. Code below
-    // sets attributes of the label currently on the panel.
-    ImageIcon icon = draggablePicture.getImageIcon(25);     // TODO: figure out what we really want as sizing here.
-    String    text = draggablePicture.getDisplayText();
-    currentPictureLabel.setIcon(icon);
-    currentPictureLabel.setText(text);                      
-    currentPictureLabel.setToolTipText(draggablePicture.getDisplayText());
-    
-    JLabel dragLabel = new JLabel(icon);
-    Dimension size = dragLabel.getPreferredSize();
-//    say("dragLabel size %d, %d", size.width, size.height);
-    dragLabel.setSize(size);
-    mapPane.activateDragging(draggablePicture);
-    repaint();
   }
   
   // Convenience methods for creating either a standard or a half standard space or
@@ -315,4 +254,190 @@ public class DragNDropPanel extends JPanel
     return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
   }
 
+  // ================================= methods called by various actions ======================================
+  
+  public void glyphSelected(GlyphSelectedEvent gsEvent)
+  {
+    say("glyphSelectedEvent in DnDropPanel");
+    Draggable draggable = gsEvent.getDraggable();
+    setCurrentPicture(draggable);
+  }
+  
+  /**
+   * Set the given picture as the one that will be dragged onto the drag-n-drop panel.
+   * @param draggablePicture
+   */
+  private void setCurrentPicture(Draggable draggablePicture)
+  {
+//    currentPictureLabel = draggablePicture.getJLabelJustIcon(25);
+//    currentPictureLabel.setText(draggablePicture.getDisplayText());
+    
+    // note to self -- commented out code above gets a new label; I could use it,
+    // but then would have to replace the label currently on the panel. Code below
+    // sets attributes of the label currently on the panel.
+    ImageIcon icon = draggablePicture.getImageIcon(25);     // TODO: figure out what we really want as sizing here.
+    String    text = draggablePicture.getDisplayText();
+    currentPictureLabel.setIcon(icon);
+    currentPictureLabel.setText(text);                      
+    currentPictureLabel.setToolTipText(draggablePicture.getDisplayText());
+    
+//    JLabel dragLabel = new JLabel(icon);
+//    Dimension size = dragLabel.getPreferredSize();
+////    say("dragLabel size %d, %d", size.width, size.height);
+//    dragLabel.setSize(size);
+//    mapPane.activateDragging(draggablePicture);
+    repaint();
+  }
+
+  // ================================= VitruviusActions methods =============================================
+  
+  public static String        SAVED_TILE_FILE_DIRECTORY_KEY   = "savedOpenFileDirectory";
+  public static String        SAVED_TILE_FILE_FILENAME_KEY    = "savedOpenFileFilename";
+  public static String        SAVED_TILE_FILE_FILENAME_EXTENSION = "tiles";
+  
+
+  @Override
+  public boolean openFile()
+  {
+    // TODO: consider a method (somewhere) that accepts necessary parameters for user to choose
+    // a file to save to; parameters would include:
+    // defaultPath
+    // defaultFolderName
+    // filter, or extension(s) for filter
+    // dialog title
+    // dialog button text
+    // 
+    String defaultPath = System.getProperty("user.home");
+    String defaultFolderName = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
+    JFileChooser chooser = new JFileChooser(defaultFolderName);
+    
+    ExtensionFileFilter saveFilter = new ExtensionFileFilter(SAVED_TILE_FILE_FILENAME_EXTENSION);
+    chooser.setFileFilter(saveFilter);
+    chooser.setDialogTitle(I18n.getString("fileOpenActionName"));
+    
+    String buttonText = I18n.getString("fileOpenDialogButtonText");
+    
+    int fileChooseReturn = chooser.showDialog(this, buttonText);    // TODO: check experiment of dialog centered on panel not JFrame
+    if (fileChooseReturn == JFileChooser.APPROVE_OPTION)
+    {
+      File selectedFile = chooser.getSelectedFile();
+      try 
+      { 
+        TileArray tileArray = TileArray.readFromFile(selectedFile);
+        mapPane.setTileArray(tileArray); 
+      }
+      catch (Exception exception) 
+      { 
+        String message = I18n.getString("errorOpeningFile");
+        String fullMessage = String.format("%s (%s)", message, exception.getMessage());
+        userMessageListener.addMessage(fullMessage);
+//        exception.printStackTrace(); 
+      }
+    }
+    return true;      // TODO: if this is all we do, eliminate the return value.
+  }
+
+  @Override
+  public void saveFile()
+  {
+    String resultMessage      = null;
+    String defaultPath        = System.getProperty("user.home");
+    String defaultFolderName  = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
+    JFileChooser chooser = new JFileChooser(defaultFolderName);
+    ExtensionFileFilter saveFilter = new ExtensionFileFilter(SAVED_TILE_FILE_FILENAME_EXTENSION);
+    chooser.setFileFilter(saveFilter);
+    chooser.setDialogTitle(I18n.getString("fileSaveActionName"));
+
+    String buttonText = I18n.getString("fileSaveDialogButtonText");
+    
+    int fileChooseReturn = chooser.showDialog(this, buttonText);    // TODO: check experiment of opening dialog above this panel
+    if (fileChooseReturn == JFileChooser.APPROVE_OPTION)
+    {
+      File selectedFile = chooser.getSelectedFile();
+      try 
+      { 
+        TileArray tileArray = mapPane.getTileArray();
+        tileArray.saveToFile(selectedFile);
+        // now that we've saved it, save the filename and directory for use later.
+        String filename = selectedFile.getName();
+        String filepath = selectedFile.getCanonicalPath();
+        applicationPreferences.put(SAVED_TILE_FILE_FILENAME_KEY, filename);
+        applicationPreferences.put(SAVED_TILE_FILE_DIRECTORY_KEY, filepath);
+        
+        // and let the user know that it's been saved
+        resultMessage = I18n.getString("tileFileSavedMessage");
+      }
+      catch (Exception exception) 
+      { 
+        resultMessage = I18n.getString("tileFileCouldNotBeSaved");
+        exception.printStackTrace(); 
+      }
+    }
+    userMessageListener.addMessage(resultMessage);
+  }
+
+  @Override
+  public void clearPanel()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void setPanelSize()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void decreaseTileSize()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void increaseTileSize()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void generateFullHTML()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void generateForumHTML()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void displayHelp()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  
+  // =================================== 'glyph selected' event ====================================
+  
+  HashSet<GlyphSelectedListener> glyphSelectedListeners = new HashSet<>();
+  
+  public void addGlyphSelectedListener(GlyphSelectedListener listener)    { glyphSelectedListeners.add(listener);     }
+  public void removeGlyphSelectedListener(GlyphSelectedListener listener) { glyphSelectedListeners.remove(listener);  }
+  public void fireGlyphSelectedEvent(GlyphSelectedEvent gsEvent)          
+  { 
+    say("Firing GlyphSelected, %d listeners", glyphSelectedListeners.size());
+    for (GlyphSelectedListener listener: glyphSelectedListeners) 
+    { 
+      listener.glyphSelected(gsEvent);  
+      say("listener notified");
+    }  
+  }
 }

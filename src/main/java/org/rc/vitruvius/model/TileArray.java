@@ -1,13 +1,16 @@
 package org.rc.vitruvius.model;
 
 import java.awt.Point;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.rc.vitruvius.model.Tile.Type;
 import org.rc.vitruvius.ui.I18n;
 import org.rc.vitruvius.ui.Picture;
 
@@ -22,6 +25,8 @@ import org.rc.vitruvius.ui.Picture;
  */
 public class TileArray implements Iterable<TileRow>
 {
+  public static void say(String s) { System.out.println(s); }
+  
   private ArrayList<TileRow>  tileRows = null;
   private int                 rows      = 0;
   private int                 columns   = 0;
@@ -159,6 +164,78 @@ public class TileArray implements Iterable<TileRow>
     return new String(sb);
   }
   
+  /**
+   * Create a TileArray object by reading given file.
+   * @param saveFile
+   * @throws IOException
+   * @throws Exception
+   */
+  public static TileArray readFromFile(File saveFile) throws IOException, Exception
+  {
+    BufferedReader reader = null;
+    
+    TileArray readTileArray = new TileArray();
+    try
+    {
+      reader = new BufferedReader(new FileReader(saveFile));
+      
+      String line = reader.readLine();
+      if (!(line.startsWith("tileArray:")))
+      {
+        throw new Exception(I18n.getString("tileFileIncorrectFormat"));
+      }
+      else
+      {
+        line = reader.readLine();
+        while(line.startsWith("row:"))
+        {
+          line = line.substring(4);   // cut off "row:"
+          TileRow tileRow = new TileRow();
+          String[] tileStrings = line.split(";");
+          if (tileStrings.length > 1 || (!tileStrings[0].equals("")))
+          {
+            for (String part: tileStrings)
+            {
+              Tile newTile = null;
+//            if (part.length() == 0)                   { newTile = null; }
+//            else if (part.startsWith("null"))         { newTile = null; }
+//            else 
+              if (part.startsWith("EMPTY"))        { newTile = new Tile(); }
+              else if (part.startsWith("CONTINUATION")) { newTile = new Tile(Type.CONTINUATION); }
+              else if (part.startsWith("PICTURE"))      { String pictureKey = part.substring("PICTURE:".length());
+              newTile = Tile.getTileFromPictureKey(pictureKey);
+              }
+              else 
+              { say("unexpected tileString while reading: <" + part + ">"); }
+              tileRow.add(newTile);
+            }
+          }
+          line = reader.readLine();
+          readTileArray.addRow(tileRow);
+        }
+        if (!(line.startsWith("endTileArray"))) { throw new Exception(I18n.getString("tileFileIncorrectFormat")); }
+      }
+    }
+    catch (IOException ioe)
+    {
+      throw new IOException(I18n.getString("errorOpeningTileFile"), ioe);
+    }
+    finally
+    {
+      if (reader != null) { reader.close(); }
+    }
+    return readTileArray;
+//    displayTileArray(readTileArray);
+  }
+  
+  public boolean saveToFile(File file) throws Exception
+  {
+    boolean result = false;
+    BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+    saveToFile(writer);
+    return result;
+  }
+
   public boolean saveToFile(BufferedWriter writer) throws Exception
   {
     boolean result = true;
@@ -166,11 +243,13 @@ public class TileArray implements Iterable<TileRow>
     {
       writer.write("tileArray:");
       writer.newLine();
-      
+
+      // if tileRows is null or empty, no lines get written for rows.
       if (tileRows != null && (!tileRows.isEmpty()))
       {
         for (TileRow row: tileRows)
         {
+          say("Writing row");
           row.saveToFile(writer);
         }
       }
@@ -181,6 +260,10 @@ public class TileArray implements Iterable<TileRow>
     catch (Exception exception)
     {
       throw new Exception("Error writing save file", exception);
+    }
+    finally
+    {
+      writer.close();
     }
     
     return result;

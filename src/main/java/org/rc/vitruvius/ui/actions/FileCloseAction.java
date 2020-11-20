@@ -33,7 +33,10 @@ public class FileCloseAction extends AbstractAction
     int option = JOptionPane.showConfirmDialog(mainFrame, message, title, JOptionPane.YES_NO_OPTION);
     if (option == JOptionPane.OK_OPTION)
     {
-      try { mainFrame.closeTileFile(); }
+      try 
+      { 
+//        mainFrame.closeTileFile(); 
+      }
       catch (Exception exception) { throw new RuntimeException("problem in File/Close", exception); }
     }
   }

@@ -11,14 +11,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -26,23 +21,21 @@ import javax.swing.JPanel;
 import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Draggable;
 import org.rc.vitruvius.model.Tile;
-import org.rc.vitruvius.model.Tile.Type;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.TileRow;
 
 /**
- * This wrapper extends JLayeredPane, allowing operations above the given 'wrapped' panel 
- * such as dragging a component above everything else on the panel. This partaicular one 
- * has the mouse listeners to implement making a dragged component operate as a cursor, dropping
- * that component on the panel with a mouse click, etc.
+ * This wrapper extends JLayeredPane, primarily so we can 'drag' a component above everything
+ * else in the panel.  This particular one has the mouse listeners to implement making a 
+ * dragged component operate as a cursor, dropping that component on the panel with a mouse click, etc.
  * 
  * @author rcook
  *
  */
-public class DragNDropImagesPane extends JLayeredPane
+public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectedListener 
 {
-  private static void say(String s) { System.out.println(s); }
-//  private static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
+  public static void say(String s) { System.out.println(s); }
+  public static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   
   private static final long serialVersionUID = 1L;
   private JPanel              wrappedPanel          = null;
@@ -52,7 +45,6 @@ public class DragNDropImagesPane extends JLayeredPane
   private JLabel              draggableJLabel       = null;     // JLabel created from draggable, actual screen component
                                                                 // it is specific to tileSize, needs recalc if that changes
                                                                 // (or if we get a new draggable item)
-  private boolean             draggableAddedToWindow = false;    // true when draggableJLabel has been added to the window
 
   private TileArray           tileArray             = null;
   
@@ -63,14 +55,20 @@ public class DragNDropImagesPane extends JLayeredPane
   
   PassAlongMousePressedListener passAlongListener   = new PassAlongMousePressedListener();
   
+  private DragNDropPanel      glyphSelectionGenerator   = null;
   private UserMessageListener userMessageListener       = null;
   
-  public DragNDropImagesPane(JPanel givenPanel, TileArray tileArray, UserMessageListener givenListener)
+  // TODO: decide whether we still want the 'givenPanel' passed in -- it is not used by the caller at this time.
+  // Neither is the tile array.
+  public DragNDropImagesPane(DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener)
   {
-    wrappedPanel = givenPanel;
-    this.tileArray = tileArray;
+    this.glyphSelectionGenerator = glyphSelectionGenerator;
+    glyphSelectionGenerator.addGlyphSelectedListener(this);
     this.userMessageListener = givenListener;
     
+    wrappedPanel = createWrappedPanel();
+    tileArray = new TileArray();
+
     // Transparent 16 x 16 pixel 'blank cursor' image.
     BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
     blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
@@ -170,7 +168,7 @@ public class DragNDropImagesPane extends JLayeredPane
 
     setPreferredSize(wrappedPanel.getPreferredSize());
 
-    addComponentListener
+    addComponentListener                                    // TODO: when we implement size <> window size, delete this.
     (
         // when this (the layered pane) gets a resize event,
         // resize the panel it contains to the same size.
@@ -178,7 +176,6 @@ public class DragNDropImagesPane extends JLayeredPane
         {
           @Override public void componentResized(ComponentEvent e)
           {
-            say("DNDImagesPane.componentResized()");
             Component c = e.getComponent();
             Dimension size = c.getSize();
             setAllComponentSizes(wrappedPanel, size);
@@ -188,81 +185,49 @@ public class DragNDropImagesPane extends JLayeredPane
     );
     
     addKeyListener(new DragNDropKeyListener(this));
+    
   }
   
-  public void saveTileFile(File saveFile)
+  public void glyphSelected(GlyphSelectedEvent gsEvent)
   {
-    String message = null;
-    try
-    {
-      BufferedWriter writer = new BufferedWriter(new FileWriter(saveFile));
-      tileArray.saveToFile(writer);
-      writer.close();
-      
-      message = I18n.getString("tileFileSavedMessage");
-    }
-    catch (Exception e)
-    {
-      message = String.format("Could not save file:%n%s", e.getMessage());
-    }
-    userMessageListener.addMessage(message);
+    say("glyphSelectedEvent in DNDImagesPane");
+    Draggable draggable = gsEvent.getDraggable();
+    ImageIcon icon = draggable.getImageIcon(25);      // TODO: this doesn't look like the right size.
+    JLabel dragLabel = new JLabel(icon);
+    Dimension size = dragLabel.getPreferredSize();
+    dragLabel.setSize(size);
+    activateDragging(draggable);
+    repaint();
   }
   
-  public void openTileFile(File saveFile) throws IOException, Exception
+  /**
+   * Create the JPanel that is 'wrapped' by this JLayeredPane; this is the
+   * panel that will be the parent of the JLabel objects holding the glyphs.
+   * @return
+   */
+  public JPanel createWrappedPanel()
   {
-    BufferedReader reader = null;
-    TileArray readTileArray = new TileArray();
-    try
-    {
-      reader = new BufferedReader(new FileReader(saveFile));
-      
-      String line = reader.readLine();
-      if (!(line.startsWith("tileArray:")))
-      {
-        throw new Exception(I18n.getString("tileFileIncorrectFormat"));
-      }
-      else
-      {
-        line = reader.readLine();
-        while(line.startsWith("row:"))
-        {
-          line = line.substring(4);   // cut off "row:"
-          TileRow tileRow = new TileRow();
-          String[] tileStrings = line.split(";");
-          for (String part: tileStrings)
-          {
-            Tile newTile = null;
-            if (part.length() == 0)                   { newTile = null; }
-            else if (part.startsWith("null"))         { newTile = null; }
-            else if (part.startsWith("EMPTY"))        { newTile = new Tile(); }
-            else if (part.startsWith("CONTINUATION")) { newTile = new Tile(Type.CONTINUATION); }
-            else if (part.startsWith("PICTURE"))      { String pictureKey = part.substring("PICTURE:".length());
-                                                        newTile = Tile.getTileFromPictureKey(pictureKey);
-                                                      }
-            tileRow.add(newTile);
-          }
-          line = reader.readLine();
-          readTileArray.addRow(tileRow);
-        }
-        if (!(line.startsWith("endTileArray"))) { throw new Exception(I18n.getString("tileFileIncorrectFormat")); }
-      }
-    }
-    catch (IOException ioe)
-    {
-      throw new IOException(I18n.getString("errorOpeningTileFile"), ioe);
-    }
-    finally
-    {
-      if (reader != null) { reader.close(); }
-    }
-    displayTileArray(readTileArray);
+    JPanel mapPanel = new JPanel();
+    mapPanel.setLayout(null);
+    // TODO: figure out why this sizing is still needed.
+    Dimension mapSize = new Dimension(400,400);
+    mapPanel.setSize(mapSize);
+    mapPanel.setPreferredSize(mapSize);
+    mapPanel.setMaximumSize(mapSize);
+    mapPanel.setBorder(BorderFactory.createLineBorder(Color.green, 3));
+    return mapPanel;
   }
-
+  
+  /**
+   * Return the tile array currently in use.
+   */
+  public TileArray getTileArray() { return tileArray; }
+  
   /**
    * Set the given tile Array as the current one, and display it.
    * @param tileArray
    */
-  private void displayTileArray(TileArray tileArray)
+  public void setTileArray(TileArray tileArray)
   {
     wrappedPanel.removeAll();
     this.tileArray = tileArray;
@@ -280,23 +245,19 @@ public class DragNDropImagesPane extends JLayeredPane
           int y = rowNumber * tileSize;
           label.setLocation(x,y);
           label.setVisible(true);
-//          this.add(label, JLayeredPane.DEFAULT_LAYER);
-          printAllSizes("label", label);
           wrappedPanel.add(label);
-          System.out.printf("added size %d, %d at %d, %d%n", label.getSize().width, label.getSize().height, x, y);
         }
         colNumber++;
       }
       rowNumber++;
     }
-    System.out.println("repainting");
-    printAllSizes("wrappedPanel", wrappedPanel);
     wrappedPanel.invalidate();
     wrappedPanel.repaint();
     invalidate();
     repaint();
   }
   
+  @SuppressWarnings("unused")
   private void printAllSizes(String name, Component c)
   {
     System.out.println(name);
@@ -347,8 +308,9 @@ public class DragNDropImagesPane extends JLayeredPane
   }
   
   /**
-   * Return true if the given point is legal to put down the current draggable label.
-   * @param Point point of the cursor (p'bly middle of the glyph)
+   * Return true if it is legal to put the current draggable label
+   * down at the given point.
+   * @param Point cursor location (p'bly middle of the glyph)
    */
   private boolean insertDraggableIfFree(Point cursorPoint)
   {
@@ -372,7 +334,7 @@ public class DragNDropImagesPane extends JLayeredPane
   }
   
   /**
-   * Set the size, preferredSize, and maximum size of the given component to the given dimension.
+   * Set the size, preferredSize, minimum, and maximum size of the given component to the given dimension.
    * @param c
    * @param size
    */
@@ -381,6 +343,7 @@ public class DragNDropImagesPane extends JLayeredPane
     c.setSize(size);
     c.setPreferredSize(size);
     c.setMaximumSize(size);
+    c.setMinimumSize(size);
   }
 
   /**
@@ -435,24 +398,6 @@ public class DragNDropImagesPane extends JLayeredPane
     copiedLabel.addMouseListener(passAlongListener);
   }
   
-//  /**
-//   * Put the image for the given picture at the given x,y position on the panel.
-//   * Sizing to current tileSize is handled here.
-//   * Does not repaint so that this can be used for multiple labels with one repaint afterwards.
-//   * @param label
-//   * @param x
-//   * @param y
-//   */
-//  public void put(Picture picture, int x, int y)
-//  {
-//    JLabel label = picture.getLabel(tileSize);
-////    setAllComponentSizes(label, label.getPreferredSize());
-//    label.setVisible(true);
-//    label.setLocation(x,y);
-//    add(label, JLayeredPane.DEFAULT_LAYER);
-//    wrappedPanel.add(label);
-//  }
-//  
   /**
    * given these x,y coordinates, calculate the x,y position in the
    * tile array of the upper left-hand tile in our draggable item.
@@ -498,8 +443,6 @@ public class DragNDropImagesPane extends JLayeredPane
     System.out.println("activateDragging()");
     draggableItem = draggable;
     
-    // trying doing this here instead of in mouseMoved
-    // TODO: if this works, eliminate draggableAddedToWindow boolean.
     draggableJLabel = draggable.getJLabelJustIcon(tileSize);
     draggableJLabel.setVisible(false);
     add(draggableJLabel, JLayeredPane.DEFAULT_LAYER);   //, -1);  // or 0
@@ -507,7 +450,6 @@ public class DragNDropImagesPane extends JLayeredPane
     
     setAllComponentSizes(glassPanel, wrappedPanel.getSize());
     
-    draggableAddedToWindow = true; // false;
     glassPanel.setVisible(true);
     glassPanel.requestFocusInWindow();
     glassPanel.setFocusTraversalKeysEnabled(false);

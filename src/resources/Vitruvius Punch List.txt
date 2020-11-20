@@ -1,6 +1,9 @@
 Vitruvius punch list.
 ---------------------
 
+Currently going through all the classes to check for leftover artifacts from 
+working out the File Open bug, or other, fixing occasional problems.
+
 tileSize -- currently hard-coded in the images pane, the panel containing the
 images pane does not have a variable for tilesize at the moment. Tile size 
 makes sense for both of the display panels, but they don't need to be the same
@@ -9,25 +12,25 @@ and it might be useful if they changed separately.
 The action from a combo box selection creates a DraggablePicture, then calls
 'activateDragging' on the mapPane to set it as the 'current draggable'. 
 
-Menu bar:
+Menu bar: ('*' next to options that might apply to both DnD and Glyphy panes)
 
 File
-	open
-	save
-	close
-	exit
+*	open
+*	save
+*	close (or clear?)
+-	exit
 Images
-	set window size
-	decrease tile size
-	increase tile size
-Glyphy tool
-	update image panel
+*	set window size
+*	decrease tile size
+*	increase tile size
+	update image panel (glyphy only)
+	transfer Image to DnD
 HTML
-	generate full HTML
-	generate forum HTML
+*	generate full HTML
+*	generate forum HTML
 Help
-	program help
-	credits
+*	program help
+*	credits
 
 Save file: probably separate for dragndrop & glyph, possibly save glyphy text,
 certainly HTML.
