@@ -33,6 +33,8 @@ import org.rc.vitruvius.ui.actions.GenerateImageAction;
 public class GlyphyToolPanel extends JPanel implements DocumentListener, VitruviusWorkingPane
 {
   private static final long serialVersionUID = 1L;
+  
+  private static void say(String s) { System.out.println(s); }
 
 //  private MainFrame   mainFrame         = null;
   
@@ -43,8 +45,12 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
 //  private TextTranslator textTranslator = null;
   
   private boolean dirtyText = false; 
-  public void setDirtyText(boolean b) { dirtyText = b; generateImageButton.setEnabled(b); } 
-  public boolean textDirty() { return dirtyText; }
+  public boolean  textDirty()             { return dirtyText; }
+  public void     setDirtyText(boolean b) { dirtyText = b; if (b) { setUnsavedChanges(true); } generateImageButton.setEnabled(b); } 
+  
+  private boolean unsavedChanges = false;
+  public boolean unsavedChanges()             { return unsavedChanges; } 
+  public void    setUnsavedChanges(boolean b) { unsavedChanges = b; }
   
   public GlyphyToolPanel(MainFrame mainFrame)
   {
@@ -77,7 +83,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
                                                     // them their preferred height at the top of the panel.
     buttonsPanel.setLayout(gridLayout);
 
-            generateImageButton         = new JButton();
+            generateImageButton  = new JButton();
             generateImageButton.setEnabled(false);
     JButton generateForumHtmlButton     = new JButton();
     JButton generateFullHtmlButton      = new JButton();
@@ -118,6 +124,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
     Container c = imagesPanel.getParent();
     c.repaint();
     generateImageButton.setEnabled(false);
+    setDirtyText(false);    // also sets unsavedChanges to false;
   }
 
   /**
@@ -138,17 +145,25 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   public void openFile()
   {
     System.out.println("open glyphy tool file here");
+    setUnsavedChanges(false);
   }
   @Override
   public void saveFile()
   {
+    say("save glyphy tool file here");
+    setUnsavedChanges(false);
+  }
+  @Override
+  public void saveFileAs()
+  {
     System.out.println("save glyphy tool file here");
+    setUnsavedChanges(false);
   }
   @Override
   public void clearPanel()
   {
     // TODO Auto-generated method stub
-    
+    setUnsavedChanges(false);
   }
   @Override
   public void setPanelSize()

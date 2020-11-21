@@ -173,12 +173,13 @@ public class TileArray implements Iterable<TileRow>
     TileArray readTileArray = new TileArray();
     try
     {
+      String filename = saveFile.getCanonicalPath();
       reader = new BufferedReader(new FileReader(saveFile));
       
       String line = reader.readLine();
-      if (!(line.startsWith("tileArray:")))
+      if (line == null || !(line.startsWith("tileArray:")))
       {
-        throw new Exception(I18n.getString("tileFileIncorrectFormat"));
+        throw new Exception(I18n.getString("tileFileIncorrectFormat", filename));
       }
       else
       {

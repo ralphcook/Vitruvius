@@ -9,13 +9,13 @@ import javax.swing.JOptionPane;
 import org.rc.vitruvius.ui.I18n;
 import org.rc.vitruvius.ui.MainFrame;
 
-public class FileCloseAction extends AbstractAction
+public class ImageClearAction extends AbstractAction
 {
   private static final long serialVersionUID = 1L;
   
   private MainFrame mainFrame = null;
   
-  public FileCloseAction(MainFrame mainFrame)
+  public ImageClearAction(MainFrame mainFrame)
   {
     super(I18n.getString("fileCloseActionName"));
     this.mainFrame = mainFrame;

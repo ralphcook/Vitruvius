@@ -52,6 +52,8 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
   
   private JLabel              selectedItem          = null;
   
+  private boolean             unsavedChanges        = false;
+  
   PassAlongMousePressedListener passAlongListener   = new PassAlongMousePressedListener();
   
   private UserMessageListener userMessageListener       = null;
@@ -211,6 +213,9 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     return mapPanel;
   }
   
+  public boolean  unsavedChanges()                  { return unsavedChanges; }
+  public void     setUnsavedChanges(boolean value)  { unsavedChanges = value; }
+  
   /**
    * Return the tile array currently in use.
    */
@@ -293,6 +298,8 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
       
       // take the selected item off the panel.
       wrappedPanel.remove(selectedItem);
+      
+      setUnsavedChanges(true);
 
       unselectCurrentItem();
       revalidate();
@@ -387,6 +394,8 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     copiedLabel.setVisible(true);
     wrappedPanel.add(copiedLabel);
     wrappedPanel.repaint();
+    
+    setUnsavedChanges(true);
     
     copiedLabel.addMouseListener(passAlongListener);
   }

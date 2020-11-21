@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.prefs.Preferences;
 
@@ -21,7 +20,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -30,10 +28,9 @@ import javax.swing.border.BevelBorder;
 import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Draggable;
 import org.rc.vitruvius.model.DraggablePicture;
+import org.rc.vitruvius.model.FileHandler;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
-
-import rcutil.file.ExtensionFileFilter;
 
 /**
  * Panel for drag-n-drop Caesar III map planning, including ways to drag glyphs 
@@ -46,21 +43,28 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   public static void say(String s) { System.out.println(s); }
   public static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   private static final long serialVersionUID = 1L;
+  
+  private MainFrame           mainFrame               = null;
+  private UserMessageListener userMessageListener     = null;
 
   private JLabel              currentPictureLabel     = null;   // label of current picture, displayed upper left.
   private Icon                currentPictureLabelDefaultIcon = null;
   private String              currentPictureLabelDefaultText = I18n.getString("currentDragComponentDefaultLabelText");
   private DragNDropImagesPane mapPane                 = null;
-  private UserMessageListener userMessageListener     = null;
   private Preferences         applicationPreferences  = null;
+  
+  private FileHandler         fileHandler             = null;
+  private File                currentlyOpenFile       = null;
   
   /**
    * Create the DragNDrop panel
    */
-  public DragNDropPanel(UserMessageListener userMessageListener, Preferences applicationPreferences)
+  public DragNDropPanel(MainFrame mainFrame, UserMessageListener userMessageListener, Preferences applicationPreferences)
   {
     this.userMessageListener    = userMessageListener;
     this.applicationPreferences = applicationPreferences;
+    
+    this.fileHandler = new FileHandler(mainFrame);
     
     JPanel leftPanel   = createLeftPanel(); 
            mapPane     = new DragNDropImagesPane(this, userMessageListener);
@@ -285,6 +289,8 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     }
     repaint();
   }
+  
+  public boolean unsavedChanges() { return mapPane.unsavedChanges(); }
 
   // ================================= VitruviusActions methods =============================================
   
@@ -296,93 +302,140 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   @Override
   public void openFile()
   {
-    // TODO: consider a method (somewhere) that accepts necessary parameters for user to choose
-    // a file to save to; parameters would include:
-    // defaultPath
-    // defaultFolderName
-    // filter, or extension(s) for filter
-    // dialog title
-    // dialog button text
-    //
-    // would the method handle checking for existing file and warning of overwrite?
-    // would the method handle defaulting the extension and warning of overriding?
-    // 
     String defaultPath = System.getProperty("user.home");
     String defaultFolderName = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
-    JFileChooser chooser = new JFileChooser(defaultFolderName);
+    String defaultExtension = SAVED_TILE_FILE_FILENAME_EXTENSION;
     
-    ExtensionFileFilter saveFilter = new ExtensionFileFilter(SAVED_TILE_FILE_FILENAME_EXTENSION);
-    chooser.setFileFilter(saveFilter);
-    chooser.setDialogTitle(I18n.getString("fileOpenActionName"));
-    
+    String dialogTitle = I18n.getString("fileOpenActionName");
     String buttonText = I18n.getString("fileOpenDialogButtonText");
     
-    int fileChooseReturn = chooser.showDialog(this, buttonText);
-    if (fileChooseReturn == JFileChooser.APPROVE_OPTION)
+    FileHandler.FileChoice fileChoice = fileHandler.getFileToOpen(this, defaultFolderName, defaultExtension, dialogTitle, buttonText);
+    String message = null;
+    String filename = null;
+    if (!fileChoice.succeeded())
     {
-      File selectedFile = chooser.getSelectedFile();
+      userMessageListener.addMessage(fileChoice.getMessage());
+    }
+    else
+    {
+      try
+      {
+        File file = fileChoice.getFile();
+        filename = file.getCanonicalPath();
+        TileArray tileArray = TileArray.readFromFile(file);
+        mapPane.setTileArray(tileArray); 
+        saveFileInPreferences(file);
+        currentlyOpenFile = file;
+      }
+      catch (Exception e)
+      {
+        message = I18n.getString("errorOpeningFile", filename, e.getMessage());
+        userMessageListener.addMessage(message);
+      }
+    }     // end of if
+  }     // end of openFile()
+    
+  
+  /**
+   * Save this map to the file it came from; if there is no such map file, then
+   * convert to "save as" so the user can pick one.
+   */
+  public void saveFile()
+  {
+    if (currentlyOpenFile == null)
+    {
+      saveFileAs();
+    }
+    else
+    {
+      String filepath = "";
       try 
       { 
-        TileArray tileArray = TileArray.readFromFile(selectedFile);
-        mapPane.setTileArray(tileArray); 
+        filepath = currentlyOpenFile.getCanonicalPath();
+        saveCurrentTileArray(currentlyOpenFile); 
       }
-      catch (Exception exception) 
-      { 
-        String message;
-        try
-        {
-          message = I18n.getString("errorOpeningFile", selectedFile.getCanonicalPath());
-        }
-        catch (IOException ioe)
-        {
-          message = I18n.getString("errorOpeningFile");
-        }
-        String fullMessage = String.format("%s (%s)", message, exception.getMessage());
-        userMessageListener.addMessage(fullMessage);
-//        exception.printStackTrace(); 
+      catch (Exception e)
+      {
+        String message = I18n.getString("fileCouldNotBeSaved", filepath);
+        userMessageListener.addMessage(message);
       }
     }
   }
 
+  /**
+   * Save the current map to a file, including a file dialog allowing the user to choose
+   * the filename to save to.
+   */
   @Override
-  public void saveFile()
+  public void saveFileAs()
   {
     String resultMessage      = null;
     String defaultPath        = System.getProperty("user.home");
     String defaultFolderName  = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
-    JFileChooser chooser = new JFileChooser(defaultFolderName);
-    ExtensionFileFilter saveFilter = new ExtensionFileFilter(SAVED_TILE_FILE_FILENAME_EXTENSION);
-    chooser.setFileFilter(saveFilter);
-    chooser.setDialogTitle(I18n.getString("fileSaveActionName"));
-
-    String buttonText = I18n.getString("fileSaveDialogButtonText");
     
-    int fileChooseReturn = chooser.showDialog(this, buttonText);
-    if (fileChooseReturn == JFileChooser.APPROVE_OPTION)
+    FileHandler.FileChoice fileChoice = fileHandler.getFileToSave(this,  
+                                                                  defaultFolderName, 
+                                                                  SAVED_TILE_FILE_FILENAME_EXTENSION, 
+                                                                  I18n.getString("fileSaveActionName"), 
+                                                                  I18n.getString("fileSaveDialogButtonText")
+                                                                 );
+
+    if (!fileChoice.cancelled())
     {
-      File selectedFile = chooser.getSelectedFile();
-      String filename = "";
-      String filepath = "";
-      try 
-      { 
-        TileArray tileArray = mapPane.getTileArray();
-        tileArray.saveToFile(selectedFile);
-        // now that we've saved it, save the filename and directory for use later.
-        filename = selectedFile.getName();
-        filepath = selectedFile.getCanonicalPath();
-        applicationPreferences.put(SAVED_TILE_FILE_FILENAME_KEY, filename);
-        applicationPreferences.put(SAVED_TILE_FILE_DIRECTORY_KEY, filepath);
-        
-        // and let the user know that it's been saved
-        resultMessage = I18n.getString("fileSavedMessage", filepath);
+      if (!fileChoice.succeeded())
+      {
+        resultMessage = fileChoice.getMessage();
       }
-      catch (Exception exception) 
-      { 
-        resultMessage = I18n.getString("fileCouldNotBeSaved", filepath);
-        exception.printStackTrace(); 
+      else 
+      {
+        File selectedFile = fileChoice.getFile();
+        String filename = "";
+        String filepath = "";
+        try 
+        { 
+          saveCurrentTileArray(selectedFile);
+//          TileArray tileArray = mapPane.getTileArray();
+//          tileArray.saveToFile(selectedFile);
+          
+          saveFileInPreferences(selectedFile);
+          
+//          // now that we've saved it, save the filename and directory for use later.
+//          filename = selectedFile.getName();
+//          filepath = selectedFile.getCanonicalPath();
+//          applicationPreferences.put(SAVED_TILE_FILE_FILENAME_KEY, filename);
+//          applicationPreferences.put(SAVED_TILE_FILE_DIRECTORY_KEY, filepath);
+          
+          // and let the user know that it's been saved
+          resultMessage = I18n.getString("fileSavedMessage", filepath);
+          
+//          mapPane.setUnsavedChanges(false);
+//          currentlyOpenFile = selectedFile;
+        }
+        catch (Exception exception) 
+        { 
+          resultMessage = I18n.getString("fileCouldNotBeSaved", filepath);
+        }
       }
+      userMessageListener.addMessage(resultMessage);
     }
-    userMessageListener.addMessage(resultMessage);
+    
+  }
+  
+  private void saveFileInPreferences(File selectedFile) throws Exception
+  {
+    // now that we've saved it, save the filename and directory for use later.
+    String filename = selectedFile.getName();
+    String filepath = selectedFile.getCanonicalPath();
+    applicationPreferences.put(SAVED_TILE_FILE_FILENAME_KEY, filename);
+    applicationPreferences.put(SAVED_TILE_FILE_DIRECTORY_KEY, filepath);
+  }
+  
+  private void saveCurrentTileArray(File saveFile) throws Exception
+  {
+    TileArray tileArray = mapPane.getTileArray();
+    tileArray.saveToFile(saveFile);
+    mapPane.setUnsavedChanges(false);
+    currentlyOpenFile = saveFile;
   }
 
   @Override

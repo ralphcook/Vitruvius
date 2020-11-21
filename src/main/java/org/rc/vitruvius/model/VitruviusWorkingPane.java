@@ -16,10 +16,16 @@ public interface VitruviusWorkingPane
   public void     openFile();
   
   /**
+   * Save the information from the current pane to the file from which it was read;
+   * if there is no such file, have the user pick one as in SaveFileAs().
+   */
+  public void     saveFile();
+  
+  /**
    * Save the information from the current pane to a file
    * specified by the user.
    */
-  public void     saveFile();
+  public void     saveFileAs();
   
   /**
    * Clear the current pane's information, leaving a blank pane.

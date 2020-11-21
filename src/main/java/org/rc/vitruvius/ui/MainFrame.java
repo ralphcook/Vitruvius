@@ -13,10 +13,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.rc.vitruvius.UserMessageListener;
+import org.rc.vitruvius.model.FileHandler;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
-import org.rc.vitruvius.ui.actions.FileCloseAction;
-import org.rc.vitruvius.ui.actions.FileOpenAction;
-import org.rc.vitruvius.ui.actions.FileSaveAction;
+import org.rc.vitruvius.ui.actions.ImageClearAction;
 
 import rcutil.swing.SavedWindowPositionJFrame;
 
@@ -39,7 +38,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
   // recieves the messages to put there.
   private JTextArea   messagesTextArea  = null;
   
-  // holds a reference to the current tabbed pane
+  // holds a reference to the current tabbed pane; will be either dragNDropPanel or glyphyToolPanel
   private VitruviusWorkingPane   currentWorkingPane       = null;
   public  VitruviusWorkingPane   getCurrentWorkingPane() { return currentWorkingPane; }
   public  void                   setCurrentWorkingPane(VitruviusWorkingPane pane) { currentWorkingPane = pane; }
@@ -66,7 +65,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     setJMenuBar(menuBar);
     
     JTabbedPane tabbedPane = new JTabbedPane();
-    dragNDropPanel  = new DragNDropPanel(this, applicationPreferences);
+    dragNDropPanel  = new DragNDropPanel(this, this, applicationPreferences);
     glyphyToolPanel = new GlyphyToolPanel(this);
  
     tabbedPane.addTab(I18n.getString("dragNDropTabbedPaneLabelText"),   dragNDropPanel);
@@ -106,9 +105,11 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     
     JMenu fileMenu = getI18nJMenu("fileMenuName", "fileMenuMnemonicKey");
 
-    fileMenu.add(new JMenuItem(new FileOpenAction(this)));
-    fileMenu.add(new JMenuItem(new FileSaveAction(this)));
-    fileMenu.add(new JMenuItem(new FileCloseAction(this)));
+    FileHandler fileHandler = new FileHandler(this);
+    fileMenu.add(new JMenuItem(fileHandler.getOpenAction()));
+    fileMenu.add(new JMenuItem(fileHandler.getSaveAction()));
+    fileMenu.add(new JMenuItem(fileHandler.getSaveAsAction()));
+    fileMenu.add(new JMenuItem(new ImageClearAction(this)));
     
 //    AbstractAction fileOpenAction = new FileOpenAction(this, applicationPreferences);
 //    
@@ -160,5 +161,17 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
    * Clear the user messages area.
    */
   public void clearMessages()               { messagesTextArea.setText(""); }
+  
+  /**
+   * Return true/false indicating whether there are unsaved changes on either working pane.
+   * @return
+   */
+  public boolean unsavedChanges()
+  {
+    boolean result = false;
+    result = dragNDropPanel.unsavedChanges();
+    if (!result) { result = glyphyToolPanel.unsavedChanges(); }
+    return result;
+  }
   
 }
