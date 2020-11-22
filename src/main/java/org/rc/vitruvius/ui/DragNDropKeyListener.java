@@ -24,6 +24,7 @@ public class DragNDropKeyListener extends KeyAdapter
     int keyChar = event.getKeyChar();
     switch (keyChar)
     {
+    case KeyEvent.VK_BACK_SPACE:
     case KeyEvent.VK_DELETE:
       imagesPane.deleteSelectedItem();
       break;

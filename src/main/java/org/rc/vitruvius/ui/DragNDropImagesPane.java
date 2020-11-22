@@ -355,13 +355,17 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
    */
   private Point getDraggedComponentIndexPoint(int x, int y)
   {
-    Dimension d = draggableJLabel.getSize();
-    int xOffset = d.width / 2;
-    int yOffset = d.height / 2;
-    int xTile = (x - xOffset) / tileSize;
-    int yTile = (y - yOffset) / tileSize;
-    int newX = xTile * tileSize;
-    int newY = yTile * tileSize;
+    TileArray draggableItemTileArray = draggableItem.getTileArray();
+    int width = draggableItemTileArray.columns();
+    int height = draggableItemTileArray.rows();
+
+    int cursorXTile = x / tileSize;   //  row and column indices 
+    int cursorYTile = y / tileSize;   //  of tile containing cursor
+        cursorXTile -= width/2;       // adjustment for width of draggable.
+        cursorYTile -= height/2;      //   and height
+
+    int newX = cursorXTile * tileSize;  // upper left corner coordinates  
+    int newY = cursorYTile * tileSize;  // of upper left tile for glyph
     
     return new Point(newX, newY);
   }
@@ -454,7 +458,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     glassPanel.setVisible(true);
     glassPanel.requestFocusInWindow();
     glassPanel.setFocusTraversalKeysEnabled(false);
-    glassPanel.setCursor(blankCursor);
+//    glassPanel.setCursor(blankCursor);
   }
   
   /**
@@ -467,7 +471,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
       remove(draggableJLabel);
       draggableJLabel = null; 
       glassPanel.setVisible(false);
-      glassPanel.setCursor(null);
+//      glassPanel.setCursor(null);
     }
   }
   

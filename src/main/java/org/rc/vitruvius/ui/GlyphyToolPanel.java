@@ -141,6 +141,9 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   @Override public void insertUpdate(DocumentEvent e)  {    setDirtyText(true);  }
   @Override public void removeUpdate(DocumentEvent e)  {    setDirtyText(true);  }
   @Override public void changedUpdate(DocumentEvent e) { }
+  
+  // Vitrovius Working Pane methods
+  @Override public String getDisplayName() { return I18n.getString("glyphyToolPaneName"); }
   @Override
   public void openFile()
   {

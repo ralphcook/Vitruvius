@@ -9,6 +9,12 @@ package org.rc.vitruvius.model;
 public interface VitruviusWorkingPane
 {
   /**
+   *   
+   * @return
+   */
+  public String getDisplayName();
+  
+  /**
    * Get a file specification from the user to open
    * and display on the current pane.
    * @return

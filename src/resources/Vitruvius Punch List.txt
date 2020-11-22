@@ -24,9 +24,16 @@ Help
 *	program help
 *	credits / about
 
-Set up key bindings for hot keys.
+from Bianca:
+	*put the cursor back on the screen when dragging a building.
+	*scrollable left pane on DnD
+	*additional button for deleting, maybe backspace
+	*first item in dropdowns somehow? selecting top one twice seems weird.
+	*right-click not easy on map, make another way to do that. Escape?
+	drag buildings already on map.
+	
 
-When right-click clears the current glyph, clear from left panel
+Set up key bindings for hot keys.
 
 Consider key bindings instead of key listener dependent on focus.
 

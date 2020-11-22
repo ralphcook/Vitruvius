@@ -21,9 +21,13 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 
 import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Draggable;
@@ -44,7 +48,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   public static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   private static final long serialVersionUID = 1L;
   
-  private MainFrame           mainFrame               = null;
+//  private MainFrame           mainFrame               = null;
   private UserMessageListener userMessageListener     = null;
 
   private JLabel              currentPictureLabel     = null;   // label of current picture, displayed upper left.
@@ -69,8 +73,9 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     JPanel leftPanel   = createLeftPanel(); 
            mapPane     = new DragNDropImagesPane(this, userMessageListener);
     
+    JScrollPane leftScrollPane = new JScrollPane(leftPanel);
     setLayout(new BorderLayout());
-    add(leftPanel, BorderLayout.WEST);
+    add(leftScrollPane, BorderLayout.WEST);
     add(mapPane, BorderLayout.CENTER);
     
     addKeyListener(new DragNDropKeyListener(mapPane));
@@ -105,8 +110,12 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   private JPanel createPictureDropdownsPanel()
   {
     JPanel panel = new JPanel();
-    panel.setLayout(new NonUniformGridLayout(0,2,10,5));   // rows and columns for categories and picture dropdowns
-    panel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
+    panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+//    panel.getInsets().set(3, 3, 3, 15);   // didn't work, p'bly because of borderlayout
+    Border bevelBorder = BorderFactory.createSoftBevelBorder(BevelBorder.RAISED);
+    Border emptyBorder = BorderFactory.createEmptyBorder(3, 3, 3, 15);
+    Border compoundBorder = new CompoundBorder(emptyBorder, bevelBorder);
+    panel.setBorder(compoundBorder);
     
     addDropdown(panel, "roads", Picture.road, Picture.plaza, Picture.garden);                                                     // 3
     addDropdown(panel, "houses", Picture.house1, Picture.house2, Picture.house3, Picture.palace);                                 // 4
@@ -141,9 +150,10 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
    */
   private void addDropdown(Container panel, String categoryKey, Picture... pictures)
   {
-    JLabel label = new JLabel(I18n.getString(categoryKey));
-    JComboBox<Picture> cbox = createPictureComboBox(pictures);
-    panel.add(label);
+    String categoryName = I18n.getString(categoryKey);
+//    JLabel label = new JLabel(categoryName);
+    JComboBox<Object> cbox = createPictureComboBox(categoryName, pictures);
+//    panel.add(label);
     panel.add(cbox);
   }
   
@@ -153,24 +163,26 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
    * @param list
    * @return
    */
-  private JComboBox<Picture> createPictureComboBox(Picture[] list)
+  private JComboBox<Object> createPictureComboBox(String label, Picture[] list)
   {
-    JComboBox<Picture> cBox = new JComboBox<>();
-    
+    JComboBox<Object> cBox = new JComboBox<>();
+    cBox.addItem(label);
     for (Picture p: list) { cBox.addItem(p); }
     
     cBox.addActionListener(new ActionListener()
                             {
                               public void actionPerformed(ActionEvent e)
                               {
-                                Object o = e.getSource();
-                                @SuppressWarnings("unchecked")
-                                JComboBox<Picture> cBox = (JComboBox<Picture>)o;
-                                Picture p = (Picture) cBox.getSelectedItem();
-                                DraggablePicture draggablePicture = new DraggablePicture(p);
-                                GlyphSelectionEvent gsEvent = new GlyphSelectionEvent(this, "select", draggablePicture);
-//                                setCurrentPicture(draggablePicture);
-                                fireGlyphSelectionEvent(gsEvent);
+                                Object selectedItem = cBox.getSelectedItem();
+                                if (selectedItem instanceof Picture)
+                                {
+                                  @SuppressWarnings("unchecked")
+                                  Picture selectedPicture = (Picture) selectedItem;
+                                  DraggablePicture draggablePicture = new DraggablePicture(selectedPicture);
+                                  GlyphSelectionEvent gsEvent = new GlyphSelectionEvent(this, "select", draggablePicture);
+                                  fireGlyphSelectionEvent(gsEvent);
+                                  cBox.setSelectedIndex(0);
+                                }
                               }
                             }
                           );
@@ -298,41 +310,54 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   public static String        SAVED_TILE_FILE_FILENAME_KEY    = "savedOpenFileFilename";
   public static String        SAVED_TILE_FILE_FILENAME_EXTENSION = "tiles";
   
-
+  @Override public String getDisplayName() { return I18n.getString("dragNDropPaneName"); }
+  
   @Override
   public void openFile()
   {
-    String defaultPath = System.getProperty("user.home");
-    String defaultFolderName = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
-    String defaultExtension = SAVED_TILE_FILE_FILENAME_EXTENSION;
-    
-    String dialogTitle = I18n.getString("fileOpenActionName");
-    String buttonText = I18n.getString("fileOpenDialogButtonText");
-    
-    FileHandler.FileChoice fileChoice = fileHandler.getFileToOpen(this, defaultFolderName, defaultExtension, dialogTitle, buttonText);
-    String message = null;
-    String filename = null;
-    if (!fileChoice.succeeded())
+    // if there are unsaved changes, ask about wiping them.
+    int option = JOptionPane.YES_OPTION;
+    if (unsavedChanges())
     {
-      userMessageListener.addMessage(fileChoice.getMessage());
+      String message = I18n.getString("unsavedChangesOnePanelMessage", getDisplayName());
+      String title   = I18n.getString("unsavedChangesDialogTitle");
+      option = JOptionPane.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION);
     }
-    else
+    if (option == JOptionPane.YES_OPTION)
     {
-      try
+      String defaultPath = System.getProperty("user.home");
+      String defaultFolderName = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
+      String defaultExtension = SAVED_TILE_FILE_FILENAME_EXTENSION;
+      
+      String dialogTitle = I18n.getString("fileOpenActionName");
+      String buttonText = I18n.getString("fileOpenDialogButtonText");
+      
+      FileHandler.FileChoice fileChoice = fileHandler.getFileToOpen(this, defaultFolderName, defaultExtension, dialogTitle, buttonText);
+      String message = null;
+      String filename = null;
+      if (!fileChoice.cancelled())
       {
-        File file = fileChoice.getFile();
-        filename = file.getCanonicalPath();
-        TileArray tileArray = TileArray.readFromFile(file);
-        mapPane.setTileArray(tileArray); 
-        saveFileInPreferences(file);
-        currentlyOpenFile = file;
+        if (!fileChoice.succeeded())
+        {
+          userMessageListener.addMessage(fileChoice.getMessage());
+        } else
+        {
+          try
+          {
+            File file = fileChoice.getFile();
+            filename = file.getCanonicalPath();
+            TileArray tileArray = TileArray.readFromFile(file);
+            mapPane.setTileArray(tileArray);
+            saveFileInPreferences(file);
+            currentlyOpenFile = file;
+          } catch (Exception e)
+          {
+            message = I18n.getString("errorOpeningFile", filename, e.getMessage());
+            userMessageListener.addMessage(message);
+          }
+        } // end of if
       }
-      catch (Exception e)
-      {
-        message = I18n.getString("errorOpeningFile", filename, e.getMessage());
-        userMessageListener.addMessage(message);
-      }
-    }     // end of if
+    }
   }     // end of openFile()
     
   
@@ -389,27 +414,12 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
       else 
       {
         File selectedFile = fileChoice.getFile();
-        String filename = "";
         String filepath = "";
         try 
         { 
           saveCurrentTileArray(selectedFile);
-//          TileArray tileArray = mapPane.getTileArray();
-//          tileArray.saveToFile(selectedFile);
-          
           saveFileInPreferences(selectedFile);
-          
-//          // now that we've saved it, save the filename and directory for use later.
-//          filename = selectedFile.getName();
-//          filepath = selectedFile.getCanonicalPath();
-//          applicationPreferences.put(SAVED_TILE_FILE_FILENAME_KEY, filename);
-//          applicationPreferences.put(SAVED_TILE_FILE_DIRECTORY_KEY, filepath);
-          
-          // and let the user know that it's been saved
           resultMessage = I18n.getString("fileSavedMessage", filepath);
-          
-//          mapPane.setUnsavedChanges(false);
-//          currentlyOpenFile = selectedFile;
         }
         catch (Exception exception) 
         { 

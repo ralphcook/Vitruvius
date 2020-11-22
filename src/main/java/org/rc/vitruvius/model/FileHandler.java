@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -183,6 +182,7 @@ public class FileHandler
         {
           fileChoice = FileChoice.createCancelledFileChoice();
         }
+        else
         {
           try 
           { 
