@@ -2,8 +2,10 @@ package org.rc.vitruvius.ui;
 
 import java.awt.Dimension;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.EtchedBorder;
 
 import org.rc.vitruvius.model.Tile;
 import org.rc.vitruvius.model.TileArray;
@@ -14,26 +16,36 @@ import org.rc.vitruvius.model.TileRow;
  * @author rcook
  *
  */
-public class ImagesPanel extends JPanel // implements MouseListener, MouseMotionListener
+public class MapPanel extends JPanel // implements MouseListener, MouseMotionListener
 {
   private static final long serialVersionUID = 1L;
   
   int         tileSize = -1;      // # of pixels per tile edge
+  Dimension   currentTileSize;    // number of rows and columns of tiles for the current panel size.
   TileArray   tileArray = null;   // new form of pictures array
   public TileArray getTileArray() { return tileArray; }
   
-  public ImagesPanel()
+  public MapPanel(int tileSize)
   {
-    Dimension dimension = new Dimension(150,150);
-    setPreferredSize(dimension);
-    setSize(dimension);
+    this.tileSize = tileSize;
+    // set default size of map at 100x100 tiles
+    int defaultColumns  = 100;
+    int defaultRows     = 100;
+    tileArray = new TileArray();
+    currentTileSize = new Dimension(defaultRows, defaultColumns);
+    Dimension pixelSize = new Dimension(defaultRows*tileSize, defaultColumns*tileSize);
+    setAllPanelSizes(pixelSize);
     setLayout(null);
+    
+    setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
   }
   
-  public ImagesPanel(int tileSize)
+  private void setAllPanelSizes(Dimension pixelSize)
   {
-    this();
-    this.tileSize = tileSize;
+    setPreferredSize(pixelSize);
+    setSize(pixelSize);
+    setMinimumSize(pixelSize);
+    setMaximumSize(pixelSize);
   }
 
   /**
@@ -89,6 +101,8 @@ public class ImagesPanel extends JPanel // implements MouseListener, MouseMotion
    */
   private void drawTileArray(TileArray tileArray)
   {
+    removeAll();
+    this.tileArray = tileArray;
     if (tileArray != null)
     {
       int rowNumber = 0;
@@ -111,6 +125,43 @@ public class ImagesPanel extends JPanel // implements MouseListener, MouseMotion
         rowNumber++;
       }
     }
+
+    
+// the following is the "setTileArray(TileArray)" code from a previous version of 
+// DragNDropImagesPane, which did not use this class. I'm converting over for that pane/panel
+// to use this class instead, and having this one handle the tilearray-on-a-panel operations
+// for both drag-and-drop and glyphy functionality. Based on this code, I added (1)
+// assignment of tileArray to this instance var, and (2) removal of any existing components before
+// starting the creation and drawing of picture labels.
+    
+//    wrappedPanel.removeAll();
+//    this.tileArray = tileArray;
+//    int rowNumber = 0;
+//    for (TileRow tileRow: tileArray)
+//    {
+//      int colNumber = 0;
+//      for (Tile tile: tileRow)
+//      {
+//        if (tile != null && tile.type() == Tile.Type.PICTURE)
+//        {
+//          Picture picture = tile.picture();
+//          JLabel label = picture.getLabel(tileSize);
+//          int x = colNumber * tileSize;
+//          int y = rowNumber * tileSize;
+//          label.setLocation(x,y);
+//          label.setVisible(true);
+//          wrappedPanel.add(label);
+//        }
+//        colNumber++;
+//      }
+//      rowNumber++;
+//    }
+//    wrappedPanel.invalidate();
+//    wrappedPanel.repaint();
+//    invalidate();
+//    repaint();
+    
+    
 //    invalidate();     // TODO: figure out if this is necessary; caller liable to invalidate higher-level things anyway.
                       // Include repaint/invalidate decisions in javadoc.
   }

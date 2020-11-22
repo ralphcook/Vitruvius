@@ -54,7 +54,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   private JLabel              currentPictureLabel     = null;   // label of current picture, displayed upper left.
   private Icon                currentPictureLabelDefaultIcon = null;
   private String              currentPictureLabelDefaultText = I18n.getString("currentDragComponentDefaultLabelText");
-  private DragNDropImagesPane mapPane                 = null;
+  private DragNDropImagesPane layeredPane             = null;
   private Preferences         applicationPreferences  = null;
   
   private FileHandler         fileHandler             = null;
@@ -71,14 +71,15 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     this.fileHandler = new FileHandler(mainFrame);
     
     JPanel leftPanel   = createLeftPanel(); 
-           mapPane     = new DragNDropImagesPane(this, userMessageListener);
+           layeredPane = new DragNDropImagesPane(this, userMessageListener);
     
     JScrollPane leftScrollPane = new JScrollPane(leftPanel);
+    JScrollPane middleScrollPane = new JScrollPane(layeredPane);
     setLayout(new BorderLayout());
     add(leftScrollPane, BorderLayout.WEST);
-    add(mapPane, BorderLayout.CENTER);
+    add(middleScrollPane, BorderLayout.CENTER);
     
-    addKeyListener(new DragNDropKeyListener(mapPane));
+    addKeyListener(new DragNDropKeyListener(layeredPane));
     addGlyphSelectionListener(this);
   }
   
@@ -111,7 +112,6 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   {
     JPanel panel = new JPanel();
     panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-//    panel.getInsets().set(3, 3, 3, 15);   // didn't work, p'bly because of borderlayout
     Border bevelBorder = BorderFactory.createSoftBevelBorder(BevelBorder.RAISED);
     Border emptyBorder = BorderFactory.createEmptyBorder(3, 3, 3, 15);
     Border compoundBorder = new CompoundBorder(emptyBorder, bevelBorder);
@@ -302,7 +302,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     repaint();
   }
   
-  public boolean unsavedChanges() { return mapPane.unsavedChanges(); }
+  public boolean unsavedChanges() { return layeredPane.unsavedChanges(); }
 
   // ================================= VitruviusActions methods =============================================
   
@@ -347,7 +347,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
             File file = fileChoice.getFile();
             filename = file.getCanonicalPath();
             TileArray tileArray = TileArray.readFromFile(file);
-            mapPane.setTileArray(tileArray);
+            layeredPane.setTileArray(tileArray);
             saveFileInPreferences(file);
             currentlyOpenFile = file;
           } catch (Exception e)
@@ -394,7 +394,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   @Override
   public void saveFileAs()
   {
-    TileArray tileArray = mapPane.getTileArray();
+    TileArray tileArray = layeredPane.getTileArray();
     if (tileArray.isEmpty())
     {
       JOptionPane.showMessageDialog(this, I18n.getString("noTilesMessage"), I18n.getString("noTilesTitle"), JOptionPane.INFORMATION_MESSAGE);
@@ -451,9 +451,9 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   
   private void saveCurrentTileArray(File saveFile) throws Exception
   {
-    TileArray tileArray = mapPane.getTileArray();
+    TileArray tileArray = layeredPane.getTileArray();
     tileArray.saveToFile(saveFile);
-    mapPane.setUnsavedChanges(false);
+    layeredPane.setUnsavedChanges(false);
     currentlyOpenFile = saveFile;
   }
 

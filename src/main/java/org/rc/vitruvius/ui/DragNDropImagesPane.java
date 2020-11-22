@@ -2,15 +2,10 @@ package org.rc.vitruvius.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -19,9 +14,7 @@ import javax.swing.JPanel;
 
 import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Draggable;
-import org.rc.vitruvius.model.Tile;
 import org.rc.vitruvius.model.TileArray;
-import org.rc.vitruvius.model.TileRow;
 
 /**
  * This wrapper extends JLayeredPane, primarily so we can 'drag' a component above everything
@@ -37,7 +30,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
   public static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   
   private static final long serialVersionUID = 1L;
-  private JPanel              wrappedPanel          = null;
+  private MapPanel            wrappedPanel          = null;
   private JPanel              glassPanel            = new JPanel();
   
   private Draggable           draggableItem         = null;     // item being dragged
@@ -45,9 +38,9 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
                                                                 // it is specific to tileSize, needs recalc if that changes
                                                                 // (or if we get a new draggable item)
 
-  private TileArray           tileArray             = null;
+//  private TileArray           tileArray             = null;   // TODO: move all tile array type operations down to
+                                                                //   the MapPanel.
   
-  private Cursor              blankCursor           = null;
   private int                 tileSize              = 25;     // TODO: get the actual tileSize from the main panel into this instance, and to change it.
   
   private JLabel              selectedItem          = null;
@@ -63,17 +56,12 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     glyphSelectionGenerator.addGlyphSelectionListener(this);
     this.userMessageListener = givenListener;
     
-    wrappedPanel = createWrappedPanel();
-    tileArray = new TileArray();
+    wrappedPanel = new MapPanel(tileSize); // createWrappedPanel();
+//    tileArray = new TileArray();
 
-    // Transparent 16 x 16 pixel 'blank cursor' image.
-    BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-    blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-    
     glassPanel.setOpaque(false);
     glassPanel.setVisible(false);
     glassPanel.setFocusable(true);
-    glassPanel.setBorder(BorderFactory.createLineBorder(Color.red));
     
     glassPanel.addMouseMotionListener
     (new MouseAdapter() 
@@ -156,7 +144,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     );
 
     Dimension wrappedPanelSize = wrappedPanel.getPreferredSize();
-    wrappedPanel.setSize(wrappedPanel.getPreferredSize());
+//    wrappedPanel.setSize(wrappedPanel.getPreferredSize());    // TODO: now that wrappedPanel is a MapPanel, this is unneeded.
 
     add(wrappedPanel, JLayeredPane.DEFAULT_LAYER);
     add(glassPanel, JLayeredPane.PALETTE_LAYER);
@@ -166,21 +154,21 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
 
     setPreferredSize(wrappedPanel.getPreferredSize());
 
-    addComponentListener                                    // TODO: when we implement size <> window size, delete this.
-    (
-        // when this (the layered pane) gets a resize event,
-        // resize the panel it contains to the same size.
-        new ComponentAdapter()
-        {
-          @Override public void componentResized(ComponentEvent e)
-          {
-            Component c = e.getComponent();
-            Dimension size = c.getSize();
-            setAllComponentSizes(wrappedPanel, size);
-            setAllComponentSizes(glassPanel, size);
-          }
-        }
-    );
+//    addComponentListener                                    // TODO: when we implement size <> window size, delete this.
+//    (
+//        // when this (the layered pane) gets a resize event,
+//        // resize the panel it contains to the same size.
+//        new ComponentAdapter()
+//        {
+//          @Override public void componentResized(ComponentEvent e)
+//          {
+//            Component c = e.getComponent();
+//            Dimension size = c.getSize();
+//            setAllComponentSizes(wrappedPanel, size);
+//            setAllComponentSizes(glassPanel, size);
+//          }
+//        }
+//    );
     
     addKeyListener(new DragNDropKeyListener(this));
     
@@ -195,23 +183,23 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     repaint();
   }
   
-  /**
-   * Create the JPanel that is 'wrapped' by this JLayeredPane; this is the
-   * panel that will be the parent of the JLabel objects holding the glyphs.
-   * @return
-   */
-  public JPanel createWrappedPanel()
-  {
-    JPanel mapPanel = new JPanel();
-    mapPanel.setLayout(null);
-    // TODO: figure out why this sizing is still needed.
-    Dimension mapSize = new Dimension(400,400);
-    mapPanel.setSize(mapSize);
-    mapPanel.setPreferredSize(mapSize);
-    mapPanel.setMaximumSize(mapSize);
-    mapPanel.setBorder(BorderFactory.createLineBorder(Color.green, 3));
-    return mapPanel;
-  }
+//  /**
+//   * Create the JPanel that is 'wrapped' by this JLayeredPane; this is the
+//   * panel that will be the parent of the JLabel objects holding the glyphs.
+//   * @return
+//   */
+//  public JPanel createWrappedPanel()
+//  {
+//    JPanel mapPanel = new JPanel();
+//    mapPanel.setLayout(null);
+//    // TODO: figure out why this sizing is still needed.
+//    Dimension mapSize = new Dimension(400,400);
+//    mapPanel.setSize(mapSize);
+//    mapPanel.setPreferredSize(mapSize);
+//    mapPanel.setMaximumSize(mapSize);
+//    mapPanel.setBorder(BorderFactory.createLineBorder(Color.green, 3));
+//    return mapPanel;
+//  }
   
   public boolean  unsavedChanges()                  { return unsavedChanges; }
   public void     setUnsavedChanges(boolean value)  { unsavedChanges = value; }
@@ -219,7 +207,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
   /**
    * Return the tile array currently in use.
    */
-  public TileArray getTileArray() { return tileArray; }
+  public TileArray getTileArray() { return wrappedPanel.getTileArray(); }
   
   /**
    * Set the given tile Array as the current one, and display it.
@@ -227,32 +215,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
    */
   public void setTileArray(TileArray tileArray)
   {
-    wrappedPanel.removeAll();
-    this.tileArray = tileArray;
-    int rowNumber = 0;
-    for (TileRow tileRow: tileArray)
-    {
-      int colNumber = 0;
-      for (Tile tile: tileRow)
-      {
-        if (tile != null && tile.type() == Tile.Type.PICTURE)
-        {
-          Picture picture = tile.picture();
-          JLabel label = picture.getLabel(tileSize);
-          int x = colNumber * tileSize;
-          int y = rowNumber * tileSize;
-          label.setLocation(x,y);
-          label.setVisible(true);
-          wrappedPanel.add(label);
-        }
-        colNumber++;
-      }
-      rowNumber++;
-    }
-    wrappedPanel.invalidate();
-    wrappedPanel.repaint();
-    invalidate();
-    repaint();
+    wrappedPanel.setTileArray(tileArray);
   }
   
   @SuppressWarnings("unused")
@@ -294,7 +257,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
       // get the tile position of the selected item.
       Point graphicsIndex = selectedItem.getLocation();
       Point indexTile = calculateIndexTile(graphicsIndex); 
-      tileArray.deletePictureTiles(indexTile);
+      wrappedPanel.getTileArray().deletePictureTiles(indexTile);
       
       // take the selected item off the panel.
       wrappedPanel.remove(selectedItem);
@@ -321,9 +284,9 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     
     // check on whether draggable tile array will go onto the main tile array.
     TileArray draggedTileArray = draggableItem.getTileArray();
-    if (tileArray.accepts(draggedTileArray, tilePoint))
+    if (wrappedPanel.getTileArray().accepts(draggedTileArray, tilePoint))
     {
-      tileArray.put(draggedTileArray, tilePoint);
+      wrappedPanel.getTileArray().put(draggedTileArray, tilePoint);
     }
     else 
     {

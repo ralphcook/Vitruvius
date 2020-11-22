@@ -39,7 +39,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
 //  private MainFrame   mainFrame         = null;
   
   private JTextArea   textMapTextArea   = null;     // contains text representing a portion of a map
-  private ImagesPanel imagesPanel       = null;     // contains images representing a portion of a map
+  private MapPanel imagesPanel       = null;     // contains images representing a portion of a map
   private JButton     generateImageButton = null;   // generates the image on the images panel;
   // disabled when activated, enabled when text changes.
 //  private TextTranslator textTranslator = null;
@@ -65,7 +65,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
     JScrollPane textMapScrollPane = new JScrollPane(textMapTextArea);
     
     // create a panel where we'll display a resulting set of map images
-    imagesPanel = new ImagesPanel(25);
+    imagesPanel = new MapPanel(25);
     JScrollPane imagesScrollPane = new JScrollPane(imagesPanel);
     
     // the text area and the images panel go in a split pane so the user

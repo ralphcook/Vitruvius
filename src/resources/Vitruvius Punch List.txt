@@ -1,7 +1,9 @@
 Vitruvius punch list.
 ---------------------
 
-get the map images panel sizing straightened out. We might need to display it
+prevent writing in the messages text area -- perhaps provide a way to clear it of text entirely.
+
+*get the map images panel sizing straightened out. We might need to display it
 as an x-by-y tile count or something. 
 
 Menu bar: '*' for menus applying to both working panes, 'G' for glyphy tool only.
@@ -37,7 +39,7 @@ from Bianca:
 
 *Consider key bindings instead of key listener dependent on focus.
 
-implement image panel sizing, with scroll bars where necessary. 
+*implement image panel sizing, with scroll bars where necessary. 
 
 implement clicking-and-dragging glyphs already on the panel
 
@@ -68,7 +70,7 @@ Larger font for messages text panel.
 
 There's something funny about the messages text panel sizing / scroll bars
 
-+implement scrolledpane for left and middle DnD panels
+*implement scrolledpane for left and middle DnD panels
 
 *if a file is opened, make that file default for saving.
 
