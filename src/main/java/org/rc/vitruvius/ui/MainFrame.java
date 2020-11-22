@@ -1,6 +1,7 @@
 package org.rc.vitruvius.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.util.prefs.Preferences;
 
 import javax.swing.Action;
@@ -83,6 +84,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     tabbedPane.addTab(I18n.getString("glyphyToolTabbedPaneLabelText"), glyphyToolPanel);
     
     messagesTextArea = new JTextArea(5, 80);
+    messagesTextArea.setFont(new Font("Arial", Font.BOLD, 14));    // new Font(Font.MONOSPACED, 20, Font.PLAIN);
     JScrollPane messagesScrollPane = new JScrollPane(messagesTextArea);
     
     add(tabbedPane, BorderLayout.CENTER);

@@ -33,9 +33,9 @@ from Bianca:
 	drag buildings already on map.
 	
 
-Set up key bindings for hot keys.
+*Set up key bindings for hot keys.
 
-Consider key bindings instead of key listener dependent on focus.
+*Consider key bindings instead of key listener dependent on focus.
 
 implement image panel sizing, with scroll bars where necessary. 
 
@@ -61,20 +61,20 @@ Button to clear panel?
 
 glyphs to add: well, aqueduct(h&v), boatyard
 
-track whether image being built has changed since last read/write,
+*track whether image being built has changed since last read/write,
 warn on exit/read
 
 Larger font for messages text panel.
 
 There's something funny about the messages text panel sizing / scroll bars
 
-implement scrolledpane for left and middle DnD panels
++implement scrolledpane for left and middle DnD panels
 
-if a file is opened, make that file default for saving.
+*if a file is opened, make that file default for saving.
 
-might separate 'file save' from 'file save as'
+*might separate 'file save' from 'file save as'
 
-idea: FileAction class, with action names for save, open, saveAs
+*idea: FileAction class, with action names for save, open, saveAs
 
-idea: FileHandling class, an instance could hold current files,
+*idea: FileHandling class, an instance could hold current files,
 most recent files, etc.

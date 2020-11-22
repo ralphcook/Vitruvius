@@ -135,6 +135,21 @@ public class TileRow implements Iterable<Tile>
   }
   
   /**
+   * return true iff there are no non-empty tiles in this row
+   * @return
+   */
+  public boolean isEmpty()
+  {
+    boolean result = true;
+    for (Tile tile: row)
+    {
+      result = (tile == null) || tile.type() == Tile.Type.EMPTY;
+      if (!result) break;
+    }
+    return result;
+  }
+  
+  /**
    * Return the iterator for this TileRow.
    */
   @Override

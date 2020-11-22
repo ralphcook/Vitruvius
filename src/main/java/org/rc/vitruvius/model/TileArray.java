@@ -369,6 +369,21 @@ public class TileArray implements Iterable<TileRow>
   }
   
   /**
+   * Return true iff there are no non-empty tiles in this array.
+   * @return
+   */
+  public boolean isEmpty()
+  {
+    boolean result = true;
+    for (TileRow row: tileRows)
+    {
+      result = row.isEmpty();
+      if (!result) break;
+    }
+    return result;
+  }
+  
+  /**
    * Return an iterator over the rows in the TileArray.
    */
   @Override

@@ -7,7 +7,7 @@ import java.util.ResourceBundle;
 public class I18n
 {
   private static ResourceBundle bundle = ResourceBundle.getBundle("MessagesBundle");
-  
+  private static String newLine = String.format("%n");
   /**
    * Get the resources value associated with the given key for the current
    * default locale. If the resource is not available, print a message to
@@ -22,6 +22,7 @@ public class I18n
     try
     {
       value = bundle.getString(key);
+      value = value.replace("\\n", newLine);
     }
     catch (MissingResourceException mre)
     {

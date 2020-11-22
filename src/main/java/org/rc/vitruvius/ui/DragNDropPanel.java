@@ -394,39 +394,48 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   @Override
   public void saveFileAs()
   {
-    String resultMessage      = null;
-    String defaultPath        = System.getProperty("user.home");
-    String defaultFolderName  = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
-    
-    FileHandler.FileChoice fileChoice = fileHandler.getFileToSave(this,  
-                                                                  defaultFolderName, 
-                                                                  SAVED_TILE_FILE_FILENAME_EXTENSION, 
-                                                                  I18n.getString("fileSaveActionName"), 
-                                                                  I18n.getString("fileSaveDialogButtonText")
-                                                                 );
-
-    if (!fileChoice.cancelled())
+    TileArray tileArray = mapPane.getTileArray();
+    if (tileArray.isEmpty())
     {
-      if (!fileChoice.succeeded())
+      JOptionPane.showMessageDialog(this, I18n.getString("noTilesMessage"), I18n.getString("noTilesTitle"), JOptionPane.INFORMATION_MESSAGE);
+    }
+    else
+    {
+      String resultMessage      = null;
+      String defaultPath        = System.getProperty("user.home");
+      String defaultFolderName  = applicationPreferences.get(SAVED_TILE_FILE_DIRECTORY_KEY, defaultPath);
+      
+      FileHandler.FileChoice fileChoice = fileHandler.getFileToSave(this,  
+          defaultFolderName, 
+          SAVED_TILE_FILE_FILENAME_EXTENSION, 
+          I18n.getString("fileSaveActionName"), 
+          I18n.getString("fileSaveDialogButtonText")
+          );
+      
+      if (!fileChoice.cancelled())
       {
-        resultMessage = fileChoice.getMessage();
-      }
-      else 
-      {
-        File selectedFile = fileChoice.getFile();
-        String filepath = "";
-        try 
-        { 
-          saveCurrentTileArray(selectedFile);
-          saveFileInPreferences(selectedFile);
-          resultMessage = I18n.getString("fileSavedMessage", filepath);
+        if (!fileChoice.succeeded())
+        {
+          resultMessage = fileChoice.getMessage();
         }
-        catch (Exception exception) 
-        { 
-          resultMessage = I18n.getString("fileCouldNotBeSaved", filepath);
+        else 
+        {
+          File selectedFile = fileChoice.getFile();
+          String filepath = "";
+          try 
+          { 
+            filepath = selectedFile.getCanonicalPath();
+            saveCurrentTileArray(selectedFile);
+            saveFileInPreferences(selectedFile);
+            resultMessage = I18n.getString("fileSavedMessage", filepath);
+          }
+          catch (Exception exception) 
+          { 
+            resultMessage = I18n.getString("fileCouldNotBeSaved", filepath);
+          }
         }
+        userMessageListener.addMessage(resultMessage);
       }
-      userMessageListener.addMessage(resultMessage);
     }
     
   }
