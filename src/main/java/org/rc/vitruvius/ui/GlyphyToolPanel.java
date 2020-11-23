@@ -4,9 +4,17 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -14,6 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.rc.vitruvius.model.FileHandler;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
 import org.rc.vitruvius.text.TextTranslator;
@@ -34,27 +43,41 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
 {
   private static final long serialVersionUID = 1L;
   
-  private static void say(String s) { System.out.println(s); }
+  public static void say(String s) { System.out.println(s); }
 
-//  private MainFrame   mainFrame         = null;
+  private MainFrame   userMessageListener     = null;
+  private Preferences applicationPreferences  = null;
   
-  private JTextArea   textMapTextArea   = null;     // contains text representing a portion of a map
-  private MapPanel imagesPanel       = null;     // contains images representing a portion of a map
-  private JButton     generateImageButton = null;   // generates the image on the images panel;
-  // disabled when activated, enabled when text changes.
-//  private TextTranslator textTranslator = null;
+  private FileHandler fileHandler             = null;
   
-  private boolean dirtyText = false; 
-  public boolean  textDirty()             { return dirtyText; }
-  public void     setDirtyText(boolean b) { dirtyText = b; if (b) { setUnsavedChanges(true); } generateImageButton.setEnabled(b); } 
+  private JTextArea   textMapTextArea         = null;   // contains text representing a portion of a map
+  private MapPanel    imagesPanel             = null;   // contains images representing a portion of a map
+  private JButton     generateImageButton     = null;   // generates the image on the images panel;
+  
+  // dirtyText true => text does not match image; only effect is enabling button to update the image.
+  // unsavedChanges true => text does not match file
+  // if text is changed, by definition it does not match its file.
+  // dirty text status is only checked within this class; unsaved changes is available elsewhere.
+//  private boolean dirtyText = false; 
+//  public boolean  textDirty()             { return dirtyText; }
+  public void     setDirtyText(boolean b) 
+  { 
+//    dirtyText = b; 
+    if (b) { setUnsavedChanges(true); } generateImageButton.setEnabled(b); 
+  } 
   
   private boolean unsavedChanges = false;
   public boolean unsavedChanges()             { return unsavedChanges; } 
   public void    setUnsavedChanges(boolean b) { unsavedChanges = b; }
   
-  public GlyphyToolPanel(MainFrame mainFrame)
+  private File          currentlyOpenFile   = null;
+  
+  public GlyphyToolPanel(MainFrame mainFrame, Preferences applicationPreferences)
   {
-//    this.mainFrame = mainFrame; 
+    this.userMessageListener = mainFrame;
+    this.applicationPreferences = applicationPreferences;
+    fileHandler = new FileHandler(mainFrame);
+    
     setLayout(new BorderLayout());
     
     // Create a text area where the user can put text to convert to a map picture
@@ -132,10 +155,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
    *  
    * @return
    */
-  public String getGlyphyText()
-  {
-    return textMapTextArea.getText();
-  }
+  public String getGlyphyText()  {    return textMapTextArea.getText();  }
   
   // DocumentEvents happen when someone changes the text of the text area.
   @Override public void insertUpdate(DocumentEvent e)  {    setDirtyText(true);  }
@@ -147,20 +167,178 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   @Override
   public void openFile()
   {
-    System.out.println("open glyphy tool file here");
-    setUnsavedChanges(false);
+    // if there are unsaved changes, ask about wiping them.
+    int option = JOptionPane.YES_OPTION;
+    if (unsavedChanges())
+    {
+      String message = I18n.getString("unsavedChangesOnePanelMessage", getDisplayName());
+      String title   = I18n.getString("unsavedChangesDialogTitle");
+      option = JOptionPane.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION);
+    }
+    if (option == JOptionPane.YES_OPTION)
+    {
+      String defaultPath = System.getProperty("user.home");
+      String defaultFolderName = applicationPreferences.get("savedOpenGlyphTextFileDirectory", defaultPath);
+      String defaultExtension = "txt";
+      
+      String dialogTitle = I18n.getString("fileOpenGlyphTextFileActionName");
+      String buttonText = I18n.getString("fileOpenDialogButtonText");
+      
+      FileHandler.FileChoice fileChoice = fileHandler.getFileToOpen(this, defaultFolderName, defaultExtension, dialogTitle, buttonText);
+      String message = null;
+      String filename = null;
+      if (!fileChoice.cancelled())
+      {
+        if (!fileChoice.succeeded())
+        {
+          userMessageListener.addMessage(fileChoice.getMessage());
+        } 
+        else
+        {
+          try
+          {
+            File file = fileChoice.getFile();
+            filename = file.getCanonicalPath();
+            String text = readTextFromFile(file);
+            textMapTextArea.setText(text);
+            saveFileInPreferences(file);
+            currentlyOpenFile = file;
+            setDirtyText(true);
+            setUnsavedChanges(false);
+          } 
+          catch (Exception e)
+          {
+            message = I18n.getString("errorOpeningFile", filename, e.getMessage());
+            userMessageListener.addMessage(message);
+          }
+        }
+      }
+    }
   }
+  
+  private String readTextFromFile(File file) throws Exception
+  {
+    BufferedReader reader = null;
+    StringBuilder textSB = new StringBuilder();
+      String filename = file.getCanonicalPath();
+      reader = new BufferedReader(new FileReader(file));
+      String line = reader.readLine();
+      String newLine = String.format("%n");
+      if (line == null) 
+      { 
+        if (reader != null) { reader.close(); }
+        throw new Exception(I18n.getString("glyphTextFileNoText", filename)); 
+      }
+      else
+      {
+        while(line != null)
+        {
+          textSB.append(line);
+          textSB.append(newLine);
+          line = reader.readLine();
+        }
+      }
+    if (reader != null) { reader.close(); }
+    return textSB.toString();
+  }
+  
   @Override
   public void saveFile()
   {
-    say("save glyphy tool file here");
-    setUnsavedChanges(false);
+    if (currentlyOpenFile == null)
+    {
+      saveFileAs();
+    }
+    else
+    {
+      String message = "";
+      String filepath = "";
+      try                 { filepath = currentlyOpenFile.getCanonicalPath(); 
+                            message = saveToFile(currentlyOpenFile);
+                            setUnsavedChanges(false);
+                          }
+      catch (Exception e) { message = I18n.getString("fileCouldNotBeSaved", filepath); }
+      finally             { userMessageListener.addMessage(message);      }
+    }
   }
+  
+  private String saveToFile(File selectedFile) throws Exception
+  {
+    String filepath = selectedFile.getCanonicalPath();
+    saveCurrentTextEntry(selectedFile);
+    saveFileInPreferences(selectedFile);
+    String resultMessage = I18n.getString("fileSavedMessage", filepath);
+    return resultMessage;
+  }
+  
+  private void saveCurrentTextEntry(File file) throws Exception
+  {
+    BufferedWriter writer = null;
+    writer = new BufferedWriter(new FileWriter(file));
+    
+    String text = textMapTextArea.getText();
+    try   { 
+            writer.write(text);
+//            writer.newLine();
+          }
+    catch (Exception exception) { throw new Exception("Error writing glyph save file", exception); }
+    finally { writer.close(); }
+  }
+  
+  private void saveFileInPreferences(File selectedFile) throws Exception
+  {
+    // now that we've saved it, save the filename and directory for use later.
+//    String filename = selectedFile.getName();
+    String filepath = selectedFile.getCanonicalPath();
+    // TODO: implement preferences saving for glyph tile file
+//    applicationPreferences.put(SAVED_TILE_FILE_FILENAME_KEY, filename);   // we don't seem to use this.
+    applicationPreferences.put("savedOpenGlyphTextFileDirectory", filepath);
+  }
+  
   @Override
   public void saveFileAs()
   {
-    System.out.println("save glyphy tool file here");
-    setUnsavedChanges(false);
+    String text = textMapTextArea.getText();
+    if (text == null || text.length() == 0)
+    {
+      JOptionPane.showMessageDialog(this, I18n.getString("noGlyphTextMessage"), I18n.getString("noGlyphTextTitle"), JOptionPane.INFORMATION_MESSAGE);
+    }
+    else
+    {
+      String resultMessage      = null;
+      String defaultPath        = System.getProperty("user.home");
+      String defaultFolderName  = applicationPreferences.get("savedOpenGlyphTextFileDirectory", defaultPath);
+      
+      FileHandler.FileChoice fileChoice = fileHandler.getFileToSave(this,  
+          defaultFolderName, 
+          "txt",          // TODO make this and the directory name key constants
+          I18n.getString("fileSaveGlyphTextFileActionName"), 
+          I18n.getString("fileSaveDialogButtonText")
+          );
+      
+      if (!fileChoice.cancelled())
+      {
+        if (!fileChoice.succeeded())
+        {
+          resultMessage = fileChoice.getMessage();
+        }
+        else 
+        {
+          File selectedFile = fileChoice.getFile();
+          String filepath = "";
+          try 
+          { 
+            resultMessage = saveToFile(selectedFile);
+            setUnsavedChanges(false);
+          }
+          catch (Exception exception) 
+          { 
+            resultMessage = I18n.getString("fileCouldNotBeSaved", filepath);
+          }
+        }
+        userMessageListener.addMessage(resultMessage);
+      }
+    }
   }
   @Override
   public void clearPanel()

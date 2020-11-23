@@ -54,7 +54,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   private JLabel              currentPictureLabel     = null;   // label of current picture, displayed upper left.
   private Icon                currentPictureLabelDefaultIcon = null;
   private String              currentPictureLabelDefaultText = I18n.getString("currentDragComponentDefaultLabelText");
-  private DragNDropImagesPane layeredPane             = null;
+  private DragNDropLayeredPane layeredPane             = null;
   private Preferences         applicationPreferences  = null;
   
   private FileHandler         fileHandler             = null;
@@ -71,7 +71,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     this.fileHandler = new FileHandler(mainFrame);
     
     JPanel leftPanel   = createLeftPanel(); 
-           layeredPane = new DragNDropImagesPane(this, userMessageListener);
+           layeredPane = new DragNDropLayeredPane(this, userMessageListener);
     
     JScrollPane leftScrollPane = new JScrollPane(leftPanel);
     JScrollPane middleScrollPane = new JScrollPane(layeredPane);
@@ -302,7 +302,9 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     repaint();
   }
   
-  public boolean unsavedChanges() { return layeredPane.unsavedChanges(); }
+  public boolean unsavedChanges()             { return layeredPane.unsavedChanges(); }
+  public void    setUnsavedChanges(boolean b) { layeredPane.setUnsavedChanges(b); }
+  
 
   // ================================= VitruviusActions methods =============================================
   
@@ -373,17 +375,17 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     }
     else
     {
+      String message = "";
       String filepath = "";
-      try 
-      { 
-        filepath = currentlyOpenFile.getCanonicalPath();
-        saveCurrentTileArray(currentlyOpenFile); 
-      }
-      catch (Exception e)
-      {
-        String message = I18n.getString("fileCouldNotBeSaved", filepath);
-        userMessageListener.addMessage(message);
-      }
+      try                 { filepath = currentlyOpenFile.getCanonicalPath(); 
+                            message = saveToFile(currentlyOpenFile);
+                            setUnsavedChanges(false);
+                          }
+      catch (Exception e) { message = I18n.getString("fileCouldNotBeSaved", filepath); }
+      finally             { 
+                            userMessageListener.addMessage(message);
+                            
+                          }
     }
   }
 
@@ -424,10 +426,8 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
           String filepath = "";
           try 
           { 
-            filepath = selectedFile.getCanonicalPath();
-            saveCurrentTileArray(selectedFile);
-            saveFileInPreferences(selectedFile);
-            resultMessage = I18n.getString("fileSavedMessage", filepath);
+            resultMessage = saveToFile(selectedFile);
+            setUnsavedChanges(false);
           }
           catch (Exception exception) 
           { 
@@ -437,7 +437,15 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
         userMessageListener.addMessage(resultMessage);
       }
     }
-    
+  }
+  
+  private String saveToFile(File selectedFile) throws Exception
+  {
+    String filepath = selectedFile.getCanonicalPath();
+    saveCurrentTileArray(selectedFile);
+    saveFileInPreferences(selectedFile);
+    String resultMessage = I18n.getString("fileSavedMessage", filepath);
+    return resultMessage;
   }
   
   private void saveFileInPreferences(File selectedFile) throws Exception

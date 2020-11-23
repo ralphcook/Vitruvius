@@ -61,7 +61,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
   {
     applicationPreferences = Preferences.userNodeForPackage(this.getClass());
     dragNDropPanel  = new DragNDropPanel(this, this, applicationPreferences);
-    glyphyToolPanel = new GlyphyToolPanel(this);
+    glyphyToolPanel = new GlyphyToolPanel(this, applicationPreferences);
     fileHandler = new FileHandler(this);
   }
   

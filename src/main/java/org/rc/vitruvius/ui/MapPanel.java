@@ -48,49 +48,65 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
     setMaximumSize(pixelSize);
   }
 
-  /**
-   * set the size of the images panel so that it is big enough to accommodate the given tile array.
-   * @param tileArray
-   */
-  private void setSize(TileArray tileArray)
-  {
-    int height = 0;
-    int width = 0;
-    
-    // the text might have multi-column or multi-row glyphs in the last
-    // few columns/rows of the text, so the width and height of the tile
-    // array might need to be larger than the number of characters in the
-    // strings or the number of strings in the text. The loop calculates
-    // the grid dimensions needed so we can size the panel holding the glyphs.
-    int currentRow = 0; 
-    for (TileRow row: tileArray)
-    {
-      int currentCol = 0;
-      for (Tile tile: row)
-      {
-        Picture p = tile.picture();
-        if (p != null)
-        {
-          int tileRows = p.rows();
-          int tileCols = p.columns();
-          height = Math.max(height, currentRow + tileRows);
-          width  = Math.max(width,  currentCol + tileCols);
-        }
-        currentCol++;
-      }
-      currentRow++;
-    }
-    setSize(width*tileSize, height*tileSize);
-    setPreferredSize(new Dimension(width*tileSize, height*tileSize));
-  }
+//  /**
+//   * set the size of the images panel so that it is big enough to accommodate the given tile array.
+//   * @param tileArray
+//   */
+//  private void setSize(TileArray tileArray)
+//  {
+//    int height = 0;
+//    int width = 0;
+//    
+//    int currentRow = 0; 
+//    for (TileRow row: tileArray)
+//    {
+//      int currentCol = 0;
+//      for (Tile tile: row)
+//      {
+//        Picture p = tile.picture();
+//        if (p != null)
+//        {
+//          int tileRows = p.rows();
+//          int tileCols = p.columns();
+//          height = Math.max(height, currentRow + tileRows);
+//          width  = Math.max(width,  currentCol + tileCols);
+//        }
+//        currentCol++;
+//      }
+//      currentRow++;
+//    }
+//    setSize(width*tileSize, height*tileSize);
+//    setPreferredSize(new Dimension(width*tileSize, height*tileSize));
+//  }
   
   public void setTileArray(TileArray newTileArray)
   {
     tileArray = newTileArray;
-    // Ensure the panel is the right size and clear it.
-    setSize(tileArray);
+    // Ensure the panel is big enough for the map.
+    Dimension tileArraySize = tileArray.getSize();
+    Dimension screenSize = calculateTileArrayScreenSize(tileArraySize);
+    if (panelTooSmall(screenSize))
+    {
+      setAllPanelSizes(screenSize);
+    }
+
     removeAll();
     drawTileArray(tileArray);
+    repaint();
+  }
+
+  private Dimension calculateTileArrayScreenSize(Dimension tileArraySize)
+          {
+    int width = tileArraySize.width * tileSize;
+    int height = tileArraySize.height * tileSize;
+    return new Dimension(width, height);
+  }
+  
+  private boolean panelTooSmall(Dimension size)
+  {
+    Dimension panelSize = getSize();
+    boolean result = ((panelSize.width < size.width) || (panelSize.height < size.height));
+    return result;
   }
   
   /**
@@ -125,54 +141,5 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
         rowNumber++;
       }
     }
-
-    
-// the following is the "setTileArray(TileArray)" code from a previous version of 
-// DragNDropImagesPane, which did not use this class. I'm converting over for that pane/panel
-// to use this class instead, and having this one handle the tilearray-on-a-panel operations
-// for both drag-and-drop and glyphy functionality. Based on this code, I added (1)
-// assignment of tileArray to this instance var, and (2) removal of any existing components before
-// starting the creation and drawing of picture labels.
-    
-//    wrappedPanel.removeAll();
-//    this.tileArray = tileArray;
-//    int rowNumber = 0;
-//    for (TileRow tileRow: tileArray)
-//    {
-//      int colNumber = 0;
-//      for (Tile tile: tileRow)
-//      {
-//        if (tile != null && tile.type() == Tile.Type.PICTURE)
-//        {
-//          Picture picture = tile.picture();
-//          JLabel label = picture.getLabel(tileSize);
-//          int x = colNumber * tileSize;
-//          int y = rowNumber * tileSize;
-//          label.setLocation(x,y);
-//          label.setVisible(true);
-//          wrappedPanel.add(label);
-//        }
-//        colNumber++;
-//      }
-//      rowNumber++;
-//    }
-//    wrappedPanel.invalidate();
-//    wrappedPanel.repaint();
-//    invalidate();
-//    repaint();
-    
-    
-//    invalidate();     // TODO: figure out if this is necessary; caller liable to invalidate higher-level things anyway.
-                      // Include repaint/invalidate decisions in javadoc.
   }
-
-//  @Override  public void mouseDragged(MouseEvent e)  {      }
-//  @Override  public void mouseMoved(MouseEvent e)  {      }
-//  
-//  @Override  public void mouseClicked(MouseEvent e)    {     }
-//  @Override  public void mousePressed(MouseEvent e)  {      }
-//  @Override  public void mouseReleased(MouseEvent e)  {      }
-//  @Override  public void mouseEntered(MouseEvent e)  {      }
-//  @Override  public void mouseExited(MouseEvent e)  {      }
-
 }

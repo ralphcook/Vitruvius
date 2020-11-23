@@ -14,6 +14,8 @@ import javax.swing.JPanel;
 
 import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Draggable;
+import org.rc.vitruvius.model.DraggablePicture;
+import org.rc.vitruvius.model.Tile;
 import org.rc.vitruvius.model.TileArray;
 
 /**
@@ -24,13 +26,13 @@ import org.rc.vitruvius.model.TileArray;
  * @author rcook
  *
  */
-public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionListener 
+public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelectionListener 
 {
   public static void say(String s) { System.out.println(s); }
   public static void say(String format, Object... args) { System.out.println(String.format(format, args)); }
   
   private static final long serialVersionUID = 1L;
-  private MapPanel            wrappedPanel          = null;
+  private MapPanel            mapPanel              = null;
   private JPanel              glassPanel            = new JPanel();
   
   private Draggable           draggableItem         = null;     // item being dragged
@@ -38,9 +40,6 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
                                                                 // it is specific to tileSize, needs recalc if that changes
                                                                 // (or if we get a new draggable item)
 
-//  private TileArray           tileArray             = null;   // TODO: move all tile array type operations down to
-                                                                //   the MapPanel.
-  
   private int                 tileSize              = 25;     // TODO: get the actual tileSize from the main panel into this instance, and to change it.
   
   private JLabel              selectedItem          = null;
@@ -51,12 +50,12 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
   
   private UserMessageListener userMessageListener       = null;
   
-  public DragNDropImagesPane(DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener)
+  public DragNDropLayeredPane(DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener)
   {
     glyphSelectionGenerator.addGlyphSelectionListener(this);
     this.userMessageListener = givenListener;
     
-    wrappedPanel = new MapPanel(tileSize); // createWrappedPanel();
+    mapPanel = new MapPanel(tileSize); // createWrappedPanel();
 //    tileArray = new TileArray();
 
     glassPanel.setOpaque(false);
@@ -94,7 +93,10 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
               Point cursorPoint = e.getPoint();
               if (glassPanel.contains(cursorPoint)) 
               { 
-                if (insertDraggableIfFree(cursorPoint)) { dropDraggableCopy(e.getX(), e.getY()); }
+                if (insertDraggableIfFree(cursorPoint)) { 
+                                                          dropDraggableCopy(e.getX(), e.getY());
+                                                          if (!draggableItem.isPersistent()) { deactivateDragging(); }
+                                                        }
                                                    else { 
                                                            String clearedLandMessage = I18n.getString("clearedLandMessage");
                                                            userMessageListener.addMessage(clearedLandMessage); 
@@ -121,7 +123,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
       }
     );
     
-    wrappedPanel.addMouseListener
+    mapPanel.addMouseListener
     (
         new MouseAdapter()
         {
@@ -130,10 +132,22 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
             int buttonId = event.getButton();
             if (buttonId == MouseEvent.BUTTON1)
             {
+              // if a user double-clicks, we get two events: one for the first click,
+              // and another where the click count is 2. If the user continues to click
+              // quickly, the system will continue to report higher numbers of click counts.
+              int clickCount = event.getClickCount();
+              say("clickCount = %d", clickCount);
+
               // if there's a glyph under the cursor, select it.
-              Component c = wrappedPanel.findComponentAt(event.getX(), event.getY());
+              Component c = mapPanel.findComponentAt(event.getX(), event.getY());
               if (c instanceof JLabel)
               {
+                if (clickCount == 2)
+                {
+                  // c should already be the selected item
+                  // create a draggableItem out of the selected image
+                  startDraggingSelectedItem();
+                }
                 boolean newSelection = (selectedItem != c);   // true iff the user has selected a new item
                 unselectCurrentItem();                        // regardless of whether he has clicked on a new item, we're going to deselect the current one.
                 if (newSelection) { selectItem((JLabel)c); }
@@ -143,16 +157,16 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
         }
     );
 
-    Dimension wrappedPanelSize = wrappedPanel.getPreferredSize();
+    Dimension wrappedPanelSize = mapPanel.getPreferredSize();
 //    wrappedPanel.setSize(wrappedPanel.getPreferredSize());    // TODO: now that wrappedPanel is a MapPanel, this is unneeded.
 
-    add(wrappedPanel, JLayeredPane.DEFAULT_LAYER);
+    add(mapPanel, JLayeredPane.DEFAULT_LAYER);
     add(glassPanel, JLayeredPane.PALETTE_LAYER);
     
     glassPanel.setSize(wrappedPanelSize);
     glassPanel.setPreferredSize(wrappedPanelSize);
 
-    setPreferredSize(wrappedPanel.getPreferredSize());
+    setPreferredSize(mapPanel.getPreferredSize());
 
 //    addComponentListener                                    // TODO: when we implement size <> window size, delete this.
 //    (
@@ -172,6 +186,22 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     
     addKeyListener(new DragNDropKeyListener(this));
     
+  }
+  
+  private void startDraggingSelectedItem()
+  {
+    // get the tile corresponding to the selected item.
+    Point screenLocation = selectedItem.getLocation();
+    Point tileLocation = calculateIndexTile(screenLocation);
+    TileArray tileArray = mapPanel.getTileArray();
+    Tile tile = tileArray.getTile(tileLocation.x, tileLocation.y);
+    // remove this picture from the tile array, and from the mapPanel.
+    tileArray.deletePictureTiles(tileLocation);
+    mapPanel.remove(selectedItem);
+    // activate dragging
+    Draggable newDraggable = new DraggablePicture(tile.picture(), false);
+    activateDragging(newDraggable);
+    draggableJLabel.setLocation(screenLocation);
   }
   
   public void glyphSelection(GlyphSelectionEvent gsEvent)
@@ -207,7 +237,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
   /**
    * Return the tile array currently in use.
    */
-  public TileArray getTileArray() { return wrappedPanel.getTileArray(); }
+  public TileArray getTileArray() { return mapPanel.getTileArray(); }
   
   /**
    * Set the given tile Array as the current one, and display it.
@@ -215,7 +245,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
    */
   public void setTileArray(TileArray tileArray)
   {
-    wrappedPanel.setTileArray(tileArray);
+    mapPanel.setTileArray(tileArray);
   }
   
   @SuppressWarnings("unused")
@@ -257,10 +287,10 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
       // get the tile position of the selected item.
       Point graphicsIndex = selectedItem.getLocation();
       Point indexTile = calculateIndexTile(graphicsIndex); 
-      wrappedPanel.getTileArray().deletePictureTiles(indexTile);
+      mapPanel.getTileArray().deletePictureTiles(indexTile);
       
       // take the selected item off the panel.
-      wrappedPanel.remove(selectedItem);
+      mapPanel.remove(selectedItem);
       
       setUnsavedChanges(true);
 
@@ -284,9 +314,9 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     
     // check on whether draggable tile array will go onto the main tile array.
     TileArray draggedTileArray = draggableItem.getTileArray();
-    if (wrappedPanel.getTileArray().accepts(draggedTileArray, tilePoint))
+    if (mapPanel.getTileArray().accepts(draggedTileArray, tilePoint))
     {
-      wrappedPanel.getTileArray().put(draggedTileArray, tilePoint);
+      mapPanel.getTileArray().put(draggedTileArray, tilePoint);
     }
     else 
     {
@@ -359,8 +389,8 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
 
     // add the component to the wrapped pane.
     copiedLabel.setVisible(true);
-    wrappedPanel.add(copiedLabel);
-    wrappedPanel.repaint();
+    mapPanel.add(copiedLabel);
+    mapPanel.repaint();
     
     setUnsavedChanges(true);
     
@@ -402,7 +432,6 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     return new Point(tileX, tileY);
   }
   
-  
   /**
    * Activate the glass panel for dragging the given draggable JLabel.
    * @param c
@@ -416,7 +445,7 @@ public class DragNDropImagesPane extends JLayeredPane implements GlyphSelectionL
     add(draggableJLabel, JLayeredPane.DEFAULT_LAYER);   //, -1);  // or 0
     add(draggableJLabel, JLayeredPane.DRAG_LAYER);      //,   -1);  // or 0
     
-    setAllComponentSizes(glassPanel, wrappedPanel.getSize());
+    setAllComponentSizes(glassPanel, mapPanel.getSize());
     
     glassPanel.setVisible(true);
     glassPanel.requestFocusInWindow();

@@ -44,4 +44,11 @@ public interface Draggable
    * @return
    */
   public String     getDisplayText();
+  
+  /**
+   * Return true if, after dropping this draggable, it remains draggable
+   * so that it can be dropped again. Otherwise, after dropping, it should
+   * cease to be the draggable item.
+   */
+  public boolean isPersistent();
 }

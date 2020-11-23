@@ -11,9 +11,9 @@ import java.awt.event.KeyEvent;
  */
 public class DragNDropKeyListener extends KeyAdapter
 {
-  private DragNDropImagesPane imagesPane = null;
+  private DragNDropLayeredPane imagesPane = null;
   
-  public DragNDropKeyListener(DragNDropImagesPane imagesPane)
+  public DragNDropKeyListener(DragNDropLayeredPane imagesPane)
   {
     this.imagesPane = imagesPane;
   }

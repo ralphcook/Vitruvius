@@ -1,12 +1,16 @@
 Vitruvius punch list.
 ---------------------
 
+Do file extensions need to be internationalized?
+
 prevent writing in the messages text area -- perhaps provide a way to clear it of text entirely.
 
 *get the map images panel sizing straightened out. We might need to display it
 as an x-by-y tile count or something. 
 
 Menu bar: '*' for menus applying to both working panes, 'G' for glyphy tool only.
+
+implement preferences for the glyphy tool -- currently commented out, see TODO lines.
 
 File
 *	open

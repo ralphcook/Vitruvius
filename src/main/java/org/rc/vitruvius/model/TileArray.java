@@ -1,5 +1,6 @@
 package org.rc.vitruvius.model;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -28,13 +29,23 @@ public class TileArray implements Iterable<TileRow>
   public static void say(String s) { System.out.println(s); }
   
   private ArrayList<TileRow>  tileRows = null;
-  private int                 rows      = 0;
-  private int                 columns   = 0;
+  private Dimension           size      = new Dimension(0,0);   // only updated occasionally, see calculateRowsAndColumns()
   private boolean             rowsAndColumnsDirty = true;
   
   public TileArray()
   {
     tileRows = new ArrayList<>();
+  }
+  
+  /**
+   * Return the size, in tiles, of this tile array. Calculates the number of
+   * columns in the widest row, and the number of rows.
+   * @return
+   */
+  public Dimension getSize()
+  {
+    updateSize();
+    return size;
   }
   
   public TileArray(int rows, int cols)
@@ -45,7 +56,7 @@ public class TileArray implements Iterable<TileRow>
       TileRow tileRow = new TileRow(cols);
       tileRows.add(tileRow);
     }
-    calculateRowsAndColumns();
+    updateSize();
   }
   
   /**
@@ -58,7 +69,7 @@ public class TileArray implements Iterable<TileRow>
   {
     int indexCol = indexTilePosition.x;
     int indexRow = indexTilePosition.y;
-    Tile indexTile = getTile(indexRow, indexCol);
+    Tile indexTile = getTile(indexCol, indexRow);
     Picture p = indexTile.picture();
     Tile emptyTile = new Tile();
     for (int i=0; i<p.rows(); i++)
@@ -77,8 +88,8 @@ public class TileArray implements Iterable<TileRow>
    */
   public int rows()
   {
-    if (rowsAndColumnsDirty) { calculateRowsAndColumns(); }
-    return rows;
+    if (rowsAndColumnsDirty) { updateSize(); }
+    return size.height;
   }
 
   /**
@@ -88,16 +99,16 @@ public class TileArray implements Iterable<TileRow>
    */
   public int columns()
   {
-    if (rowsAndColumnsDirty) { calculateRowsAndColumns(); }
-    return columns;
+    if (rowsAndColumnsDirty) { updateSize(); }
+    return size.width;
   }
   
-  private void calculateRowsAndColumns()
+  private void updateSize()
   {
-    rows = tileRows.size();
+    size.height = tileRows.size();
     for (TileRow row : tileRows)
     {
-      columns = Math.max(columns, row.length());
+      size.width = Math.max(size.width, row.length());
     } 
     rowsAndColumnsDirty = false;
   }
@@ -116,8 +127,8 @@ public class TileArray implements Iterable<TileRow>
     {
       for (int j=0; j<columns; j++)
       {
-        Tile smallerArrayTile = smallerTileArray.getTile(i, j);
-        Tile largerArrayTile  = getTile(i+startRow, j+startColumn);
+        Tile smallerArrayTile = smallerTileArray.getTile(j, i);
+        Tile largerArrayTile  = getTile(j+startColumn, i+startRow);
         if (smallerArrayTile != null && smallerArrayTile.type() != Tile.Type.EMPTY)
         {
           if (largerArrayTile != null && largerArrayTile.type() != Tile.Type.EMPTY)
@@ -280,10 +291,10 @@ public class TileArray implements Iterable<TileRow>
     {
       for (int colOffset=0; colOffset < ta.columns(); colOffset++)
       {
-        Tile currentTile = ta.getTile(rowOffset, colOffset);
+        Tile currentTile = ta.getTile(colOffset, rowOffset);
         if (currentTile != null && currentTile.type() != Tile.Type.EMPTY)
         {
-          Tile existingTile = getTile(arrayPosition.y + rowOffset, arrayPosition.x + colOffset);
+          Tile existingTile = getTile(arrayPosition.x + colOffset, arrayPosition.y + rowOffset);
           boolean tileFree = (existingTile == null || existingTile.type() == Tile.Type.EMPTY);
           if (!tileFree)
           {
@@ -312,7 +323,7 @@ public class TileArray implements Iterable<TileRow>
     {
       for (int colOffset=0; colOffset < ta.columns(); colOffset++)
       {
-        Tile currentTile = ta.getTile(rowOffset, colOffset);
+        Tile currentTile = ta.getTile(colOffset, rowOffset);
         put(currentTile, arrayPosition.y + rowOffset, arrayPosition.x + colOffset);
       }
     }
@@ -355,7 +366,7 @@ public class TileArray implements Iterable<TileRow>
    * @param columnNumber
    * @return
    */
-  public Tile getTile(int rowNumber, int columnNumber)
+  public Tile getTile(int columnNumber, int rowNumber)
   {
     Tile    tile = null;
     TileRow row  = null;

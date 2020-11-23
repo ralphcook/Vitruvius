@@ -20,20 +20,39 @@ import org.rc.vitruvius.ui.Picture;
 public class DraggablePicture implements Draggable
 {
   private Picture                       picture     = null;
-  
   private HashMap<Integer, JLabel>      jLabelMap   = new HashMap<>();    // indexed by tileSize
+  private boolean                       persistent  = true;
   
   @SuppressWarnings("unused")
   private DraggablePicture() {}
   
+  /**
+   * Create a Draggable object from the given Picture.
+   * @param picture
+   */
   public DraggablePicture(Picture picture)
   {
     if (picture == null) { throw new IllegalArgumentException("Cannot create DraggablePicture with null Picture"); }
     this.picture = picture;
   }
   
+  /**
+   * Create a Draggable object from the given picture; if persistent, then after
+   * placement, the draggable will remain available for another placement. Otherwise,
+   * after placing the draggable on the screen, it is no longer available and disappears
+   * from dragging.
+   * @param picture
+   * @param persistent
+   */
+  public DraggablePicture(Picture picture, boolean persistent)
+  {
+    this(picture);
+    this.persistent = persistent;
+  }
+  
   public ImageIcon getImageIcon(int tileSize) { return picture.getImageIcon(tileSize); }
   public String    getDisplayText()           { return picture.getDisplayText();       }
+  public boolean   isPersistent()             { return persistent;                     }
   
   /**
    * Get the (possibly cached) JLabel for the given tile size.

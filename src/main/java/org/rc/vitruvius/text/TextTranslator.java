@@ -89,7 +89,7 @@ public class TextTranslator
               int targetRow = currentCharacterRow + pictureRow;
               int targetColumn = currentCharacterColumn + pictureColumn;
               // if the tile where we would put this is already occupied, print a warning.
-              Tile existingTile = tileArray.getTile(targetRow, targetColumn);
+              Tile existingTile = tileArray.getTile(targetColumn, targetRow);
               if (existingTile == null || existingTile.type() == Tile.Type.EMPTY)
               {
                 if (pictureRow==0 && pictureColumn==0)
