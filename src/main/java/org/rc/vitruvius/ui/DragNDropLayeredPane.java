@@ -3,7 +3,9 @@ package org.rc.vitruvius.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -11,6 +13,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.Draggable;
@@ -40,8 +43,6 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
                                                                 // it is specific to tileSize, needs recalc if that changes
                                                                 // (or if we get a new draggable item)
 
-  private int                 tileSize              = 25;     // TODO: get the actual tileSize from the main panel into this instance, and to change it.
-  
   private JLabel              selectedItem          = null;
   
   private boolean             unsavedChanges        = false;
@@ -50,7 +51,7 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
   
   private UserMessageListener userMessageListener       = null;
   
-  public DragNDropLayeredPane(DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener)
+  public DragNDropLayeredPane(DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener, int tileSize)
   {
     glyphSelectionGenerator.addGlyphSelectionListener(this);
     this.userMessageListener = givenListener;
@@ -69,8 +70,7 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
         {
           if (draggableItem != null)
           {
-            Point newPoint = getDraggedComponentIndexPoint(event.getX(), event.getY());
-            draggableJLabel.setLocation(newPoint.x, newPoint.y);
+            setToCursorPosition(draggableJLabel, event.getX(), event.getY());
           }
         }
       }
@@ -93,9 +93,10 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
               Point cursorPoint = e.getPoint();
               if (glassPanel.contains(cursorPoint)) 
               { 
-                if (insertDraggableIfFree(cursorPoint)) { 
+                if (insertDraggableIntoTileArrayIfFree(cursorPoint)) 
+                                                        { 
                                                           dropDraggableCopy(e.getX(), e.getY());
-                                                          if (!draggableItem.isPersistent()) { deactivateDragging(); }
+                                                          if (!draggableItem.isPersistent()) { deactivateDraggingOrMoving(); }
                                                         }
                                                    else { 
                                                            String clearedLandMessage = I18n.getString("clearedLandMessage");
@@ -157,16 +158,74 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
         }
     );
 
-    Dimension wrappedPanelSize = mapPanel.getPreferredSize();
-//    wrappedPanel.setSize(wrappedPanel.getPreferredSize());    // TODO: now that wrappedPanel is a MapPanel, this is unneeded.
-
+    mapPanel.addMouseMotionListener
+    (
+        new MouseAdapter()
+        {
+          public void mouseDragged(MouseEvent event)
+          {
+            // in our world here, 'dragging' refers to the user clicking on an icon that
+            // is already on the screen, keeping his mouse button down, and dragging that
+            // icon to another location.
+            // when the user clicks on a drop-down or whatever to put an icon on the screen
+            // that was not there before, we use the 'mouseMoved' event for that. So that's
+            // 'moving' something, not 'dragging' it, even though we think of it as dragging.
+            // There is a 'draggable' interface we use for objects that might be moved either
+            // way; this class has an instance variable for the item, whether it is being
+            // dragged or moved.
+            // if this event determines that something is currently selected and that the mouse
+            // event is still on that item, that means it is the first such event in a dragging
+            // operation. We detach the icon from the screen, determine what the underlying
+            // item is and remove it from the tileArray, and make a Draggable out of it so
+            // it is in that instance variable ready to move on the glasspane.
+            // 
+            // if there is already a draggable in place, can we assume we're dragging it?
+            // if it was a new draggable, a mouse button press would have ended its drag, 
+            // so there would be no draggable. The only other time we have a draggable is if
+            // we're actually dragging something, so that assumption sounds safe.
+            //
+            // So the first time this event is received, determine if we have a selected label
+            // and if that selected label is under the mouse cursor at this first drag event. 
+            // If both those are true, create its Draggable and make it the current dragged 
+            // object.
+            if (draggableItem == null)
+            {
+              Component c = mapPanel.findComponentAt(event.getX(), event.getY());
+              // since we aren't currently dragging something; see if we're on top of one to drag.
+              // if we're not, we'll just quietly exit the method...
+              if ((selectedItem != null) && (c == selectedItem))
+              {
+                // ok, we're dragging this puppy. Create its draggable; we'll need the underlying picture
+                // (only attempting to support dragging individual glyphs for now)
+                Point selectedScreenLocation = selectedItem.getLocation();                            // find our item
+                Point selectedTileLocation = calculateIndexTile(selectedScreenLocation);              // get its index tile location
+                Tile selectedTile = mapPanel.getTileArray().getTile(selectedTileLocation);            // and its index tile.
+                
+                mapPanel.getTileArray().deletePictureTiles(selectedTileLocation);                     // remove item being dragged from tile array
+                mapPanel.remove(selectedItem);
+                
+                draggableItem = new DraggablePicture(selectedTile.picture());                         // make our current draggableItem one from the picture in that tile.
+//                draggableJLabel = draggableItem.getJLabelJustIcon(mapPanel.getTileSize());            // likewise with our draggableJLabel
+                activateDraggingOrMoving(draggableItem);
+                setToCursorPosition(draggableJLabel, event.getX(), event.getY());
+              }
+            }
+            else
+            {
+              setToCursorPosition(draggableJLabel, event.getX(), event.getY());
+            }
+          }
+        }
+    );
+    
+    Dimension mapPanelSize = mapPanel.getPreferredSize();
     add(mapPanel, JLayeredPane.DEFAULT_LAYER);
     add(glassPanel, JLayeredPane.PALETTE_LAYER);
     
-    glassPanel.setSize(wrappedPanelSize);
-    glassPanel.setPreferredSize(wrappedPanelSize);
+    glassPanel.setSize(mapPanelSize);
+    glassPanel.setPreferredSize(mapPanelSize);
 
-    setPreferredSize(mapPanel.getPreferredSize());
+    setPreferredSize(mapPanelSize);
 
 //    addComponentListener                                    // TODO: when we implement size <> window size, delete this.
 //    (
@@ -200,36 +259,60 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
     mapPanel.remove(selectedItem);
     // activate dragging
     Draggable newDraggable = new DraggablePicture(tile.picture(), false);
-    activateDragging(newDraggable);
+    activateDraggingOrMoving(newDraggable);
     draggableJLabel.setLocation(screenLocation);
+  }
+
+  public void setToCursorPosition(JLabel label, int x, int y)
+  {
+    Point newPoint = getDraggedComponentIndexPoint(x, y);
+    label.setLocation(newPoint.x, newPoint.y);
+  }
+  
+  public void decreaseTileSize()
+  {
+    mapPanel.decreaseTileSize();
+    resetDraggableAfterTileResize();
+  }
+  
+  private void resetDraggableAfterTileResize()
+  {
+    if (draggableItem != null)                            // help -- probably need to do this for the existing glyph draggable as well
+    {                                                     // try to think of a way to make this one draggable...
+      Draggable savedDraggableItem = draggableItem;
+      deactivateDraggingOrMoving();
+      activateDraggingOrMoving(savedDraggableItem);
+      
+      Point currentCursorPoint = MouseInfo.getPointerInfo().getLocation();
+      SwingUtilities.convertPointFromScreen(currentCursorPoint, this);
+
+      Rectangle panelRectangle = this.getBounds();
+      if (    0 < currentCursorPoint.x 
+          &&      currentCursorPoint.x < panelRectangle.width
+          &&  0 < currentCursorPoint.y
+          &&      currentCursorPoint.y < panelRectangle.height
+          )
+      {
+        setToCursorPosition(draggableJLabel, currentCursorPoint.x, currentCursorPoint.y);
+        draggableJLabel.setVisible(true);
+      }
+    }
+  }
+  
+  public void increaseTileSize()
+  {
+    mapPanel.increaseTileSize();
+    resetDraggableAfterTileResize();
   }
   
   public void glyphSelection(GlyphSelectionEvent gsEvent)
   {
     String action = gsEvent.getAction();
     Draggable draggable = gsEvent.getDraggable();
-    if (action.equals("select")) { activateDragging(draggable); }
-                            else { deactivateDragging();        }
+    if (action.equals("select")) { activateDraggingOrMoving(draggable); }
+                            else { deactivateDraggingOrMoving();        }
     repaint();
   }
-  
-//  /**
-//   * Create the JPanel that is 'wrapped' by this JLayeredPane; this is the
-//   * panel that will be the parent of the JLabel objects holding the glyphs.
-//   * @return
-//   */
-//  public JPanel createWrappedPanel()
-//  {
-//    JPanel mapPanel = new JPanel();
-//    mapPanel.setLayout(null);
-//    // TODO: figure out why this sizing is still needed.
-//    Dimension mapSize = new Dimension(400,400);
-//    mapPanel.setSize(mapSize);
-//    mapPanel.setPreferredSize(mapSize);
-//    mapPanel.setMaximumSize(mapSize);
-//    mapPanel.setBorder(BorderFactory.createLineBorder(Color.green, 3));
-//    return mapPanel;
-//  }
   
   public boolean  unsavedChanges()                  { return unsavedChanges; }
   public void     setUnsavedChanges(boolean value)  { unsavedChanges = value; }
@@ -301,11 +384,11 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
   }
   
   /**
-   * Return true if it is legal to put the current draggable label
-   * down at the given point.
+   * Insert the current draggable into the tile array as indicated by the cursor location,
+   * if there are no non-empty tiles that would be overwritten.
    * @param Point cursor location (p'bly middle of the glyph)
    */
-  private boolean insertDraggableIfFree(Point cursorPoint)
+  private boolean insertDraggableIntoTileArrayIfFree(Point cursorPoint)
   {
     boolean result = true;
     
@@ -352,6 +435,7 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
     int width = draggableItemTileArray.columns();
     int height = draggableItemTileArray.rows();
 
+    int tileSize = mapPanel.getTileSize();
     int cursorXTile = x / tileSize;   //  row and column indices 
     int cursorYTile = y / tileSize;   //  of tile containing cursor
         cursorXTile -= width/2;       // adjustment for width of draggable.
@@ -384,6 +468,9 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
     copiedLabel.setSize(copiedLabelSize);
     copiedLabel.setPreferredSize(copiedLabelSize);
     copiedLabel.setToolTipText(draggableJLabel.getToolTipText());
+    PassAlongMousePressedListener mouseListener = new PassAlongMousePressedListener();
+    copiedLabel.addMouseListener(mouseListener);
+    copiedLabel.addMouseMotionListener(mouseListener);
     Point componentPoint = getDraggedComponentIndexPoint(cursorX, cursorY);
     copiedLabel.setLocation(componentPoint.x, componentPoint.y);
 
@@ -393,8 +480,6 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
     mapPanel.repaint();
     
     setUnsavedChanges(true);
-    
-    copiedLabel.addMouseListener(passAlongListener);
   }
   
   /**
@@ -405,6 +490,7 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
    */
   private Point calculateDraggedIndexTile(int cursorX, int cursorY)
   {
+    int tileSize = mapPanel.getTileSize();
     Point draggableXY = getDraggedComponentIndexPoint(cursorX, cursorY);
     int tileX = draggableXY.x / tileSize;
     int tileY = draggableXY.y / tileSize;
@@ -427,6 +513,7 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
    */
   private Point calculateIndexTile(int x, int y)
   {
+    int tileSize = mapPanel.getTileSize();
     int tileX = x / tileSize;
     int tileY = y / tileSize;
     return new Point(tileX, tileY);
@@ -436,11 +523,17 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
    * Activate the glass panel for dragging the given draggable JLabel.
    * @param c
    */
-  public void activateDragging(Draggable draggable)
+  public void activateDraggingOrMoving(Draggable draggable)
   {
     draggableItem = draggable;
+    draggableJLabel = draggable.getJLabelJustIcon(mapPanel.getTileSize());
     
-    draggableJLabel = draggable.getJLabelJustIcon(tileSize);
+    draggableJLabel.setVisible(false);
+    putLabelOnGlassPane(draggableJLabel);
+  }
+  
+  private void putLabelOnGlassPane(JLabel draggableJLabel)
+  {
     draggableJLabel.setVisible(false);
     add(draggableJLabel, JLayeredPane.DEFAULT_LAYER);   //, -1);  // or 0
     add(draggableJLabel, JLayeredPane.DRAG_LAYER);      //,   -1);  // or 0
@@ -456,12 +549,13 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
   /**
    * Deactivate the glass panel, remove the current dragged JLabel from the glass panel.
    */
-  public void deactivateDragging()
+  public void deactivateDraggingOrMoving()
   {
     if (draggableJLabel != null)
     {
       remove(draggableJLabel);
       draggableJLabel = null; 
+      draggableItem   = null;
       glassPanel.setVisible(false);
 //      glassPanel.setCursor(null);
     }

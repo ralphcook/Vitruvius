@@ -2,6 +2,7 @@ package org.rc.vitruvius.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
 import java.util.prefs.Preferences;
 
 import javax.swing.Action;
@@ -25,6 +26,9 @@ import org.rc.vitruvius.model.VitruviusWorkingPane;
 import org.rc.vitruvius.ui.actions.EndDragAction;
 import org.rc.vitruvius.ui.actions.ImageClearAction;
 import org.rc.vitruvius.ui.actions.ProgramExitAction;
+import org.rc.vitruvius.ui.actions.TileSizeHandler;
+import org.rc.vitruvius.ui.actions.TileSizeHandler.Decrease;
+import org.rc.vitruvius.ui.actions.TileSizeHandler.Increase;
 
 import rcutil.swing.SavedWindowPositionJFrame;
 
@@ -55,6 +59,8 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
   public  VitruviusWorkingPane   getCurrentWorkingPane() { return currentWorkingPane; }
   public  void                   setCurrentWorkingPane(VitruviusWorkingPane pane) { currentWorkingPane = pane; }
   
+  TileSizeHandler tileSizeHandler = null;
+  
   private static final long serialVersionUID = 1L;
 
   public MainFrame() 
@@ -63,6 +69,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     dragNDropPanel  = new DragNDropPanel(this, this, applicationPreferences);
     glyphyToolPanel = new GlyphyToolPanel(this, applicationPreferences);
     fileHandler = new FileHandler(this);
+    tileSizeHandler = new TileSizeHandler();
   }
   
   /**
@@ -129,11 +136,26 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     setKeyBinding(tpInputMap, tpActionMap, "control O", "Open",     fileHandler.getOpenAction());
     setKeyBinding(tpInputMap, tpActionMap, "control S", "Save",     fileHandler.getSaveAction());
     setKeyBinding(tpInputMap, tpActionMap, "ESCAPE",    "exitDrag", new EndDragAction(dragNDropPanel));
+    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_MINUS,       "decreaseTileSize", tileSizeHandler.new Decrease(this));
+    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_UNDERSCORE,  "decreaseTileSize", tileSizeHandler.new Decrease(this));
+    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_PLUS,        "increaseTileSize", tileSizeHandler.new Increase(this));
+    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_EQUALS,      "increaseTileSize", tileSizeHandler.new Increase(this));
+  }
+  
+  private void setKeyBinding(InputMap inputMap, ActionMap actionMap, int keyCode, String actionName, Action action)
+  {
+    KeyStroke keyStroke = KeyStroke.getKeyStroke(keyCode, 0);
+    setKeyBinding(inputMap, actionMap, keyStroke, actionName, action);
   }
   
   private void setKeyBinding(InputMap inputMap, ActionMap actionMap, String keyString, String actionName, Action action)
   {
     KeyStroke keyStroke = KeyStroke.getKeyStroke(keyString);
+    setKeyBinding(inputMap, actionMap, keyStroke, actionName, action);
+  }
+  
+  private void setKeyBinding(InputMap inputMap, ActionMap actionMap, KeyStroke keyStroke, String actionName, Action action)
+  {
     inputMap.put(keyStroke, actionName);
     actionMap.put(actionName, action);
   }
@@ -166,6 +188,9 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     menuBar.add(fileMenu);
     return menuBar;
   }
+
+  public void decreaseTileSize() {  getCurrentWorkingPane().decreaseTileSize(); }
+  public void increaseTileSize() {  getCurrentWorkingPane().increaseTileSize(); }
   
   /**
    * Return a menu (not a menu item) where the menu name is accessed with the given

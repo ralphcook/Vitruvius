@@ -21,7 +21,10 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
   private static final long serialVersionUID = 1L;
   
   int         tileSize = -1;      // # of pixels per tile edge
-  Dimension   currentTileSize;    // number of rows and columns of tiles for the current panel size.
+  public int getTileSize() { return tileSize; }
+  
+  Dimension   currentMapTileSize;     // number of rows and columns of tiles for the current panel size.
+  
   TileArray   tileArray = null;   // new form of pictures array
   public TileArray getTileArray() { return tileArray; }
   
@@ -32,7 +35,7 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
     int defaultColumns  = 100;
     int defaultRows     = 100;
     tileArray = new TileArray();
-    currentTileSize = new Dimension(defaultRows, defaultColumns);
+    currentMapTileSize = new Dimension(defaultRows, defaultColumns);
     Dimension pixelSize = new Dimension(defaultRows*tileSize, defaultColumns*tileSize);
     setAllPanelSizes(pixelSize);
     setLayout(null);
@@ -48,7 +51,37 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
     setMaximumSize(pixelSize);
   }
 
-//  /**
+  public void decreaseTileSize()
+  {
+    if (tileSize > 2)
+    {
+      tileSize -= 1;
+      resizePanel();
+      redrawTileArray();
+      repaint();
+    }
+  }
+  
+  public void increaseTileSize()
+  {
+    if (tileSize < 75)
+    {
+      tileSize += 1;
+      resizePanel();
+      redrawTileArray();
+      repaint();
+    }
+  }
+  
+  private void resizePanel()
+  {
+    int width = tileSize * currentMapTileSize.width;
+    int height = tileSize * currentMapTileSize.height;
+    Dimension newSize = new Dimension(width, height);
+    setAllPanelSizes(newSize);
+  }
+
+  //  /**
 //   * set the size of the images panel so that it is big enough to accommodate the given tile array.
 //   * @param tileArray
 //   */
@@ -82,17 +115,15 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
   public void setTileArray(TileArray newTileArray)
   {
     tileArray = newTileArray;
-    // Ensure the panel is big enough for the map.
+    // Ensure the panel is at least big enough for the tileArray;
+    //    enlarge it if not.
     Dimension tileArraySize = tileArray.getSize();
     Dimension screenSize = calculateTileArrayScreenSize(tileArraySize);
     if (panelTooSmall(screenSize))
     {
       setAllPanelSizes(screenSize);
     }
-
-    removeAll();
-    drawTileArray(tileArray);
-    repaint();
+    redrawTileArray();
   }
 
   private Dimension calculateTileArrayScreenSize(Dimension tileArraySize)
@@ -115,10 +146,9 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
    * from tile size and TileArray position.
    * @param tileArray
    */
-  private void drawTileArray(TileArray tileArray)
+  private void redrawTileArray()
   {
     removeAll();
-    this.tileArray = tileArray;
     if (tileArray != null)
     {
       int rowNumber = 0;

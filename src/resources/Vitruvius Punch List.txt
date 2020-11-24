@@ -3,32 +3,29 @@ Vitruvius punch list.
 
 Do file extensions need to be internationalized?
 
-prevent writing in the messages text area -- perhaps provide a way to clear it of text entirely.
-
-*get the map images panel sizing straightened out. We might need to display it
-as an x-by-y tile count or something. 
-
-Menu bar: '*' for menus applying to both working panes, 'G' for glyphy tool only.
+prevent user from writing in the messages text area -- perhaps provide a way to clear it of text entirely.
 
 implement preferences for the glyphy tool -- currently commented out, see TODO lines.
 
+implement Menu bar: 'B' for menus applying to both working panes, 'G' for glyphy tool only.
+
 File
-*	open
-*	save
-*	close (or clear?)
+B	open
+B	save
+B	close (or clear?)
 -	exit
 Images
-*	set window size
-*	decrease tile size
-*	increase tile size
+B	set window size
+B	decrease tile size
+B	increase tile size
 G	update image panel
 G	transfer Image to DnD
 HTML
-*	generate full HTML
-*	generate forum HTML
+B	generate full HTML
+B	generate forum HTML
 Help
-*	program help
-*	credits / about
+B	program help
+B	credits / about
 
 from Bianca:
 	*put the cursor back on the screen when dragging a building.
@@ -36,24 +33,8 @@ from Bianca:
 	*additional button for deleting, maybe backspace
 	*first item in dropdowns somehow? selecting top one twice seems weird.
 	*right-click not easy on map, make another way to do that. Escape?
-	drag buildings already on map.
+	*drag buildings already on map.
 	
-
-*Set up key bindings for hot keys.
-
-*Consider key bindings instead of key listener dependent on focus.
-
-*implement image panel sizing, with scroll bars where necessary. 
-
-implement clicking-and-dragging glyphs already on the panel
-
-Implement sending tile size into GlassPaneWrapper from 
-DragNDrop panel, and allowing the user to change the tile size
-
-tileSize -- currently hard-coded in the images pane, the panel containing the
-images pane does not have a variable for tilesize at the moment. Tile size 
-makes sense for both of the display panels, but they don't need to be the same
-and it might be useful if they changed separately.
 
 implement multiple glyph selection?
 
@@ -67,12 +48,11 @@ Button to clear panel?
 
 glyphs to add: well, aqueduct(h&v), boatyard
 
-*track whether image being built has changed since last read/write,
-warn on exit/read
-
 Larger font for messages text panel.
 
 There's something funny about the messages text panel sizing / scroll bars
+
+* done * ==================================================
 
 *implement scrolledpane for left and middle DnD panels
 
@@ -84,3 +64,26 @@ There's something funny about the messages text panel sizing / scroll bars
 
 *idea: FileHandling class, an instance could hold current files,
 most recent files, etc.
+
+*get the map images panel sizing straightened out. We might need to display it
+as an x-by-y tile count or something. 
+
+*Set up key bindings for hot keys.
+
+*Consider key bindings instead of key listener dependent on focus.
+
+*implement image panel sizing, with scroll bars where necessary. 
+
+*implement clicking-and-dragging glyphs already on the panel
+
+* Implement sending tile size into GlassPaneWrapper from 
+DragNDrop panel, and allowing the user to change the tile size
+
+*tileSize -- currently hard-coded in the images pane, the panel containing the
+images pane does not have a variable for tilesize at the moment. Tile size 
+makes sense for both of the display panels, but they don't need to be the same
+and it might be useful if they changed separately.
+
+*track whether image being built has changed since last read/write,
+warn on exit/read
+

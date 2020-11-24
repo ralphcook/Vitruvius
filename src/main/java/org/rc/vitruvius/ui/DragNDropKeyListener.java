@@ -11,11 +11,11 @@ import java.awt.event.KeyEvent;
  */
 public class DragNDropKeyListener extends KeyAdapter
 {
-  private DragNDropLayeredPane imagesPane = null;
+  private DragNDropLayeredPane layeredPane = null;
   
-  public DragNDropKeyListener(DragNDropLayeredPane imagesPane)
+  public DragNDropKeyListener(DragNDropLayeredPane layeredPane)
   {
-    this.imagesPane = imagesPane;
+    this.layeredPane = layeredPane;
   }
   
   @Override
@@ -26,7 +26,7 @@ public class DragNDropKeyListener extends KeyAdapter
     {
     case KeyEvent.VK_BACK_SPACE:
     case KeyEvent.VK_DELETE:
-      imagesPane.deleteSelectedItem();
+      layeredPane.deleteSelectedItem();
       break;
     }
   }

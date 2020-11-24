@@ -60,6 +60,8 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   private FileHandler         fileHandler             = null;
   private File                currentlyOpenFile       = null;
   
+  private final int           INITIAL_TILE_SIZE       = 25;
+  
   /**
    * Create the DragNDrop panel
    */
@@ -71,7 +73,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     this.fileHandler = new FileHandler(mainFrame);
     
     JPanel leftPanel   = createLeftPanel(); 
-           layeredPane = new DragNDropLayeredPane(this, userMessageListener);
+           layeredPane = new DragNDropLayeredPane(this, userMessageListener, INITIAL_TILE_SIZE);
     
     JScrollPane leftScrollPane = new JScrollPane(leftPanel);
     JScrollPane middleScrollPane = new JScrollPane(layeredPane);
@@ -176,7 +178,6 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
                                 Object selectedItem = cBox.getSelectedItem();
                                 if (selectedItem instanceof Picture)
                                 {
-                                  @SuppressWarnings("unchecked")
                                   Picture selectedPicture = (Picture) selectedItem;
                                   DraggablePicture draggablePicture = new DraggablePicture(selectedPicture);
                                   GlyphSelectionEvent gsEvent = new GlyphSelectionEvent(this, "select", draggablePicture);
@@ -482,15 +483,13 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   @Override
   public void decreaseTileSize()
   {
-    // TODO Auto-generated method stub
-    
+    layeredPane.decreaseTileSize();
   }
 
   @Override
   public void increaseTileSize()
   {
-    // TODO Auto-generated method stub
-    
+    layeredPane.increaseTileSize();
   }
 
   @Override

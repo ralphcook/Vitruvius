@@ -7,14 +7,20 @@ import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
 
 /**
- * When added as a MouseListener, dispatches the mouse event to the 
- * next component up the UI hierarchy; if there isn't one, it does nothing.
+ * When added as a MouseListener, dispatches mousePressed and mouseDragged events
+ * to the next component up the UI hierarchy; if there isn't one, it does nothing.
+ * 
  * @author rcook
  *
  */
 public class PassAlongMousePressedListener extends MouseAdapter
 {
-  public void mousePressed(MouseEvent e)
+  public static void say(String s) { System.out.println(s); }
+  
+  public void mousePressed(MouseEvent e) { passAlongEvent(e); }
+  public void mouseDragged(MouseEvent e) { passAlongEvent(e); }
+  
+  private void passAlongEvent(MouseEvent e)
   {
     Component component = (Component)e.getSource();
     Component parent    = component.getParent();
@@ -24,5 +30,4 @@ public class PassAlongMousePressedListener extends MouseAdapter
       parent.dispatchEvent(parentEvent);
     }
   }
-
 }

@@ -379,6 +379,9 @@ public class TileArray implements Iterable<TileRow>
     return tile;
   }
   
+  public Tile getTile(Point point) { return getTile(point.x, point.y); }
+  
+  
   /**
    * Return true iff there are no non-empty tiles in this array.
    * @return
