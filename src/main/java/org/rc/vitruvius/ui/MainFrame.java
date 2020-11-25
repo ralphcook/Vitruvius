@@ -23,12 +23,14 @@ import javax.swing.event.ChangeListener;
 import org.rc.vitruvius.UserMessageListener;
 import org.rc.vitruvius.model.FileHandler;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
+import org.rc.vitruvius.text.TextTranslator;
+import org.rc.vitruvius.ui.actions.DisplayHelpAction;
 import org.rc.vitruvius.ui.actions.EndDragAction;
+import org.rc.vitruvius.ui.actions.GenerateGlyphyImageAction;
+import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
 import org.rc.vitruvius.ui.actions.ImageClearAction;
 import org.rc.vitruvius.ui.actions.ProgramExitAction;
 import org.rc.vitruvius.ui.actions.TileSizeHandler;
-import org.rc.vitruvius.ui.actions.TileSizeHandler.Decrease;
-import org.rc.vitruvius.ui.actions.TileSizeHandler.Increase;
 
 import rcutil.swing.SavedWindowPositionJFrame;
 
@@ -59,17 +61,19 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
   public  VitruviusWorkingPane   getCurrentWorkingPane() { return currentWorkingPane; }
   public  void                   setCurrentWorkingPane(VitruviusWorkingPane pane) { currentWorkingPane = pane; }
   
-  TileSizeHandler tileSizeHandler = null;
+//  TileSizeHandler tileSizeHandler = null;
   
   private static final long serialVersionUID = 1L;
 
   public MainFrame() 
   {
+    TileSizeHandler.initialize(this);
     applicationPreferences = Preferences.userNodeForPackage(this.getClass());
+
     dragNDropPanel  = new DragNDropPanel(this, this, applicationPreferences);
     glyphyToolPanel = new GlyphyToolPanel(this, applicationPreferences);
     fileHandler = new FileHandler(this);
-    tileSizeHandler = new TileSizeHandler();
+    GenerateGlyphyImageAction.getSingleton().updateReferences(this, glyphyToolPanel, new TextTranslator(this));
   }
   
   /**
@@ -91,6 +95,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     tabbedPane.addTab(I18n.getString("glyphyToolTabbedPaneLabelText"), glyphyToolPanel);
     
     messagesTextArea = new JTextArea(5, 80);
+    messagesTextArea.setEditable(false);
     messagesTextArea.setFont(new Font("Arial", Font.BOLD, 14));    // new Font(Font.MONOSPACED, 20, Font.PLAIN);
     JScrollPane messagesScrollPane = new JScrollPane(messagesTextArea);
     
@@ -117,6 +122,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
             JTabbedPane tabbedPane = (JTabbedPane)source;
             VitruviusWorkingPane workingPane = (VitruviusWorkingPane)tabbedPane.getSelectedComponent();
             currentWorkingPane = workingPane;
+            currentWorkingPane.setGenerateImageActionStatus();
           }
         }
     );
@@ -136,10 +142,10 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     setKeyBinding(tpInputMap, tpActionMap, "control O", "Open",     fileHandler.getOpenAction());
     setKeyBinding(tpInputMap, tpActionMap, "control S", "Save",     fileHandler.getSaveAction());
     setKeyBinding(tpInputMap, tpActionMap, "ESCAPE",    "exitDrag", new EndDragAction(dragNDropPanel));
-    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_MINUS,       "decreaseTileSize", tileSizeHandler.new Decrease(this));
-    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_UNDERSCORE,  "decreaseTileSize", tileSizeHandler.new Decrease(this));
-    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_PLUS,        "increaseTileSize", tileSizeHandler.new Increase(this));
-    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_EQUALS,      "increaseTileSize", tileSizeHandler.new Increase(this));
+    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_MINUS,       "decreaseTileSize", TileSizeHandler.getDecreaseAction());
+    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_UNDERSCORE,  "decreaseTileSize", TileSizeHandler.getDecreaseAction());
+    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_PLUS,        "increaseTileSize", TileSizeHandler.getIncreaseAction());
+    setKeyBinding(tpInputMap, tpActionMap, KeyEvent.VK_EQUALS,      "increaseTileSize", TileSizeHandler.getIncreaseAction());
   }
   
   private void setKeyBinding(InputMap inputMap, ActionMap actionMap, int keyCode, String actionName, Action action)
@@ -173,24 +179,34 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     fileMenu.add(new JSeparator());
     fileMenu.add(new JMenuItem(new ProgramExitAction(mainFrame)));
     
-//    
-//    AbstractAction setWindowSizeAction = null; // new SetWindowSizeAction();
-//    AbstractAction decreaseTileSizeAction = null; // new DecreaseTileSizeAction();
-//    AbstractAction increaseTileSizeAction  = null; // new IncreaseTileSizeAction();
-//    
-//    AbstractAction glyphyUpdateImageAction = null; // new GlyphyUpdateImageAction();
-//    AbstractAction generateFullHTMLAction = null; // new GenerateFullHTMLAction();
-//    AbstractAction generateForumHTMLAction = null; // new GenerateForumHTMLAction();
-//    
+    JMenu viewMenu = getI18nJMenu("viewMenuName", "viewMenuMnemonicKey");
+    
+    viewMenu.add(new JMenuItem(TileSizeHandler.getIncreaseAction()));
+    viewMenu.add(new JMenuItem(TileSizeHandler.getDecreaseAction()));
+    viewMenu.add(new JMenuItem(GenerateGlyphyImageAction.getSingleton()));
+//    viewMenu.add(new JMenuItem(new GenerateImageAction(glyphyToolPanel, mainFrame, new TextTranslator(mainFrame))));
+    
+    JMenu htmlMenu = getI18nJMenu("htmlMenuName", "htmlMenuMnemonicKey");
+    
+    htmlMenu.add(new JMenuItem(new GenerateHtmlAction(this, GenerateHtmlAction.Target.FULL, I18n.getString("generateFullHtmlActionName"))));
+    htmlMenu.add(new JMenuItem(new GenerateHtmlAction(this, GenerateHtmlAction.Target.FORUM, I18n.getString("generateForumHtmlActionName"))));
+    
+    JMenu helpMenu = getI18nJMenu("helpMenuName", "helpMenuMnemonicKey");
+    helpMenu.add(new JMenuItem(new DisplayHelpAction(this)));
+    
 //    AbstractAction programHelpAction = null; // new ProgramHelpAction();
 //    AbstractAction creditsAction = null; // new CreditsAction();
     
     menuBar.add(fileMenu);
+    menuBar.add(viewMenu);
+    menuBar.add(htmlMenu);
+    menuBar.add(helpMenu);
     return menuBar;
   }
 
   public void decreaseTileSize() {  getCurrentWorkingPane().decreaseTileSize(); }
   public void increaseTileSize() {  getCurrentWorkingPane().increaseTileSize(); }
+  public void clearCurrentPanel() { getCurrentWorkingPane().clearPanel(); }
   
   /**
    * Return a menu (not a menu item) where the menu name is accessed with the given
@@ -216,7 +232,8 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
    * Put the given message in the user messages area, and add a newline to the end of it.
    */
   public void addMessage(String message)    { messagesTextArea.append(message); messagesTextArea.append("\n"); }
-  /**eee
+  
+  /**
    * Clear the user messages area.
    */
   public void clearMessages()               { messagesTextArea.setText(""); }

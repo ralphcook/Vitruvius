@@ -1,5 +1,7 @@
 package org.rc.vitruvius.model;
 
+import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
+
 /**
  * This interface defines actions supported by both the Drag-N-Drop
  * and the Glyphy tool "panes", i.e., the panes in the tabbed pane.
@@ -8,6 +10,11 @@ package org.rc.vitruvius.model;
  */
 public interface VitruviusWorkingPane
 {
+  /**
+   * set the status of the GenerateImageAction properly.
+   */
+  public void setGenerateImageActionStatus();
+  
   /**
    *   
    * @return
@@ -55,17 +62,10 @@ public interface VitruviusWorkingPane
   
   /**
    * Save the Information on the current image panel (the image panel
-   * of the current pane) as HTML (file or clipboard?)  
+   * of the current pane) as HTML on the clipboard.
    */
-  public void     generateFullHTML();
+  public String   generateHtml(GenerateHtmlAction.Target target);
   
-  /**
-   * Save the information on the current image panel (the image panel of the 
-   * current pane) as HTML that can be included on another webpage, such as the
-   * Heavengames Forum.
-   */
-  public void     generateForumHTML();
-
   /**
    * Display a help dialog for the current pane.
    */

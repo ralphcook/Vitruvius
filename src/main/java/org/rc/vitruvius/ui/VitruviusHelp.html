@@ -1,0 +1,107 @@
+<html>
+
+<head>
+	<style>
+		body { font-family:Arial font-size: 16}
+	</style>
+</head>
+
+<body>
+
+<h2> Vitruvius - A layout planner for Caesar III </h2>
+
+Vitruvius is a stand-alone program that allows the user to create graphical arrangements of
+image glyphs from the Sierra game "Caesar III". This guide explains how it works.
+
+<h3> Drag-and-Drop of Glyphs </h3>
+
+The first panel displays a place for a single glyph and a set of drop-downs on the left, and a blank screen
+for building up a collection of glyphs on the right. The user selects a glyph name from a drop-down, and its
+glyph 
+appears in the box at the top left. He then moves his mouse cursor over the "map panel" on the right,
+and the glyph appears under his
+cursor as he moves it. He positions the glyph where he wants it and clicks the left button; that places a copy of that
+glyph at that place, and the glyph remains under the cursor in case he wants to place another one (this
+matches the behavior of building structures in the game). 
+
+<P>Once he is done with that glyph, he may clear that dragging operation by 
+<ul>
+<li>right-clicking the mouse, 
+<li>clicking the 'Clear' button just below the image on the top left, or 
+<li>by pressing the keyboard's "Escape" key.
+</ul>
+
+Selecting the drop-down top element ("Roads", "Houses", etc.) has no effect.
+
+<P>Vitruvius does not currently support holding down the mouse button while dragging the glyph across the 
+screen to create a line of glyphs, such as the game does with roads and plazas.
+
+<P>If the user 'hovers' the mouse over any glyph, the name of the corresponding building is displayed.
+
+<h3> Deleting and Moving Glyphs </h3>
+
+If the user wants to delete a glyph from the main panel, he clicks on the glyph and presses 
+the "Delete" or "Backspace" key on his keyboard. Clicking on the glyph puts a black border around it, 
+though that is hard to see on some glyphs.
+
+<P>If he wants to move a glyph, he double-clicks it; the glyph then moves with his mouse cursor
+in the same way as a glyph chosen from the drop-downs. In this case, clicking to place the glyph in a 
+new location then ends the dragging operation, instead of allowing placement of more glyphs of the
+same kind.
+
+<h3> Changing Glyph Size </h3>
+
+By either selecting the "View / Increase Image Sizes" or pressing the "Plus" or "Equals" key on the keyboard,
+the user increases the size of glyphs; doing any of those options repeatedly continues to increase the size 
+up to a maximum. Likewise "View / Decrease Image Sizes" or pressing the "Minus" or "Underscore" keys will
+decrease the glyph sizes. There is currently no key to return to the default size, nor does the program save
+the size selected between runs of the program.
+
+<h3> Saving and Reading Files </h3>
+
+The File options work as most programs do; "Save" stores the current glyph collection in a form the program
+can read again, "Save As" allows the user to choose a different filename than was used before. "Open" reads
+a previously stored file. Control-S executes the Save function, Control-O the open function.
+
+<h3> Generating HTML </h3>
+
+<P>The program will generate HTML suitable for including in the Heavengames (or other) forum, and also HTML
+that is a complete standalone web page. Use the options under the HTML menu. The current version of the program
+puts the HTML text on the computer's clipboard; the user may then use the "Paste" function to put it into an
+editor or anywhere else that accepts a paste operation.
+
+<P>The displayed HTML also supports 'hovertext' indicating the building name, just as Vitruvius does. 
+
+<h3> The Glyphy Tool </h3>
+
+By clicking on the second tab in the main window, the user can enter text to represent glyphs and have 
+Vitruvius generate 
+the layout based on that text - this functionality was available earlier to users of the Heavengames
+website as a JavaScript tool with a layout limit of 40x40 'tiles', where a glyph can occupy 1 or more
+tiles.
+
+<P>space characters and periods are placeholders in the text; for example, if the user puts down an 'r' 
+for a reservoir, he can use period characters to space the rest of the 3x3 tile space so that no other glyphs
+mistakenly overlap it. If there is overlap of glyphs, Vitruvius warns the user that some placement could
+not be made, but continues to place whatever glyphs occupy their corresponding places first. 
+
+<P>Any time the text is changed, the "Update Image" button is enabled; the image is only updated on user
+command. There are also buttons for generating full and included HTML, as well as one for displaying a text
+file containing all the characters and their corresponding glyphs. That information is put in a non-modal 
+dialog, so that it can remain visible while the user enters text.
+
+<P> File Open/Save/Save As, used when the glyphy tool panel is up, all work on text files containing the 
+glyphy text. As far as is known at the moment, this is compatible with text used for the original glyphy
+tool, but that has not been tested much.  
+
+<h3> Other Tidbits </h3>
+
+<P> The program currently limits its space to 100x100 'tiles'; some glyphs (road, garden, plaza) only
+occupy one tile, others multiple (reservoirs are 3x3 tiles, markets 2x2, etc.). Allowing the user to
+specify a different map size is planned as a feature.
+
+<P> There is also an option for clearing the map panel currently displayed, with a warning if it contains
+unsaved content.  
+
+</body>
+</html>

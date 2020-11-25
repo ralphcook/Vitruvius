@@ -20,14 +20,10 @@ public class HtmlGenerator
   private static String startHtml = "<html>\n";
   private static String endHtml   = "</html>\n";
   
-  private static void say(String s) { System.out.println(s); }
+  public static void say(String s) { System.out.println(s); }
 
   @SuppressWarnings("unused")
-  private static void say(String formatString, Object ... args) 
-  { 
-    String resultString = String.format(formatString, args);
-    say(resultString);
-  }
+  public  static void say(String formatString, Object ... args) { System.out.println(String.format(formatString, args)); }
   
   /**
    * Generate HTML suitable as an entire HTML page.

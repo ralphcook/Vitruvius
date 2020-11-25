@@ -91,6 +91,15 @@ public class TileArray implements Iterable<TileRow>
     if (rowsAndColumnsDirty) { updateSize(); }
     return size.height;
   }
+  
+  /**
+   * Remove all tiles from the tile array, and reset the 'dirty' indicator to false.
+   */
+  public void clear() 
+  { 
+    tileRows = new ArrayList<>();
+    rowsAndColumnsDirty = false;
+  }
 
   /**
    * return the number of non-empty columns in the enclosing rectangle

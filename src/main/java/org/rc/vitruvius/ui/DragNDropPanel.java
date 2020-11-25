@@ -35,6 +35,8 @@ import org.rc.vitruvius.model.DraggablePicture;
 import org.rc.vitruvius.model.FileHandler;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
+import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
+import org.rc.vitruvius.ui.actions.GenerateGlyphyImageAction;
 
 /**
  * Panel for drag-n-drop Caesar III map planning, including ways to drag glyphs 
@@ -73,7 +75,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     this.fileHandler = new FileHandler(mainFrame);
     
     JPanel leftPanel   = createLeftPanel(); 
-           layeredPane = new DragNDropLayeredPane(this, userMessageListener, INITIAL_TILE_SIZE);
+           layeredPane = new DragNDropLayeredPane(mainFrame, this, userMessageListener, INITIAL_TILE_SIZE);
     
     JScrollPane leftScrollPane = new JScrollPane(leftPanel);
     JScrollPane middleScrollPane = new JScrollPane(layeredPane);
@@ -313,6 +315,8 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   public static String        SAVED_TILE_FILE_FILENAME_KEY    = "savedOpenFileFilename";
   public static String        SAVED_TILE_FILE_FILENAME_EXTENSION = "tiles";
   
+  @Override public void setGenerateImageActionStatus() { GenerateGlyphyImageAction.getSingleton().setEnabled(false); }
+  
   @Override public String getDisplayName() { return I18n.getString("dragNDropPaneName"); }
   
   @Override
@@ -469,8 +473,7 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   @Override
   public void clearPanel()
   {
-    // TODO Auto-generated method stub
-    
+    layeredPane.clearPanel();
   }
 
   @Override
@@ -493,17 +496,18 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
   }
 
   @Override
-  public void generateFullHTML()
+  public String generateHtml(GenerateHtmlAction.Target target)
   {
-    // TODO Auto-generated method stub
+    String result = null;
+    TileArray tiles = layeredPane.getTileArray();
+    if (!tiles.isEmpty())
+    {
+      if (target == GenerateHtmlAction.Target.FULL) 
+      { result = HtmlGenerator.generateFullHtml(tiles); }
+      else  { result = HtmlGenerator.generateForumHtml(tiles); }
+    }
     
-  }
-
-  @Override
-  public void generateForumHTML()
-  {
-    // TODO Auto-generated method stub
-    
+    return result;
   }
 
   @Override

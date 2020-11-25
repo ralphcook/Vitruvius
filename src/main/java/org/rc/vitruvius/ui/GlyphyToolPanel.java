@@ -9,9 +9,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.prefs.Preferences;
 
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -25,10 +25,9 @@ import javax.swing.event.DocumentListener;
 import org.rc.vitruvius.model.FileHandler;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
-import org.rc.vitruvius.text.TextTranslator;
 import org.rc.vitruvius.ui.actions.DisplayGlyphyHelpAction;
 import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
-import org.rc.vitruvius.ui.actions.GenerateImageAction;
+import org.rc.vitruvius.ui.actions.GenerateGlyphyImageAction;
 
 /**
  * This panel supports the entry of a block of characters representing glyphs
@@ -45,25 +44,22 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   
   public static void say(String s) { System.out.println(s); }
 
-  private MainFrame   userMessageListener     = null;
+  private MainFrame   mainFrame               = null;
   private Preferences applicationPreferences  = null;
   
   private FileHandler fileHandler             = null;
   
   private JTextArea   textMapTextArea         = null;   // contains text representing a portion of a map
-  private MapPanel    imagesPanel             = null;   // contains images representing a portion of a map
+  private MapPanel    mapPanel                = null;   // contains images representing a portion of a map
   private JButton     generateImageButton     = null;   // generates the image on the images panel;
   
-  // dirtyText true => text does not match image; only effect is enabling button to update the image.
-  // unsavedChanges true => text does not match file
-  // if text is changed, by definition it does not match its file.
-  // dirty text status is only checked within this class; unsaved changes is available elsewhere.
-//  private boolean dirtyText = false; 
-//  public boolean  textDirty()             { return dirtyText; }
+  private boolean dirtyText = false;
+  public boolean  textDirty()             { return dirtyText; }
   public void     setDirtyText(boolean b) 
   { 
-//    dirtyText = b; 
-    if (b) { setUnsavedChanges(true); } generateImageButton.setEnabled(b); 
+    dirtyText = b; 
+    if (b) { setUnsavedChanges(true); } 
+    GenerateGlyphyImageAction.getSingleton().setEnabled(b);
   } 
   
   private boolean unsavedChanges = false;
@@ -74,7 +70,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   
   public GlyphyToolPanel(MainFrame mainFrame, Preferences applicationPreferences)
   {
-    this.userMessageListener = mainFrame;
+    this.mainFrame = mainFrame;
     this.applicationPreferences = applicationPreferences;
     fileHandler = new FileHandler(mainFrame);
     
@@ -88,8 +84,8 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
     JScrollPane textMapScrollPane = new JScrollPane(textMapTextArea);
     
     // create a panel where we'll display a resulting set of map images
-    imagesPanel = new MapPanel(25);
-    JScrollPane imagesScrollPane = new JScrollPane(imagesPanel);
+    mapPanel = new MapPanel(25);
+    JScrollPane imagesScrollPane = new JScrollPane(mapPanel);
     
     // the text area and the images panel go in a split pane so the user
     // can adjust their sizes.
@@ -107,6 +103,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
     buttonsPanel.setLayout(gridLayout);
 
             generateImageButton  = new JButton();
+            generateImageButton.setAction(GenerateGlyphyImageAction.getSingleton());
             generateImageButton.setEnabled(false);
     JButton generateForumHtmlButton     = new JButton();
     JButton generateFullHtmlButton      = new JButton();
@@ -122,13 +119,12 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
     add(mainSplitPane, BorderLayout.CENTER);
     add(buttonsPanelScrollPane, BorderLayout.WEST);
     
-    GenerateImageAction generateImageAction = new GenerateImageAction(this, mainFrame, new TextTranslator(mainFrame));
-    generateImageButton.setAction(generateImageAction);
+//    generateImageButton.setText("Update Image");
     GenerateHtmlAction generateForumHtmlAction 
-      = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FORUM, I18n.getString("forumHTMLButtonText"));
+      = new GenerateHtmlAction(mainFrame, GenerateHtmlAction.Target.FORUM, I18n.getString("forumHTMLButtonText"));
     generateForumHtmlButton.setAction(generateForumHtmlAction);
     GenerateHtmlAction generateFullHtmlAction 
-      = new GenerateHtmlAction(mainFrame, this, GenerateHtmlAction.Target.FULL, I18n.getString("fullHTMLButtonText"));
+      = new GenerateHtmlAction(mainFrame, GenerateHtmlAction.Target.FULL, I18n.getString("fullHTMLButtonText"));
     generateFullHtmlButton.setAction(generateFullHtmlAction);
     
     JDialog helpDialog = new GlyphyHelpDialog(mainFrame);
@@ -143,8 +139,8 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
    */
   public void setTileArray(TileArray tileArray)
   {
-    imagesPanel.setTileArray(tileArray);
-    Container c = imagesPanel.getParent();
+    mapPanel.setTileArray(tileArray);
+    Container c = mapPanel.getParent();
     c.repaint();
     generateImageButton.setEnabled(false);
     setDirtyText(false);    // also sets unsavedChanges to false;
@@ -163,6 +159,11 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   @Override public void changedUpdate(DocumentEvent e) { }
   
   // Vitrovius Working Pane methods
+  @Override public void setGenerateImageActionStatus()
+  {
+    boolean enabled = textDirty();
+    GenerateGlyphyImageAction.getSingleton().setEnabled(enabled);
+  }
   @Override public String getDisplayName() { return I18n.getString("glyphyToolPaneName"); }
   @Override
   public void openFile()
@@ -191,7 +192,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
       {
         if (!fileChoice.succeeded())
         {
-          userMessageListener.addMessage(fileChoice.getMessage());
+          mainFrame.addMessage(fileChoice.getMessage());
         } 
         else
         {
@@ -209,7 +210,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
           catch (Exception e)
           {
             message = I18n.getString("errorOpeningFile", filename, e.getMessage());
-            userMessageListener.addMessage(message);
+            mainFrame.addMessage(message);
           }
         }
       }
@@ -223,7 +224,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
       String filename = file.getCanonicalPath();
       reader = new BufferedReader(new FileReader(file));
       String line = reader.readLine();
-      String newLine = String.format("%n");
+      String newLine = "\n"; // System.getProperty("line.separator"); // String.format("%n");
       if (line == null) 
       { 
         if (reader != null) { reader.close(); }
@@ -258,7 +259,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
                             setUnsavedChanges(false);
                           }
       catch (Exception e) { message = I18n.getString("fileCouldNotBeSaved", filepath); }
-      finally             { userMessageListener.addMessage(message);      }
+      finally             { mainFrame.addMessage(message);      }
     }
   }
   
@@ -336,16 +337,27 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
             resultMessage = I18n.getString("fileCouldNotBeSaved", filepath);
           }
         }
-        userMessageListener.addMessage(resultMessage);
+        mainFrame.addMessage(resultMessage);
       }
     }
   }
   @Override
   public void clearPanel()
   {
-    // TODO Auto-generated method stub
-    setUnsavedChanges(false);
+    String message = I18n.getString("confirmCloseWithoutSave");
+    String title   = I18n.getString("confirmCloseDialogTitle");
+    int option = JOptionPane.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION);
+    if (option == JOptionPane.OK_OPTION)
+    {
+      try 
+      { 
+        textMapTextArea.setText("");
+        setUnsavedChanges(false);
+      }
+      catch (Exception exception) { throw new RuntimeException("problem in GlyphyToolPanel.clearPanel()", exception); }
+    }
   }
+  
   @Override
   public void setPanelSize()
   {
@@ -355,26 +367,36 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   @Override
   public void decreaseTileSize()
   {
-    // TODO Auto-generated method stub
-    
+    mapPanel.decreaseTileSize();
   }
   @Override
   public void increaseTileSize()
   {
-    // TODO Auto-generated method stub
-    
+    mapPanel.increaseTileSize();
   }
   @Override
-  public void generateFullHTML()
+  public String generateHtml(GenerateHtmlAction.Target target)
   {
-    // TODO Auto-generated method stub
-    
-  }
-  @Override
-  public void generateForumHTML()
-  {
-    // TODO Auto-generated method stub
-    
+    String result = null;
+    if (textDirty())
+    {
+      JOptionPane.showMessageDialog(mainFrame, 
+                                    I18n.getString("cannotGenerateHtmlDirtyTextMessage"), 
+                                    I18n.getString("cannotGenerateHtmlDirtyTextTitle"), 
+                                    JOptionPane.INFORMATION_MESSAGE);
+    }
+    else
+    {
+      TileArray tiles = mapPanel.getTileArray(); 
+      
+      if (!tiles.isEmpty())
+      {
+        if (target == GenerateHtmlAction.Target.FULL) 
+              { result = HtmlGenerator.generateFullHtml(tiles); }
+        else  { result = HtmlGenerator.generateForumHtml(tiles); }
+      }
+    }
+    return result;
   }
   @Override
   public void displayHelp()

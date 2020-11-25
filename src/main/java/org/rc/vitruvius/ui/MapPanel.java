@@ -53,7 +53,7 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
 
   public void decreaseTileSize()
   {
-    if (tileSize > 2)
+    if (tileSize >= 15)
     {
       tileSize -= 1;
       resizePanel();
@@ -64,7 +64,7 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
   
   public void increaseTileSize()
   {
-    if (tileSize < 75)
+    if (tileSize <= 75)
     {
       tileSize += 1;
       resizePanel();
@@ -79,6 +79,13 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
     int height = tileSize * currentMapTileSize.height;
     Dimension newSize = new Dimension(width, height);
     setAllPanelSizes(newSize);
+  }
+  
+  public void clearPanel()
+  {
+    removeAll();
+    tileArray.clear();
+    repaint();
   }
 
   //  /**
@@ -124,6 +131,7 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
       setAllPanelSizes(screenSize);
     }
     redrawTileArray();
+    repaint();
   }
 
   private Dimension calculateTileArrayScreenSize(Dimension tileArraySize)

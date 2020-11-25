@@ -1,6 +1,10 @@
 Vitruvius punch list.
 ---------------------
 
+test creating text files in an editor (or two) and generating maps from them (a la Glyphy tool)
+
+saving blank map panels seems to be broken; doesn't say there's nothing to save.
+
 Do file extensions need to be internationalized?
 
 prevent user from writing in the messages text area -- perhaps provide a way to clear it of text entirely.

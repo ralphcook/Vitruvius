@@ -48,7 +48,7 @@ public class TextTranslator
   public TileArray createTileArray(String text)
   {
     TileArray tileArray = new TileArray();
-    String[] lines = text.split("\n");
+    String[] lines = text.split("\n");          // TODO: investigate what this should be.
     
     int currentCharacterRow = 0;
     for (String line :  lines)
