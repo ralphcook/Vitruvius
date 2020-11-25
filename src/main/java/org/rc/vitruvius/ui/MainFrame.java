@@ -192,7 +192,8 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     htmlMenu.add(new JMenuItem(new GenerateHtmlAction(this, GenerateHtmlAction.Target.FORUM, I18n.getString("generateForumHtmlActionName"))));
     
     JMenu helpMenu = getI18nJMenu("helpMenuName", "helpMenuMnemonicKey");
-    helpMenu.add(new JMenuItem(new DisplayHelpAction(this)));
+    helpMenu.add(new JMenuItem(new DisplayHelpAction(this, "VitruviusHelp.html", "displayHelpActionName", "displayHelpMnemonicKey")));
+    helpMenu.add(new JMenuItem(new DisplayHelpAction(this, "VitruviusAbout.html", "displayAboutActionName", "displayAboutMnemonicKey")));
     
 //    AbstractAction programHelpAction = null; // new ProgramHelpAction();
 //    AbstractAction creditsAction = null; // new CreditsAction();

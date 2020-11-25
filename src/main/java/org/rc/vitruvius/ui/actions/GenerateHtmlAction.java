@@ -8,10 +8,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
-import org.rc.vitruvius.model.TileArray;
-import org.rc.vitruvius.text.TextTranslator;
-import org.rc.vitruvius.ui.GlyphyToolPanel;
-import org.rc.vitruvius.ui.HtmlGenerator;
 import org.rc.vitruvius.ui.I18n;
 import org.rc.vitruvius.ui.MainFrame;
 

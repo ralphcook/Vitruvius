@@ -9,21 +9,37 @@ import java.io.InputStream;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
 
 public class HtmlDialog extends JDialog implements ActionListener
 {
   private static final long serialVersionUID = 1L;
   
-  MainFrame mainFrame = null;
+  JFrame mainFrame = null;
+  String resourceName = null;
+  
+  // later we'll cache dialogs as we create them.
+//  private static HashMap<String, HtmlDialog> dialogMap = new HashMap<>();
+  
+  /**
+   * Display the HTML from the given resource name (which is relative
+   * to the package of HtmlDialog, not the package of the caller).
+   * @param resourceName
+   */
+  public static void display(JFrame mainFrame, String resourceName)
+  {
+    HtmlDialog dialog = new HtmlDialog(mainFrame, resourceName);
+    dialog.setVisible(true);
+  }
 
-  public HtmlDialog(MainFrame mainFrame)
+  public HtmlDialog(JFrame mainFrame, String resourceName)
   {
     this.mainFrame = mainFrame;
+    this.resourceName = resourceName;
     createUI();
   }
   
@@ -40,11 +56,7 @@ public class HtmlDialog extends JDialog implements ActionListener
     HTMLEditorKit kit = new HTMLEditorKit();
     htmlPane.setEditorKit(kit);
     
-    // example adds some CSS StyleSheet rules here
-    
-    // we depart from the example at this point; trying to use JEditorPane's read(InputStream, Object)
-    // method to read in from a file
-    InputStream inStream = getClass().getResourceAsStream("VitruviusHelp.html");
+    InputStream inStream = getClass().getResourceAsStream(resourceName);
     Document doc = kit.createDefaultDocument();
     try { htmlPane.read(inStream, doc);  }
     catch (Exception e) { e.printStackTrace(); }

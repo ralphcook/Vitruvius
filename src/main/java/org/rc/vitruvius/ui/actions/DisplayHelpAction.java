@@ -14,22 +14,28 @@ public class DisplayHelpAction extends AbstractAction
   private static final long serialVersionUID = 1L;
   
   private MainFrame mainFrame = null;
+  private String    resourceName = null;
   
-  public DisplayHelpAction(MainFrame mainFrame)
+  public DisplayHelpAction(MainFrame mainFrame, String resourceName, String nameKey, String mnemonicKey)
   {
-    super(I18n.getString("displayHelpActionName"));
+    super(I18n.getString(nameKey));
     this.mainFrame = mainFrame;
+    this.resourceName = resourceName;
     
-    String mnemonicKey = I18n.getString("displayHelpMnemonicKey");
-    int keyCode = KeyEvent.getExtendedKeyCodeForChar(mnemonicKey.charAt(0));
-    putValue(MNEMONIC_KEY, keyCode);
+    if (mnemonicKey != null)
+    {
+      String mnemonic = I18n.getString(mnemonicKey);
+      int keyCode = KeyEvent.getExtendedKeyCodeForChar(mnemonic.charAt(0));
+      putValue(MNEMONIC_KEY, keyCode);
+    }
   }
 
   @Override
   public void actionPerformed(ActionEvent e)
   {
-    HtmlDialog dialog = new HtmlDialog(mainFrame);
-    dialog.setVisible(true);
+    HtmlDialog.display(mainFrame, resourceName);
+//    HtmlDialog dialog = new HtmlDialog(mainFrame);
+//    dialog.setVisible(true);
   }
 
 }

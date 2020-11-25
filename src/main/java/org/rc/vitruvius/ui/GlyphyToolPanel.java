@@ -11,7 +11,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.prefs.Preferences;
 
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -26,8 +25,8 @@ import org.rc.vitruvius.model.FileHandler;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
 import org.rc.vitruvius.ui.actions.DisplayGlyphyHelpAction;
-import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
 import org.rc.vitruvius.ui.actions.GenerateGlyphyImageAction;
+import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
 
 /**
  * This panel supports the entry of a block of characters representing glyphs
