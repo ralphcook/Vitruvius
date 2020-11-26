@@ -52,7 +52,7 @@ HEALTH
 B 1x1 barber
 b 1x1 bath
 D 1x1 doctor
-+ 1x1 hospital
++ 3x3 hospital
 
 EDUCATION
 A 3x3 academy
@@ -82,5 +82,4 @@ T 2x2 tower
 
 GOVERNMENT
 f 2x2 forum
-k 4x4 gov-small (4x4 building, don't know what this is)
-
+k 4x4 governor's villa

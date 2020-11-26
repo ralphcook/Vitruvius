@@ -160,65 +160,65 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
         }
     );
 
-    mapPanel.addMouseMotionListener
-    (
-        new MouseAdapter()
-        {
-          public void mouseDragged(MouseEvent event)
-          {
-            // in our world here, 'dragging' refers to the user clicking on an icon that
-            // is already on the screen, keeping his mouse button down, and dragging that
-            // icon to another location.
-            // when the user clicks on a drop-down or whatever to put an icon on the screen
-            // that was not there before, we use the 'mouseMoved' event for that. So that's
-            // 'moving' something, not 'dragging' it, even though we think of it as dragging.
-            // There is a 'draggable' interface we use for objects that might be moved either
-            // way; this class has an instance variable for the item, whether it is being
-            // dragged or moved.
-            // if this event determines that something is currently selected and that the mouse
-            // event is still on that item, that means it is the first such event in a dragging
-            // operation. We detach the icon from the screen, determine what the underlying
-            // item is and remove it from the tileArray, and make a Draggable out of it so
-            // it is in that instance variable ready to move on the glasspane.
-            // 
-            // if there is already a draggable in place, can we assume we're dragging it?
-            // if it was a new draggable, a mouse button press would have ended its drag, 
-            // so there would be no draggable. The only other time we have a draggable is if
-            // we're actually dragging something, so that assumption sounds safe.
-            //
-            // So the first time this event is received, determine if we have a selected label
-            // and if that selected label is under the mouse cursor at this first drag event. 
-            // If both those are true, create its Draggable and make it the current dragged 
-            // object.
-            if (draggableItem == null)
-            {
-              Component c = mapPanel.findComponentAt(event.getX(), event.getY());
-              // since we aren't currently dragging something; see if we're on top of one to drag.
-              // if we're not, we'll just quietly exit the method...
-              if ((selectedItem != null) && (c == selectedItem))
-              {
-                // ok, we're dragging this puppy. Create its draggable; we'll need the underlying picture
-                // (only attempting to support dragging individual glyphs for now)
-                Point selectedScreenLocation = selectedItem.getLocation();                            // find our item
-                Point selectedTileLocation = calculateIndexTile(selectedScreenLocation);              // get its index tile location
-                Tile selectedTile = mapPanel.getTileArray().getTile(selectedTileLocation);            // and its index tile.
-                
-                mapPanel.getTileArray().deletePictureTiles(selectedTileLocation);                     // remove item being dragged from tile array
-                mapPanel.remove(selectedItem);
-                
-                draggableItem = new DraggablePicture(selectedTile.picture());                         // make our current draggableItem one from the picture in that tile.
-//                draggableJLabel = draggableItem.getJLabelJustIcon(mapPanel.getTileSize());            // likewise with our draggableJLabel
-                activateDraggingOrMoving(draggableItem);
-                setToCursorPosition(draggableJLabel, event.getX(), event.getY());
-              }
-            }
-            else
-            {
-              setToCursorPosition(draggableJLabel, event.getX(), event.getY());
-            }
-          }
-        }
-    );
+//    mapPanel.addMouseMotionListener
+//    (
+//        new MouseAdapter()
+//        {
+//          public void mouseDragged(MouseEvent event)
+//          {
+//            // in our world here, 'dragging' refers to the user clicking on an icon that
+//            // is already on the screen, keeping his mouse button down, and dragging that
+//            // icon to another location.
+//            // when the user clicks on a drop-down or whatever to put an icon on the screen
+//            // that was not there before, we use the 'mouseMoved' event for that. So that's
+//            // 'moving' something, not 'dragging' it, even though we think of it as dragging.
+//            // There is a 'draggable' interface we use for objects that might be moved either
+//            // way; this class has an instance variable for the item, whether it is being
+//            // dragged or moved.
+//            // if this event determines that something is currently selected and that the mouse
+//            // event is still on that item, that means it is the first such event in a dragging
+//            // operation. We detach the icon from the screen, determine what the underlying
+//            // item is and remove it from the tileArray, and make a Draggable out of it so
+//            // it is in that instance variable ready to move on the glasspane.
+//            // 
+//            // if there is already a draggable in place, can we assume we're dragging it?
+//            // if it was a new draggable, a mouse button press would have ended its drag, 
+//            // so there would be no draggable. The only other time we have a draggable is if
+//            // we're actually dragging something, so that assumption sounds safe.
+//            //
+//            // So the first time this event is received, determine if we have a selected label
+//            // and if that selected label is under the mouse cursor at this first drag event. 
+//            // If both those are true, create its Draggable and make it the current dragged 
+//            // object.
+//            if (draggableItem == null)
+//            {
+//              Component c = mapPanel.findComponentAt(event.getX(), event.getY());
+//              // since we aren't currently dragging something; see if we're on top of one to drag.
+//              // if we're not, we'll just quietly exit the method...
+//              if ((selectedItem != null) && (c == selectedItem))
+//              {
+//                // ok, we're dragging this puppy. Create its draggable; we'll need the underlying picture
+//                // (only attempting to support dragging individual glyphs for now)
+//                Point selectedScreenLocation = selectedItem.getLocation();                            // find our item
+//                Point selectedTileLocation = calculateIndexTile(selectedScreenLocation);              // get its index tile location
+//                Tile selectedTile = mapPanel.getTileArray().getTile(selectedTileLocation);            // and its index tile.
+//                
+//                mapPanel.getTileArray().deletePictureTiles(selectedTileLocation);                     // remove item being dragged from tile array
+//                mapPanel.remove(selectedItem);
+//                
+//                draggableItem = new DraggablePicture(selectedTile.picture());                         // make our current draggableItem one from the picture in that tile.
+////                draggableJLabel = draggableItem.getJLabelJustIcon(mapPanel.getTileSize());            // likewise with our draggableJLabel
+//                activateDraggingOrMoving(draggableItem);
+//                setToCursorPosition(draggableJLabel, event.getX(), event.getY());
+//              }
+//            }
+//            else
+//            {
+//              setToCursorPosition(draggableJLabel, event.getX(), event.getY());
+//            }
+//          }
+//        }
+//    );
     
     Dimension mapPanelSize = mapPanel.getPreferredSize();
     add(mapPanel, JLayeredPane.DEFAULT_LAYER);

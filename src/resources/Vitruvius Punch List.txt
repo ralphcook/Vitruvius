@@ -1,35 +1,15 @@
 Vitruvius punch list.
 ---------------------
 
-test creating text files in an editor (or two) and generating maps from them (a la Glyphy tool)
+search function for glyph text file?
 
-saving blank map panels seems to be broken; doesn't say there's nothing to save.
+test creating text files in an editor (or two) and generating maps from them (a la Glyphy tool)
 
 Do file extensions need to be internationalized?
 
 prevent user from writing in the messages text area -- perhaps provide a way to clear it of text entirely.
 
 implement preferences for the glyphy tool -- currently commented out, see TODO lines.
-
-implement Menu bar: 'B' for menus applying to both working panes, 'G' for glyphy tool only.
-
-File
-B	open
-B	save
-B	close (or clear?)
--	exit
-Images
-B	set window size
-B	decrease tile size
-B	increase tile size
-G	update image panel
-G	transfer Image to DnD
-HTML
-B	generate full HTML
-B	generate forum HTML
-Help
-B	program help
-B	credits / about
 
 from Bianca:
 	*put the cursor back on the screen when dragging a building.
@@ -57,6 +37,10 @@ Larger font for messages text panel.
 There's something funny about the messages text panel sizing / scroll bars
 
 * done * ==================================================
+
+* saving blank map panels seems to be broken; doesn't say there's nothing to save.
+
+* implement Menu bar: 'B' for menus applying to both working panes, 'G' for glyphy tool only.
 
 *implement scrolledpane for left and middle DnD panels
 
