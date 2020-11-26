@@ -147,6 +147,11 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
               {
                 if (clickCount == 2)
                 {
+                  // if selectedItem is null, it likely means that they double-clicked on the already-selected
+                  // item; the first click DEselected the item, and so it is no longer 'selected'. I think we
+                  // should drag it anyway, so re-acquire the selected item.
+                  if (selectedItem == null) { selectItem((JLabel)c); }
+                  
                   // c should already be the selected item
                   // create a draggableItem out of the selected image
                   startDraggingSelectedItem();
