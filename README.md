@@ -49,4 +49,5 @@ doesn't indicate an overlap of glyphs. There is also a space character above the
 resulting map would have a blank tile at that location.
 
 Vitruvius will save and read files containing Drag and Drop maps or Glyphy Tool text, and also 
-generate HTML for the images from either tool.
+generate HTML for the images from either tool. The complete "Help" text is available in the project
+at src/main/java/org/rc/vitruvius/ui/VitruviusHelp.html
