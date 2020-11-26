@@ -5,7 +5,7 @@ This program provides two tools, a drag-and-drop map builder and a "glyphy tool"
 creating collections of images in a 'map' based on the Sierra Impressions game "Caesar III".
 
 The images are from a web-based "glyphy tool" that has been used for years on the website
-"Caesar III Heaven" (heavengames.com). That tool allowed a user to enter a block of text where letters
+"Caesar III Heaven" (caesar3.heavengames.com). That tool allowed a user to enter a block of text where letters
 stood for certain buildings and other graphics from the game, and the tool would translate
 the text block to a block of image 'glyphs' to illustrate 
 "housing blocks" to show other players. Results could be put
