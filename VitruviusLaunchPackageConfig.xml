@@ -2,7 +2,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>C:\Users\ralph\files\programming\workspaces\Vitruvius\Vitruvius\bin\Vitruvius.jar</jar>
+  <jar>C:\Users\ralph\files\programming\workspaces\Vitruvius\Vitruvius\Vitruvius.jar</jar>
   <outfile>C:\Users\ralph\files\programming\workspaces\Vitruvius\Vitruvius\Vitruvius.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
