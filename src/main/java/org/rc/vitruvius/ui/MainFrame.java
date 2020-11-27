@@ -2,9 +2,13 @@ package org.rc.vitruvius.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.net.URL;
 import java.util.prefs.Preferences;
 
+import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -74,6 +78,14 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     glyphyToolPanel = new GlyphyToolPanel(this, applicationPreferences);
     fileHandler = new FileHandler(this);
     GenerateGlyphyImageAction.getSingleton().updateReferences(this, glyphyToolPanel, new TextTranslator(this));
+    
+    try
+    {
+      URL resourceUrl = this.getClass().getResource("/icon/VitruvianMan.png");
+      Image icon = Toolkit.getDefaultToolkit().getImage(resourceUrl);
+      setIconImage(icon);
+    }
+    catch (Exception e) { e.printStackTrace(); }
   }
   
   /**
