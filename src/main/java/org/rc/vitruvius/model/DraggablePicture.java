@@ -100,4 +100,9 @@ public class DraggablePicture implements Draggable
   {
     return picture.getTileArray();
   }
+  
+  public boolean isMultidrop()
+  {
+    return (Picture.isMultiDrop(picture));
+  }
 }

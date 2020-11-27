@@ -2,6 +2,7 @@ package org.rc.vitruvius.ui;
 
 import java.awt.Dimension;
 import java.awt.Image;
+import java.util.EnumSet;
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
@@ -126,6 +127,7 @@ public enum Picture
   private ImageIcon unscaledImageIcon = null;   // lazy instantiation at first use.
   private HashMap<Integer, ImageIcon> scaledImageIcons = new HashMap<>();
   private PassAlongMousePressedListener cachedMousePressListener = new PassAlongMousePressedListener();
+  private static EnumSet<Picture> multiDropPictures = EnumSet.of(road, plaza, garden, house1, house2, house3);
   
   private final static String IMAGE_FILEPATH_FORMAT = "/images/%s.gif";
   
@@ -308,5 +310,10 @@ public enum Picture
       }
     }
     return ta;
+  }
+  
+  public static boolean isMultiDrop(Picture p)
+  {
+    return multiDropPictures.contains(p);
   }
 }
