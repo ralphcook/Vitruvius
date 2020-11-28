@@ -32,10 +32,17 @@ matches the behavior of placing glyphs in the game).
 <li>pressing the keyboard's "Escape" key.
 </ul>
 
-<P>Vitruvius does not currently support holding down the mouse button while dragging the glyph across the 
-screen to create a line of glyphs, such as the game does with roads and plazas.
+<P>If the user has selected a glyph which supports it, he may click to drop a copy of the
+glyph and, while holding down the mouse button, drag the glyph to create a line of them
+(works for road, plaza, garden, and the 3 sizes of house).
+This doesn't work quite like the equivalent in the game; it drops a glyph on any tile 
+the mouse cursor touches that does not already have a glyph in it, and it makes no attempt
+to make a straight line, two lines at a right angle, or a block of the selected tile. In this
+mode, every tile touched by the mouse cursor gets another copy of the selected glyph; if the
+tile is already occupied, it is skipped, but tiles on the other side of an existing glyph
+will still get the selected glyph if the mouse cursor continues.
 
-<P>If the user hovers the mouse over any glyph, the glyph's name is displayed.
+<P>If the user hovers the mouse over any glyph on the map, the glyph's name is displayed.
 
 <h4> Deleting and Moving Glyphs </h4>
 
