@@ -1,7 +1,6 @@
 package org.rc.vitruvius.model;
 
 import java.awt.Dimension;
-import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;

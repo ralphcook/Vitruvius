@@ -391,8 +391,8 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
       if (!tiles.isEmpty())
       {
         if (target == GenerateHtmlAction.Target.FULL) 
-              { result = HtmlGenerator.generateFullHtml(tiles); }
-        else  { result = HtmlGenerator.generateForumHtml(tiles); }
+              { result = HtmlGenerator.generateFullHtml(tiles, applicationPreferences); }
+        else  { result = HtmlGenerator.generateForumHtml(tiles, applicationPreferences); }
       }
     }
     return result;

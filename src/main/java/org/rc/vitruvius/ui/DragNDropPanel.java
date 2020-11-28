@@ -503,8 +503,8 @@ public class DragNDropPanel extends JPanel implements VitruviusWorkingPane, Glyp
     if (!tiles.isEmpty())
     {
       if (target == GenerateHtmlAction.Target.FULL) 
-      { result = HtmlGenerator.generateFullHtml(tiles); }
-      else  { result = HtmlGenerator.generateForumHtml(tiles); }
+      { result = HtmlGenerator.generateFullHtml(tiles, applicationPreferences); }
+      else  { result = HtmlGenerator.generateForumHtml(tiles, applicationPreferences); }
     }
     
     return result;
