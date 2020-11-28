@@ -4,11 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.net.URL;
 import java.util.prefs.Preferences;
 
-import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -16,6 +18,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
@@ -29,6 +32,7 @@ import org.rc.vitruvius.model.FileHandler;
 import org.rc.vitruvius.model.VitruviusWorkingPane;
 import org.rc.vitruvius.text.TextTranslator;
 import org.rc.vitruvius.ui.actions.DisplayHelpAction;
+import org.rc.vitruvius.ui.actions.DisplayHtmlSettingsDialogAction;
 import org.rc.vitruvius.ui.actions.EndDragAction;
 import org.rc.vitruvius.ui.actions.GenerateGlyphyImageAction;
 import org.rc.vitruvius.ui.actions.GenerateHtmlAction;
@@ -86,6 +90,34 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
       setIconImage(icon);
     }
     catch (Exception e) { e.printStackTrace(); }
+    
+  }
+  
+  @Override
+  public void windowClosing(WindowEvent windowEvent)
+  {
+    // NOTE: The superclass already adds this class as a window event listener,
+    // so we do not do it again here. We do call the superclass' method if they
+    // have no unsaved changes or say they want to continue...
+    if (!unsavedChanges())
+    {
+      System.exit(0);
+    }
+    else 
+    {
+//      say("windowClosing()");
+      // Asks if they want to continue, and has a cancel option.
+      int jOption = JOptionPane.showConfirmDialog(this, 
+                                                  I18n.getString("unsavedChangesGenericMessage"),
+                                                  I18n.getString("unsavedChangesDialogTitle"),
+                                                  JOptionPane.YES_NO_OPTION
+                                                  );
+      if (jOption == JOptionPane.YES_OPTION)  
+      {
+        super.windowClosing(windowEvent);
+        System.exit(0); 
+      }
+    }
   }
   
   /**
@@ -93,7 +125,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
    */
   public void createDisplay()
   {
-    setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+    setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     // numbers here represent default window position for first time program is run
     initializeSavedWindowPosition(applicationPreferences, 100, 100, 500, 400);
     
@@ -202,6 +234,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     
     htmlMenu.add(new JMenuItem(new GenerateHtmlAction(this, GenerateHtmlAction.Target.FULL, I18n.getString("generateFullHtmlActionName"))));
     htmlMenu.add(new JMenuItem(new GenerateHtmlAction(this, GenerateHtmlAction.Target.FORUM, I18n.getString("generateForumHtmlActionName"))));
+    htmlMenu.add(new JMenuItem(new DisplayHtmlSettingsDialogAction(mainFrame, applicationPreferences)));
     
     JMenu helpMenu = getI18nJMenu("helpMenuName", "helpMenuMnemonicKey");
     helpMenu.add(new JMenuItem(new DisplayHelpAction(this, "VitruviusHelp.html", "displayHelpActionName", "displayHelpMnemonicKey")));

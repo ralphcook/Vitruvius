@@ -1,5 +1,7 @@
 package org.rc.vitruvius.ui;
 
+import java.util.prefs.Preferences;
+
 import org.rc.vitruvius.model.Tile;
 import org.rc.vitruvius.model.TileArray;
 import org.rc.vitruvius.model.TileRow;
@@ -28,13 +30,16 @@ public class HtmlGenerator
   /**
    * Generate HTML suitable as an entire HTML page.
    * @param tiles
+   * @param prefix
    * @return
    */
-  public static String generateFullHtml(TileArray tiles)
+  public static String generateFullHtml(TileArray tiles, Preferences applicationPreferences)
   {
     StringBuilder output = new StringBuilder();
     output.append(startHtml);
-    generateForumSB(output, tiles);
+    
+    String imagePrefix = applicationPreferences.get(HtmlSettingsDialog.FULL_HTML_PREFIX_PREF_KEY, "");
+    generateInnerHtml(output, tiles, imagePrefix);
     output.append(endHtml);
     return new String(output);
   }
@@ -45,10 +50,11 @@ public class HtmlGenerator
    * @param tiles
    * @return
    */
-  public static String generateForumHtml(TileArray tiles)
+  public static String generateForumHtml(TileArray tiles, Preferences applicationPreferences)
   {
     StringBuilder output = new StringBuilder();
-    generateForumSB(output, tiles);
+    String prefix = applicationPreferences.get(HtmlSettingsDialog.HEAVEN_GAMES_PREFIX_PREF_KEY, "");
+    generateInnerHtml(output, tiles, prefix);
     return new String(output);
   }
   
@@ -58,8 +64,9 @@ public class HtmlGenerator
    * StringBuilder.
    * @param output
    * @param tiles
+   * @param imagePrefix
    */
-  private static void generateForumSB(StringBuilder output, TileArray tiles)
+  private static void generateInnerHtml(StringBuilder output, TileArray tiles, String imagePrefix)
   {
     int cellSize = 25;
     String pictureCellFormat  = "    <td rowspan=%d colspan=%d><IMG SRC=%s%s.gif style=\"height:%dpx;width:%dpx\" title=\"%s\"></td>\n";
@@ -82,15 +89,13 @@ public class HtmlGenerator
           break;
         default:
           Picture picture = tile.picture();
-              String imageDir = "/strategy/housing/images/";
-              imageDir = "images/";
-              pictureString = String.format(pictureCellFormat, 
-                                          picture.rows(), picture.columns(), 
-                                          imageDir, picture.getImageName(), 
-                                          cellSize*picture.rows(), cellSize*picture.columns(), 
-                                          picture.getImageName());
-              output.append(pictureString);
-              break;
+          pictureString = String.format(pictureCellFormat, 
+                                      picture.rows(), picture.columns(), 
+                                      imagePrefix, picture.getImageName(), 
+                                      cellSize*picture.rows(), cellSize*picture.columns(), 
+                                      picture.getImageName());
+          output.append(pictureString);
+          break;
         }
       }
       output.append(endRow);

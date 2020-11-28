@@ -1,7 +1,6 @@
 package org.rc.vitruvius.model;
 
 import java.awt.Dimension;
-import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,6 +13,7 @@ import java.util.Iterator;
 import org.rc.vitruvius.model.Tile.Type;
 import org.rc.vitruvius.ui.I18n;
 import org.rc.vitruvius.ui.Picture;
+import org.rc.vitruvius.ui.TilePoint;
 
 /**
  * Dynamic 2d collection of Tiles, organized as a list of TileRow.
@@ -65,7 +65,7 @@ public class TileArray implements Iterable<TileRow>
    * because of the Picture object at the index location.
    * @param indexTilePosition
    */
-  public void deletePictureTiles(Point indexTilePosition)
+  public void deletePictureTiles(TilePoint indexTilePosition)
   {
     int indexCol = indexTilePosition.x;
     int indexRow = indexTilePosition.y;
@@ -293,7 +293,15 @@ public class TileArray implements Iterable<TileRow>
     tileRow.put(t, colNumber);
   }
   
-  public boolean accepts(TileArray ta, Point arrayPosition)
+  /**
+   * Returns true if this tile array 'accepts' the given tile array at the
+   * given tile position, i.e., if this tile array has empty tiles everywhere
+   * the given tile array has non-empty tiles.
+   * @param ta
+   * @param arrayPosition
+   * @return
+   */
+  public boolean accepts(TileArray ta, TilePoint arrayPosition)
   {
     boolean result = true;
     for (int rowOffset=0; rowOffset < ta.rows(); rowOffset++)
@@ -326,14 +334,14 @@ public class TileArray implements Iterable<TileRow>
    * @param rowNumber
    * @param colNumber
    */
-  public void put(TileArray ta, Point arrayPosition)
+  public void put(TileArray ta, TilePoint tilePoint)
   {
     for (int rowOffset=0; rowOffset < ta.rows(); rowOffset++)
     {
       for (int colOffset=0; colOffset < ta.columns(); colOffset++)
       {
         Tile currentTile = ta.getTile(colOffset, rowOffset);
-        put(currentTile, arrayPosition.y + rowOffset, arrayPosition.x + colOffset);
+        put(currentTile, tilePoint.y + rowOffset, tilePoint.x + colOffset);
       }
     }
   }
@@ -388,7 +396,7 @@ public class TileArray implements Iterable<TileRow>
     return tile;
   }
   
-  public Tile getTile(Point point) { return getTile(point.x, point.y); }
+  public Tile getTile(TilePoint point) { return getTile(point.x, point.y); }
   
   
   /**

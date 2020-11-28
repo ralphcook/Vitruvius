@@ -51,4 +51,10 @@ public interface Draggable
    * cease to be the draggable item.
    */
   public boolean isPersistent();
+  
+  /**
+   * Return true if we allow this glyph to be duplicated by dragging it across
+   * the screen.
+   */
+  public boolean isMultidrop();
 }

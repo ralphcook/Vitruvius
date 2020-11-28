@@ -96,15 +96,17 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
               Point cursorPoint = e.getPoint();
               if (glassPanel.contains(cursorPoint)) 
               { 
-                if (insertDraggableIntoTileArrayIfFree(cursorPoint)) 
-                                                        { 
-                                                          dropDraggableCopy(e.getX(), e.getY());
-                                                          if (!draggableItem.isPersistent()) { deactivateDraggingOrMoving(); }
-                                                        }
-                                                   else { 
-                                                           String clearedLandMessage = I18n.getString("clearedLandMessage");
-                                                           userMessageListener.addMessage(clearedLandMessage); 
-                                                        }
+                TilePoint tileInsertPoint = getDraggableTileInsertPoint(cursorPoint);
+                if (tileInsertPoint != null)
+                      { 
+                        mapPanel.getTileArray().put(draggableItem.getTileArray(), tileInsertPoint);
+                        dropDraggableCopy(tileInsertPoint);
+                        if (!draggableItem.isPersistent()) { deactivateDraggingOrMoving(); }
+                      }
+                 else { 
+                         String clearedLandMessage = I18n.getString("clearedLandMessage");
+                         userMessageListener.addMessage(clearedLandMessage); 
+                      }
               }
             }
             break;
@@ -165,12 +167,28 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
         }
     );
 
-//    mapPanel.addMouseMotionListener
-//    (
-//        new MouseAdapter()
-//        {
-//          public void mouseDragged(MouseEvent event)
-//          {
+    glassPanel.addMouseMotionListener
+    (
+        new MouseAdapter()
+        {
+          public void mouseDragged(MouseEvent event)
+          {
+            // If the draggable is a "multidrop", 
+            // then when the drag reaches another tile location
+            // that will accept this draggable, drop another copy.
+            if (draggableItem != null && draggableItem.isMultidrop())
+            {
+              Point cursorPoint = event.getPoint();
+              if (glassPanel.contains(cursorPoint))
+              {
+                TilePoint tilePoint = getDraggableTileInsertPoint(cursorPoint);
+                if (tilePoint != null) 
+                { 
+                  dropDraggableCopy(tilePoint);
+                  mapPanel.getTileArray().put(draggableItem.getTileArray(), tilePoint);
+                }
+              }
+            }
 //            // in our world here, 'dragging' refers to the user clicking on an icon that
 //            // is already on the screen, keeping his mouse button down, and dragging that
 //            // icon to another location.
@@ -221,9 +239,9 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
 //            {
 //              setToCursorPosition(draggableJLabel, event.getX(), event.getY());
 //            }
-//          }
-//        }
-//    );
+          }
+        }
+    );
     
     Dimension mapPanelSize = mapPanel.getPreferredSize();
     add(mapPanel, JLayeredPane.DEFAULT_LAYER);
@@ -258,7 +276,7 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
   {
     // get the tile corresponding to the selected item.
     Point screenLocation = selectedItem.getLocation();
-    Point tileLocation = calculateIndexTile(screenLocation);
+    TilePoint tileLocation = calculateIndexTile(screenLocation);
     TileArray tileArray = mapPanel.getTileArray();
     Tile tile = tileArray.getTile(tileLocation.x, tileLocation.y);
     // remove this picture from the tile array, and from the mapPanel.
@@ -398,7 +416,7 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
     {
       // get the tile position of the selected item.
       Point graphicsIndex = selectedItem.getLocation();
-      Point indexTile = calculateIndexTile(graphicsIndex); 
+      TilePoint indexTile = calculateIndexTile(graphicsIndex); 
       mapPanel.getTileArray().deletePictureTiles(indexTile);
       
       // take the selected item off the panel.
@@ -413,30 +431,48 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
   }
   
   /**
-   * Insert the current draggable into the tile array as indicated by the cursor location,
-   * if there are no non-empty tiles that would be overwritten.
-   * @param Point cursor location (p'bly middle of the glyph)
+   * returns the **tile** insert point for insertion of the current draggable,
+   * item starting from the current cursor point. Returns null if the draggable
+   * item cannot be inserted at that point. (NOTE: the x,y pair of the returned
+   * point are column and row of tiles, not pixels.)
+   * 
+   * @param cursorPoint
+   * @return
    */
-  private boolean insertDraggableIntoTileArrayIfFree(Point cursorPoint)
+  private TilePoint getDraggableTileInsertPoint(Point graphicsPosition)
   {
-    boolean result = true;
-    
-    // calculate the tile x,y for the cursor (pixel) x and y
-    Point tilePoint = calculateDraggedIndexTile(cursorPoint.x, cursorPoint.y);
-    
-    // check on whether draggable tile array will go onto the main tile array.
-    TileArray draggedTileArray = draggableItem.getTileArray();
-    if (mapPanel.getTileArray().accepts(draggedTileArray, tilePoint))
-    {
-      mapPanel.getTileArray().put(draggedTileArray, tilePoint);
-    }
-    else 
-    {
-      result = false;
-    }
-    
-    return result;
+    TilePoint tilePoint = calculateDraggedIndexTilePoint(graphicsPosition.x, graphicsPosition.y);
+    TileArray arrayDraggedTiles = draggableItem.getTileArray();
+    TileArray mapPanelTiles = mapPanel.getTileArray();
+    if (!mapPanelTiles.accepts(arrayDraggedTiles, tilePoint)) { tilePoint = null; }
+    return tilePoint;
   }
+  
+//  /**
+//   * Insert the current draggable into the tile array as indicated by the cursor location,
+//   * if there are no non-empty tiles that would be overwritten.
+//   * @param Point cursor location (p'bly middle of the glyph)
+//   */
+//  private boolean insertDraggableIntoTileArrayIfFree(Point cursorPoint)
+//  {
+//    boolean result = true;
+//    
+//    // calculate the tile x,y for the cursor (pixel) x and y
+//    TilePoint tilePoint = calculateDraggedIndexTilePoint(cursorPoint.x, cursorPoint.y);
+//    
+//    // check on whether draggable tile array will go onto the main tile array.
+//    TileArray draggedTileArray = draggableItem.getTileArray();
+//    if (mapPanel.getTileArray().accepts(draggedTileArray, tilePoint))
+//    {
+//      mapPanel.getTileArray().put(draggedTileArray, tilePoint);
+//    }
+//    else 
+//    {
+//      result = false;
+//    }
+//    
+//    return result;
+//  }
   
   /**
    * Set the size, preferredSize, minimum, and maximum size of the given component to the given dimension.
@@ -452,33 +488,55 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
   }
 
   /**
-   * Given a cursor position, determine the x,y of the upper left corner of the current
+   * Given the x,y cursor position, determine the x,y of the upper left corner of the current
    * dragged component.
-   * @param x
-   * @param y
+   * @param pixelX
+   * @param pixelY
    * @return
    */
-  private Point getDraggedComponentIndexPoint(int x, int y)
+  private Point getDraggedComponentIndexPoint(int pixelX, int pixelY)
   {
-    TileArray draggableItemTileArray = draggableItem.getTileArray();
-    int width = draggableItemTileArray.columns();
-    int height = draggableItemTileArray.rows();
-
-    int tileSize = mapPanel.getTileSize();
-    int cursorXTile = x / tileSize;   //  row and column indices 
-    int cursorYTile = y / tileSize;   //  of tile containing cursor
-        cursorXTile -= width/2;       // adjustment for width of draggable.
-        cursorYTile -= height/2;      //   and height
-
-    int newX = cursorXTile * tileSize;  // upper left corner coordinates  
-    int newY = cursorYTile * tileSize;  // of upper left tile for glyph
+    //x,y graphics point of cursor
+    int tileSizePixels = mapPanel.getTileSize();
+    int halfTileSizePixels = tileSizePixels / 2;
     
-    return new Point(newX, newY);
+    TileArray draggableItemTileArray = draggableItem.getTileArray();
+    int xAdjustmentPixels = (draggableItemTileArray.columns() * tileSizePixels) / 2;
+    int yAdjustmentPixels = (draggableItemTileArray.rows()    * tileSizePixels) / 2;
+    
+    // calculate pixel position of the UL corner of the glyph, centered on the cursor.
+    int ulcXPixels = pixelX - xAdjustmentPixels;  
+    int ulcYPixels = pixelY - yAdjustmentPixels;
+    
+    // calculate the x,y tile array position for the nearest tile to the upper left.
+    int ulTileX = (ulcXPixels / tileSizePixels) ; // * tileSizePixels;  // now x,y pixel position for index tile of glyph
+    int ulTileY = (ulcYPixels / tileSizePixels) ; // * tileSizePixels;
+    
+    // calculate the pixel position of the nearest tile to the upper left
+    int ulTileXPixels = ulTileX * tileSizePixels;
+    int ulTileYPixels = ulTileY * tileSizePixels;
+    
+    // calc diff between x and y of the nearest upper left tile to the upper left
+    // corner of the glyph. If more than half a tile, then the cursor is closer to the next 
+    // tile down/right, and we adjust by one tile.  
+    int xDiff = ulcXPixels - ulTileXPixels;
+    int yDiff = ulcYPixels - ulTileYPixels;
+    if (xDiff > halfTileSizePixels) { ulTileXPixels += tileSizePixels; }
+    if (yDiff > halfTileSizePixels) { ulTileYPixels += tileSizePixels; }
+    
+//    int cursorXTile = (x - xAdjustment) / tileSize;   //  row and column indices 
+//    int cursorYTile = (y - yAdjustment) / tileSize;   //  of tile containing cursor
+//        cursorXTile -= width/2;       // adjustment for width of draggable.
+//        cursorYTile -= height/2;      //   and height
+
+//    say("orig %d, %d  adju %d, %d  new %d,%d", pixelX, pixelY, xAdjustmentPixels, yAdjustmentPixels, newXPixels, newYPixels);
+        
+    return new Point(ulTileXPixels, ulTileYPixels);
   }
   
   /**
-   * Make a copy of the currently dragged component and drop it at the current 
-   * cursor position. Whether this drop is legal should be determined before this
+   * Make a copy of the currently dragged component and drop it at the given
+   * tile point. Whether this drop is legal should be determined before this
    * method is called.
    * 
    * <P> Currently only handles JLabel; need to figure out what we'll do with non-JLabel
@@ -487,7 +545,7 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
    * @param cursorX
    * @param cursorY
    */
-  private void dropDraggableCopy(int cursorX, int cursorY)
+  private void dropDraggableCopy(TilePoint tileIndexPoint) // (int cursorX, int cursorY)
   {
     // make a copy of the current draggable component
     Dimension copiedLabelSize = draggableJLabel.getSize();
@@ -500,8 +558,10 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
     PassAlongMousePressedListener mouseListener = new PassAlongMousePressedListener();
     copiedLabel.addMouseListener(mouseListener);
     copiedLabel.addMouseMotionListener(mouseListener);
-    Point componentPoint = getDraggedComponentIndexPoint(cursorX, cursorY);
-    copiedLabel.setLocation(componentPoint.x, componentPoint.y);
+    
+    // calcuate where the component is going to go and put it there.
+    Point componentPoint = tileIndexPoint.calculateGraphicsPoint(mapPanel.getTileSize());
+    copiedLabel.setLocation(componentPoint);
 
     // add the component to the wrapped pane.
     copiedLabel.setVisible(true);
@@ -517,22 +577,22 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
    * 
    * @return Point with x,y tile position of index tile.
    */
-  private Point calculateDraggedIndexTile(int cursorX, int cursorY)
+  private TilePoint calculateDraggedIndexTilePoint(int cursorX, int cursorY)
   {
     int tileSize = mapPanel.getTileSize();
     Point draggableXY = getDraggedComponentIndexPoint(cursorX, cursorY);
     int tileX = draggableXY.x / tileSize;
     int tileY = draggableXY.y / tileSize;
-    Point result = new Point(tileX, tileY);
+    TilePoint result = new TilePoint(tileX, tileY);
     return result;
   }
   
   /**
-   * Calculate the index tile corresponding to a given point
+   * Calculate the index tile corresponding to a given graphics point
    * @param point
    * @return
    */
-  private Point calculateIndexTile(Point point)
+  private TilePoint calculateIndexTile(Point point)
   {
     return calculateIndexTile(point.x, point.y);
   }
@@ -540,12 +600,12 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
   /**
    * Calculate the index tile corresponding to a given x,y graphics point.
    */
-  private Point calculateIndexTile(int x, int y)
+  private TilePoint calculateIndexTile(int x, int y)
   {
     int tileSize = mapPanel.getTileSize();
     int tileX = x / tileSize;
     int tileY = y / tileSize;
-    return new Point(tileX, tileY);
+    return new TilePoint(tileX, tileY);
   }
   
   /**

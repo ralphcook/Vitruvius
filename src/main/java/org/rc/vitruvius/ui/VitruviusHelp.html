@@ -12,7 +12,7 @@
 
 Vitruvius is a stand-alone program that allows the user to create graphical arrangements of
 image glyphs from the Sierra game "Caesar III". It includes two tools, a Drag-and-Drop tool
-and a "Glyphy" tool. This guide explains how they work.
+and a "Glyphy" tool. This guide explains how to use them.
 
 <h3> Drag-and-Drop Tool </h3>
 
@@ -30,24 +30,34 @@ matches the behavior of placing glyphs in the game).
 <li>right-clicking the mouse, 
 <li>clicking the 'Clear' button just below the image on the top left, or 
 <li>pressing the keyboard's "Escape" key.
+<li>choosing another glyph
 </ul>
 
-<P>Vitruvius does not currently support holding down the mouse button while dragging the glyph across the 
-screen to create a line of glyphs, such as the game does with roads and plazas.
+<P>For certain glyphs (road, plaza, garden, and the 3 sizes of house), when the user has
+pressed the button to place the glyph, if he holds the button down and drags the mouse,
+the program will reproduce the glyph each time there is room for it. This makes it easy
+to create a 'line' of the same glyph.
 
-<P>If the user hovers the mouse over any glyph, the glyph's name is displayed.
+<P>This doesn't work quite like the equivalent operation in the game. Vitruvius drops a glyph on any tile 
+the mouse cursor touches that does not already have a glyph in it; it makes no attempt
+to make a straight line, two lines at a right angle, or a block of the selected tile. In this
+mode, every tile touched by the mouse cursor gets another copy of the selected glyph; if the
+tile is already occupied, it is skipped, but tiles on the other side of an existing glyph
+will still get the selected glyph if the mouse cursor continues.
+
+<P>If the user hovers the mouse over any glyph on the map, the glyph's name is displayed.
 
 <h4> Deleting and Moving Glyphs </h4>
 
-In the drag-and-drop tool, 
-if the user wants to delete a glyph from the main panel, he clicks on the glyph and presses 
+To delete a glyph from the main panel, he clicks on the glyph and presses 
 the "Delete" or "Backspace" key on his keyboard. Clicking on the glyph puts a black border around it, 
 though that is hard to see on some glyphs.
 
 <P>If the user wants to move a glyph, he double-clicks it; the glyph then moves with his mouse cursor
 in the same way as a glyph chosen from the drop-downs. In this case, clicking to place the glyph in a 
 new location then ends the dragging operation, instead of allowing placement of more glyphs of the
-same kind.
+same kind. If the user ends the dragging operation without placing the glyph, the glyph disappears from the
+board.
 
 <h3> The Glyphy Tool </h3>
 
@@ -90,13 +100,35 @@ tool, but that has not gotten substantial testing.
 
 <h3> Generating HTML </h3>
 
-<P>The options under the HTML menu generate HTML containing the map panel from either tool, as either a standalone
-web page or HTML suitable for including in the Heavengames (or another) 
+<P>The options under the HTML menu generate HTML to display the map panel from either tool, and for either 
+as a standalone web page or HTML suitable for including in the Heavengames (or another) 
 forum. The current version of the program
-puts the HTML text on the computer's clipboard; the user may then use the "Paste" function to put it into an
-editor or anywhere else that accepts a paste operation.
+puts the HTML text on the computer's clipboard; the user may then use the "Paste" function to put it into 
+a forum post, an editor, or anywhere else that accepts a text paste operation.
 
-<P>The displayed HTML also supports 'hovertext' indicating the glyph name, just as Vitruvius does. 
+<P>The displayed HTML also supports 'hovertext' indicating the glyph name, just as Vitruvius does.
+
+<P>There are two differences between "full HTML" and "forum HTML". The "full HTML" generates an HTML file that
+can be opened in a browser by itself. The "forum HTML" generates HTML that would go within another page; since
+the user is already creating a web page when you he creates a post in HeavenGames and another forum,
+are already a web page, they will not accept a "full HTML" page, they have to have 
+HTML that was meant to go within another page.
+
+<P>Both full and forum options must also be created to access the actual glyph files where they are located
+on that system. For HeavenGames, for instance, the images are in a folder named "/strategy/housing/images/", 
+so the HTML generated needs to refer to the images as being in that
+folder. The program implements this with a prefix string for each tool (Drag-and-Drop and Glyphy), and puts
+that string in the generated HTML. 
+
+On the HTML menu is an "HTML Settings" menu option; clicking it displays a dialog box for setting these two values,
+and for restoring their original default values. Be aware of the following if you are changing these values:
+
+<ul>
+<li>case is significant 
+<li>slashes ('/') have special meaning; both values should end with a slash
+<li>slashes work on Windows as well as other system; there is no need for backslashes
+<li>each entry for both values should end with a slash.
+</ul>
 
 <h3> Other Tidbits </h3>
 
@@ -109,7 +141,7 @@ if this would lose unsaved content.
 
 <h3> Hotkey List </h3>
 
-<table>
+<table border=2>
 	<tr>
 		<td>control-o</td>
 		<td>open file</td>
@@ -156,7 +188,6 @@ if this would lose unsaved content.
 
 <ul>
 <li>setting the number of tiles allowed for a map.
-<li>saving HTML to a file
 <li>different language support (the program is designed to make it easy to replace the default
 US English to other languages)
 </ul>
