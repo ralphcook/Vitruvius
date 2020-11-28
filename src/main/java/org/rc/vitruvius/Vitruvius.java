@@ -6,7 +6,7 @@ import org.rc.vitruvius.ui.MainFrame;
  * Vitruvius is a city planner desktop application for the Caear III game; it provides a drag-and-drop
  * interface to place game structure glyphs on an image panel. It also supports a text-based
  * method for specifying blocks of structures to be translated into their glyph equivalents,
- * based on the "glyphy tool" from the website Heavengames.com. 
+ * based on the "glyphy tool" from the "Caesar III Heaven website caesar3.heavengames.com. 
  * @author rcook
  *
  */
