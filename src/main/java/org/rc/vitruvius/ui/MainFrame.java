@@ -4,13 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.net.URL;
 import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -128,6 +126,7 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     // numbers here represent default window position for first time program is run
     initializeSavedWindowPosition(applicationPreferences, 100, 100, 500, 400);
+    addWindowListener(this);
     
     Picture.checkImageFiles();    // outputs syserror messages if we have glyphy tool letters that are supposed to 
                                   // correspond to particular glyphs, but we have no file with the filename saved 
