@@ -83,7 +83,9 @@ public class GlyphyHelpDialog extends JDialog
   private JScrollPane createTextScrollPane()
   {
     textArea = new JTextArea(30, 30);
-    textArea.setFont(new Font("Courier", Font.PLAIN, 18));    // new Font(Font.MONOSPACED, 20, Font.PLAIN);
+//    Font font = new Font("Arial", Font.BOLD, 18);
+    Font font = new Font("Courier", Font.PLAIN, 18);
+    textArea.setFont(font);   // new Font("Courier", Font.PLAIN, 30));    // new Font(Font.MONOSPACED, 20, Font.PLAIN)
     try 
     {
       String filename = I18n.getString("glyphyHelpTextFilename");

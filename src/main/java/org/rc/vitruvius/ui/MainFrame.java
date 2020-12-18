@@ -97,24 +97,23 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
     // NOTE: The superclass already adds this class as a window event listener,
     // so we do not do it again here. We do call the superclass' method if they
     // have no unsaved changes or say they want to continue...
-    if (!unsavedChanges())
+    int jOption = JOptionPane.YES_OPTION;
+    
+    if (unsavedChanges())
     {
-      System.exit(0);
-    }
-    else 
-    {
-//      say("windowClosing()");
       // Asks if they want to continue, and has a cancel option.
-      int jOption = JOptionPane.showConfirmDialog(this, 
+      jOption = JOptionPane.showConfirmDialog(this, 
                                                   I18n.getString("unsavedChangesGenericMessage"),
                                                   I18n.getString("unsavedChangesDialogTitle"),
                                                   JOptionPane.YES_NO_OPTION
                                                   );
-      if (jOption == JOptionPane.YES_OPTION)  
-      {
-        super.windowClosing(windowEvent);
-        System.exit(0); 
-      }
+    }
+    
+    if (jOption == JOptionPane.YES_OPTION)
+    {
+      // either they answered yes or we didn't need to ask.
+      super.windowClosing(windowEvent);
+      System.exit(0); 
     }
   }
   
@@ -283,16 +282,24 @@ public class MainFrame extends SavedWindowPositionJFrame implements UserMessageL
    */
   public void clearMessages()               { messagesTextArea.setText(""); }
   
+  public boolean currentWorkingPaneAnyImages() { return currentWorkingPane.anyImages(); }
+  
   /**
    * Return true/false indicating whether there are unsaved changes on either working pane (or both).
    * @return
    */
   public boolean unsavedChanges()
   {
-    boolean result = false;
-    result = dragNDropPanel.unsavedChanges();
-    if (!result) { result = glyphyToolPanel.unsavedChanges(); }
+    boolean result = dragNDropPanel.unsavedChanges() || glyphyToolPanel.unsavedChanges(); 
     return result;
   }
+  
+  public boolean unsavedChangesCurrentWorkingPane()
+  {
+    boolean result = currentWorkingPane.unsavedChanges();
+    return result;
+  }
+  
+  public void setUnsavedChangesCurrentWorkingPane(boolean b)  { currentWorkingPane.setUnsavedChanges(b); }
   
 }

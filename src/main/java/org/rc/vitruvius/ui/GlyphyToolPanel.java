@@ -65,7 +65,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   public boolean unsavedChanges()             { return unsavedChanges; } 
   public void    setUnsavedChanges(boolean b) { unsavedChanges = b; }
   
-  private File          currentlyOpenFile   = null;
+  private File          currentFile   = null;
   
   public GlyphyToolPanel(MainFrame mainFrame, Preferences applicationPreferences)
   {
@@ -202,7 +202,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
             String text = readTextFromFile(file);
             textMapTextArea.setText(text);
             saveFileInPreferences(file);
-            currentlyOpenFile = file;
+            currentFile = file;
             setDirtyText(true);
             setUnsavedChanges(false);
           } 
@@ -245,7 +245,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   @Override
   public void saveFile()
   {
-    if (currentlyOpenFile == null)
+    if (currentFile == null)
     {
       saveFileAs();
     }
@@ -253,8 +253,8 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
     {
       String message = "";
       String filepath = "";
-      try                 { filepath = currentlyOpenFile.getCanonicalPath(); 
-                            message = saveToFile(currentlyOpenFile);
+      try                 { filepath = currentFile.getCanonicalPath(); 
+                            message = saveToFile(currentFile);
                             setUnsavedChanges(false);
                           }
       catch (Exception e) { message = I18n.getString("fileCouldNotBeSaved", filepath); }
@@ -330,6 +330,7 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
           { 
             resultMessage = saveToFile(selectedFile);
             setUnsavedChanges(false);
+            currentFile = selectedFile;
           }
           catch (Exception exception) 
           { 
@@ -343,18 +344,9 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   @Override
   public void clearPanel()
   {
-    String message = I18n.getString("confirmCloseWithoutSave");
-    String title   = I18n.getString("confirmCloseDialogTitle");
-    int option = JOptionPane.showConfirmDialog(this, message, title, JOptionPane.YES_NO_OPTION);
-    if (option == JOptionPane.OK_OPTION)
-    {
-      try 
-      { 
         textMapTextArea.setText("");
+        mapPanel.clearPanel();
         setUnsavedChanges(false);
-      }
-      catch (Exception exception) { throw new RuntimeException("problem in GlyphyToolPanel.clearPanel()", exception); }
-    }
   }
   
   @Override
@@ -402,5 +394,10 @@ public class GlyphyToolPanel extends JPanel implements DocumentListener, Vitruvi
   {
     // TODO Auto-generated method stub
     
+  }
+  @Override
+  public boolean anyImages()
+  {
+    return mapPanel.anyImages();
   }
 }
