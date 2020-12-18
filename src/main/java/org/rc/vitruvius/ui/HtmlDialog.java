@@ -2,6 +2,7 @@ package org.rc.vitruvius.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.InputStream;
@@ -71,6 +72,13 @@ public class HtmlDialog extends JDialog implements ActionListener
     
     okButton.addActionListener(this);
     
+    // if we're going to set a font, we have to tell the pane (which is displaying HTML)
+    // to honor the display properties that we set on the pane. Othewise it gets them from
+    // properties or somewhere.
+    Font font = new Font("Arial", Font.BOLD, 15);
+    htmlPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+    htmlPane.setFont(font);
+
     pack();
     setVisible(true);
 

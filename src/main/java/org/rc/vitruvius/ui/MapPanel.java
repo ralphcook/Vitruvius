@@ -28,6 +28,30 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
   TileArray   tileArray = null;   // new form of pictures array
   public TileArray getTileArray() { return tileArray; }
   
+  /**
+   * return true if there are any images on the panel.
+   * @return
+   */
+  public boolean anyImages()
+  {
+    boolean result = true;
+    if (tileArray != null)
+    {
+      for (TileRow row : tileArray)
+      {
+        for (Tile tile : row)
+        {
+          if (tile != null && tile.type() != Tile.Type.EMPTY)
+          {
+            result = false;
+            break;
+          }
+        }
+      }
+    }
+    return result;
+  }
+  
   public MapPanel(int tileSize)
   {
     this.tileSize = tileSize;
@@ -80,7 +104,10 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
     Dimension newSize = new Dimension(width, height);
     setAllPanelSizes(newSize);
   }
-  
+
+  /**
+   * clear the panel -- remove all images and tile objects and repaint.
+   */
   public void clearPanel()
   {
     removeAll();
@@ -88,37 +115,6 @@ public class MapPanel extends JPanel // implements MouseListener, MouseMotionLis
     repaint();
   }
 
-  //  /**
-//   * set the size of the images panel so that it is big enough to accommodate the given tile array.
-//   * @param tileArray
-//   */
-//  private void setSize(TileArray tileArray)
-//  {
-//    int height = 0;
-//    int width = 0;
-//    
-//    int currentRow = 0; 
-//    for (TileRow row: tileArray)
-//    {
-//      int currentCol = 0;
-//      for (Tile tile: row)
-//      {
-//        Picture p = tile.picture();
-//        if (p != null)
-//        {
-//          int tileRows = p.rows();
-//          int tileCols = p.columns();
-//          height = Math.max(height, currentRow + tileRows);
-//          width  = Math.max(width,  currentCol + tileCols);
-//        }
-//        currentCol++;
-//      }
-//      currentRow++;
-//    }
-//    setSize(width*tileSize, height*tileSize);
-//    setPreferredSize(new Dimension(width*tileSize, height*tileSize));
-//  }
-  
   public void setTileArray(TileArray newTileArray)
   {
     tileArray = newTileArray;

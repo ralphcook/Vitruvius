@@ -12,7 +12,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -50,13 +49,13 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
   
   PassAlongMousePressedListener passAlongListener   = new PassAlongMousePressedListener();
   
-  private MainFrame           mainFrame                 = null;
+//  private MainFrame           mainFrame                 = null;
   private UserMessageListener userMessageListener       = null;
   
-  public DragNDropLayeredPane(MainFrame givenMainFrame, DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener, int tileSize)
+  public DragNDropLayeredPane(/*MainFrame givenMainFrame,*/ DragNDropPanel glyphSelectionGenerator, UserMessageListener givenListener, int tileSize)
   {
     glyphSelectionGenerator.addGlyphSelectionListener(this);
-    this.mainFrame = givenMainFrame;
+//    this.mainFrame = givenMainFrame;
     this.userMessageListener = givenListener;
     
     mapPanel = new MapPanel(tileSize); // createWrappedPanel();
@@ -294,25 +293,14 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
     label.setLocation(newPoint.x, newPoint.y);
   }
   
+  /**
+   * Clear the panel. This does not check for unsaved changes or anything, it just clears out all 
+   * the images.
+   */
   public void clearPanel()
   {
-    if (unsavedChanges)
-    {
-      String message = I18n.getString("confirmCloseWithoutSave");
-      String title   = I18n.getString("confirmCloseDialogTitle");
-      int option = JOptionPane.showConfirmDialog(mainFrame, message, title, JOptionPane.YES_NO_OPTION);
-      if (option == JOptionPane.OK_OPTION)
-      {
-        try 
-        { 
-          mapPanel.clearPanel(); 
-          setUnsavedChanges(false);
-        }
-        catch (Exception exception) { throw new RuntimeException("problem in DragNDropLayeredPane.clearPanel()", exception); }
-      }
-      
-    }
-    mapPanel.clearPanel();
+    mapPanel.clearPanel(); 
+    setUnsavedChanges(false);
   }
   
   public void increaseTileSize()
@@ -650,6 +638,11 @@ public class DragNDropLayeredPane extends JLayeredPane implements GlyphSelection
       glassPanel.setVisible(false);
 //      glassPanel.setCursor(null);
     }
+  }
+  
+  public boolean anyImages()
+  {
+    return mapPanel.anyImages();
   }
   
 }

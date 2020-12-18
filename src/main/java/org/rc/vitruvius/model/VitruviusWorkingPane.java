@@ -44,6 +44,22 @@ public interface VitruviusWorkingPane
    * Clear the current pane's information, leaving a blank pane.
    */
   public void     clearPanel();
+  
+  /**
+   * Set the flag for unsaved changes, either true (there are unsaved changes) or false
+   * (there are no unsaved changes)
+   */
+  public void     setUnsavedChanges(boolean unsavedChangesFlag);
+  
+  /**
+   * Return true if there are unsaved changes, false if there are none.
+   */
+  public boolean  unsavedChanges();
+  
+  /**
+   * Return true if there any glyphs on the pane
+   */
+  public boolean anyImages();
 
   /**
    * Set the size of the image panel on the current pane.
